@@ -32,14 +32,14 @@ OBJCFLAGS=-O binary
 
 #Once I have c files the target, recipie and rule can go here
 
-tm4c_os.o: vectors.S reset.S
-	${CC} ${AFLAGS} -Dgcc -c vectors.S reset.S
+tm4c_os.o: vectors.S
+	${CC} ${AFLAGS} -Dgcc -c vectors.S
 
-tm4c_os.elf: vectors.o reset.o
+tm4c_os.elf: vectors.o
 	${LD} ${LDLAGS} -o tm4c_os.elf -Map tm4c_os.map
 
 tm4c_os.bin: tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf
 
 clean:
-	rm -rf *.o  *.d tm4c_os.elf tm4c_os.bin
+	rm -rf *.o tm4c_os.elf tm4c_os.bin

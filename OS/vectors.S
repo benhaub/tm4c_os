@@ -1,8 +1,9 @@
-/********************************************************************
- *Authour	:	Ben Haubrich																						*
- *File		:	vectors.S																								*
- *Synopsis:	vector table and fault handlers for ARM Cortex M-series	*
- ********************************************************************/
+/**************************************************************************
+ *Authour	:	Ben Haubrich																									*
+ *File		:	vectors.S																											*
+ *Synopsis:	vector table, fault & reset handlers for ARM Cortex M-series	*
+ **************************************************************************/
+
 /******************************************************************
  * Sources Used:																									*
  *	ARM Assembly Language Tools v18.1.0.LTS Users Guide (Rev. U)	*
@@ -21,7 +22,7 @@
 
 /* Pg.116 & 19, ALT - These routines will be used from outside this file */ 
 	.data
-		.global Reset_EXCP, SVC_ISR, MM_FAULT 
+		.global SVC_ISR, MM_FAULT, OS_ENTRY 
 
 /* Pg.19, ALT - user-named sections created with the .sect assembler directive*/
 /* are initialized. */
@@ -36,7 +37,7 @@
 /* Pg.103, datasheet - Table 2-8 details the vector table. */
 
 Vectors:												/* Description */							
-	.word STACK_TOP
+	.word OS_ENTRY								/* The boot loader jumps to OS from here */
 	.word Reset_EXCP							/* Reset Exception */
 	.word NMI_ISR									/* Non-maskable interrupt */
 	.word HFAULT									/* Hard Fault */
@@ -216,7 +217,11 @@ BFAULT: .fnstart
 UFAULT:	.fnstart
 				uloop:
 					b uloop
-				.fnend	
+				.fnend
+/* Reset Exception Handler. See Pg.432 for reset conditions */
+/* Reset jumps back to the OS init function. */
+RESET_ISR: .fnstart
+	b init
 
 	/* Pg.111, ALT */
 	.end
