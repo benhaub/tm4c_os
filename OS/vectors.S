@@ -13,7 +13,6 @@
  *	ARMv7 Architecture Reference Manual														*
  *	- Refer to as ARmanual																				*
  ******************************************************************/
-
 /* 
  * Pg.49, ALT - General syntax for each line of arm assembly
  * 	[label[:]]mnemonic [operand list][;comment]
@@ -23,41 +22,50 @@
 /* Pg.103, datasheet - Table 2-8 details the vector table. */
 /* In C, this is similar to: */
 /* unsigned int Vectors[16] = {OS_ENTRY, Reset_EXCP,...,SYST_ISR}; */
-	.section "intvecs"
+	.syntax unified
+	.thumb
+	
+	.bss
+STACK_TOP:
+	.skip 0x1000, 0
+
+	.text
+	.global Reset_EXCP
+
+	.section .intvecs
 
 Vectors:
-	.word start										/* The boot loader jumps to OS from here */
-	.word Reset_EXCP							/* Reset Exception */
-	.word NMI_ISR									/* Non-maskable interrupt */
-	.word HFAULT									/* Hard Fault */
-	.word MM_FAULT								/* Memory Management Fault*/
-	.word BFAULT									/* Bus Fault */
-	.word UFAULT									/* Usage Fault */
-	.word 0												/* Reserved Space */
-	.word 0												/* Reserved Space */
-	.word 0												/* Reserved Space */
-	.word 0												/* Reserved Space */
-	.word SVC_ISR									/* Supervisor Call */
-	.word DM_ISR									/* Debug Monitor */
-	.word 0												/* Reserved Space */
-	.word PSV_ISR									/* PendSV */
-	.word SYST_ISR								/* SysTick */
+	.word STACK_TOP + 0x1000	/* Boot loader gets kernel stack pointer from here*/
+	.word Reset_EXCP	/* Reset Exception */
+	.word NMI_ISR			/* Non-maskable interrupt */
+	.word HFAULT			/* Hard Fault */
+	.word MM_FAULT		/* Memory Management Fault*/
+	.word BFAULT			/* Bus Fault */
+	.word UFAULT			/* Usage Fault */
+	.word 0						/* Reserved Space */
+	.word 0						/* Reserved Space */
+	.word 0						/* Reserved Space */
+	.word 0						/* Reserved Space */
+	.word SVC_ISR			/* Supervisor Call */
+	.word DM_ISR			/* Debug Monitor */
+	.word 0						/* Reserved Space */
+	.word PSV_ISR			/* PendSV */
+	.word SYST_ISR		/* SysTick */
 /*
  * These faults are entered when something in the cpu goes wrong during
  * execution. They can't really be handled, but must be entered in the event
  * that they occur. Read more about these faults on Pg. 432, ARmanual
  */
-	.text
-	.global Vectors
-	.global Reset_EXCP
+
 /* Align 2 because we are compiling thumb instructions with */
 
 /* Reset Exception Handler. See Pg.432 for reset conditions */
 /* Reset jumps back to the OS init function. */
+	.text
+
 	.align 2
 	.type Reset_EXCP, %function
 Reset_EXCP: .fnstart
-start:
 						b main
 						.fnend
 
