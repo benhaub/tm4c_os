@@ -10,11 +10,8 @@ VPATH=include
 #Define the C compiler
 CC=arm-none-eabi-gcc
 #Architecture specific options for C compiler
-CPU=-mcpu=cortex-m4
-		#-march=armv7e-m
-		#-mtune=cortex-m4
-FPU=-mfpu=fpv4-sp-d16 \
-		-mfloat-abi=hard
+CPU=-mcpu=cortex-m4 -march=armv7e-m -mtune=cortex-m4
+FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=hard
 PART=TM4C123GH6PM
 #Flags for C compiler.
 CFLAGS=-mthumb \
@@ -43,7 +40,6 @@ endif
 #Linker options
 LDFLAGS=-Wl,--gc-sections \
 			  -Wl,--entry=Reset_EXCP \
-				-Wl,--verbose \
 				-Wl,-Tlink.ld \
 				-Wl,-lm,-lc,-lgcc
 
@@ -56,14 +52,17 @@ OBJCFLAGS=-O binary
 tm4c_os.bin: tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
 
-tm4c_os.elf: vectors.o init.o
+tm4c_os.elf: vectors.o init.o link.ld
 	${CC} ${CFLAGS} ${LDFLAGS} -otm4c_os.elf vectors.o init.o
 
 init.o: init.c
 	${CC} ${CFLAGS} -c init.c
 
-vectors.o: vectors.S
-	${CC} ${CFLAGS} -c vectors.S
+vectors.o: vectors.s
+	${CC} ${CFLAGS} -c vectors.s
+
+flash:
+	lm4flash -s 0E2222BA -S 0x00000000 tm4c_os.bin
 
 clean:
 	rm -rf *.o *.d tm4c_os.map tm4c_os.elf tm4c_os.bin

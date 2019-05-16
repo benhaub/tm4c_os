@@ -8,18 +8,6 @@
 #include <tm4c123gh6pm.h>
 #include <init.h>
 
-#ifdef DONTUSE
-extern unsigned int Vectors[];
-
-/* Put the vector table into memory */
-static void putvec() {
-	unsigned int i;
-	for(i = 0; i < 16; i++) {
-		*(unsigned int *)(VTABLE_START_ADDRESS + i) = Vectors[i];
-	}
-}
-#endif
-
 int main() {
 	/* You can find which pins are LEDs by seeing the Tiva C Series LaunchPad */
 	/* Evaluation Kit User's Manual, Pg.9. The Initializaton process is found */

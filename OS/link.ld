@@ -1,7 +1,8 @@
 /******************************************************************************
  * Authour	:	Ben Haubrich																										*
- * File			: link.lds																												*
+ * File			: link.ld																													*
  * Synopsis	:	linkerscript for tm4c_os																				*
+ * Date			: May 16th, 2019																									*
  *****************************************************************************/
 /* Full Description of an output section:
 	section [address] [(type)] :
@@ -26,13 +27,10 @@ SECTIONS
 {
 	.text 0x00000000 :
 	{
-		PROVIDE(__exidx_start = .);
 		_text = .;
 		KEEP(*(.intvecs))
 		*(.text)
 		_etext = .;
-		PROVIDE(end = .);
-		PROVIDE(__exidx_end = .);
 	} > FLASH
 	
 	.data	0x20000000 : 
@@ -42,13 +40,14 @@ SECTIONS
 		_edata = .;
 	} > SRAM
 	
-	.bss ALIGN(4) :	
+	.bss ADDR(.text) + SIZEOF(.text) :
+	ALIGN(4)
 	{
 		_bss = .;
 		*(.bss)
 		*(COMMON)
 		_ebss = .;
-	} > SRAM
+	} > FLASH
 
 	/* 
 	 * This section is put in automatically by the arm compiler. It's asking for
