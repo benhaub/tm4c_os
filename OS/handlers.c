@@ -10,11 +10,10 @@ void nmi_handler() {
 	while(1);
 }
 void hfault_handler() {
-	int intnum = (NVIC_DBG_XFER_REG_FLAGS & 0xFF);
-	/* Pg.183, datasheet */
-	int statdbg = (NVIC_HFAULT_STAT_R & NVIC_HFAULT_STAT_DBG);
-	int statf = (NVIC_HFAULT_STAT_R & NVIC_HFAULT_STAT_FORCED);
-	int statv = (NVIC_HFAULT_STAT_R & NVIC_HFAULT_STAT_VECT);
+	int faultstat_vect, faultstat_forced, faultstat_dbg;
+	faultstat_vect  = (NVIC_HFAULT_STAT_R & 1 << 1);
+	faultstat_forced = (NVIC_HFAULT_STAT_R & 1 << 30);
+	faultstat_dbg = (NVIC_HFAULT_STAT_R & 1 << 31);
 	while(1);
 }
 void mm_handler() {

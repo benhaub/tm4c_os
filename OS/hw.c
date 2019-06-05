@@ -22,6 +22,9 @@ void delay_1ms() {
 	led_roff();
 	led_blon();
 	led_gron();
+	int whereami = 2;
+	//int *ret = (int *)0x000012b0;
+	//*ret = 0x00000081;
 	return;
 }
 void start_clocktick() {

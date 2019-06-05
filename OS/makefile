@@ -30,6 +30,7 @@ CFLAGS=-mthumb \
 			 -DPART_${PART}
 #-static: Stops ld from looking for .so's. No point in doing that since we are
 #linking .a's only
+#-MD produces the .d files
 
 #Optionally include the symbol table for debugging. The odd versions of -g are
 #to make sure that preprocessor information is also included (macros).
@@ -48,15 +49,23 @@ LDFLAGS=-Wl,--gc-sections \
 #will likely cause undefined instruction errors.
 OBJCOPY=arm-none-eabi-objcopy
 OBJCFLAGS=-O binary
+#C object files. This same effect could also be achieved with $@
+OBJECTS=vectors.o init.o hw.o handlers.o
 
 tm4c_os.bin: tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
 
-tm4c_os.elf: vectors.o init.o link.ld
-	${CC} ${CFLAGS} ${LDFLAGS} -otm4c_os.elf vectors.o init.o
+tm4c_os.elf: ${OBJECTS} link.ld
+	${CC} ${CFLAGS} ${LDFLAGS} -otm4c_os.elf ${OBJECTS}
 
-init.o: init.c
+init.o: init.c init.h hw.h
 	${CC} ${CFLAGS} -c init.c
+
+hw.o:	hw.c
+	${CC} ${CFLAGS} -c hw.c
+
+handlers.o: handlers.c
+	${CC} ${CFLAGS} -c handlers.c
 
 vectors.o: vectors.s
 	${CC} ${CFLAGS} -c vectors.s

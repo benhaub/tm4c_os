@@ -19,8 +19,10 @@
 
 MEMORY
 {
-	FLASH (rw) 	: ORIGIN = 0x00000000, LENGTH = 0x00040000 /* 256KB FLASH */
-	SRAM	(rwx)	: ORIGIN = 0x20000000, LENGTH = 0x00008000 /* 32KB SRAM */
+	/* TODO: Flash should be further divided into kernel and user. */
+	FLASH (wx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 /* 256KB FLASH
+	/* TODO: Maybe add the allocatable flag sto sram for malloc()? */
+	SRAM	(wx)	: ORIGIN = 0x20000000, LENGTH = 0x00008000 /* 32KB SRAM */
 }
 
 SECTIONS
@@ -31,24 +33,30 @@ SECTIONS
 		KEEP(*(.intvecs))
 		*(.text)
 		_etext = .;
-	} > FLASH
+	} >FLASH
 	
-	.data	0x20000000 : 
+	.data : 
 	{
 		_data = .;
 		*(.data)
 		_edata = .;
-	} > SRAM
+	} >SRAM
 	
-	.bss ADDR(.text) + SIZEOF(.text) :
-	ALIGN(4)
+	.bss :
 	{
 		_bss = .;
 		*(.bss)
 		*(COMMON)
 		_ebss = .;
-	} > FLASH
+	} >SRAM
 
+	.stack :
+	{
+		_stack = .;
+		KEEP(*(.stack))
+		_estack = .;
+	} >SRAM
+	
 	/* 
 	 * This section is put in automatically by the arm compiler. It's asking for
 	 * some c library exception handling code that I don't want to include.
