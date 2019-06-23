@@ -21,7 +21,7 @@ MEMORY
 {
 	/* TODO: Flash should be further divided into kernel and user. */
 	FLASH (wx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 /* 256KB FLASH
-	/* TODO: Maybe add the allocatable flag sto sram for malloc()? */
+	/* TODO: Maybe add the allocatable flag to sram for malloc()? */
 	SRAM	(wx)	: ORIGIN = 0x20000000, LENGTH = 0x00008000 /* 32KB SRAM */
 }
 
@@ -66,18 +66,3 @@ SECTIONS
 		*(.ARM.exidx)
 	}
 }
-
-/*
- * Here's a quick walkthrough. We'll use the .text section as an example:
- * First we say that the output section .text will be loaded into 0x00000000.
- * This is because we want to put the vector table there according to where
- * the boot loader searches for it (see Pg.214 of the datasheet). Then we begin
- * to arrange the .text section. The .text section is generally used for data
- * that is permanent and not going to be changed (See Pg.32 of the GNU
- * assembler docs). We place the named section .intvecs from vectors.S in first
- * The location count is autmatically incremented now to be just at the end of
- * intvecs (Pg.39 GNU linker docs). Then we have all sections that are .text
- * placed in afeter. Then the linker is told to place these into the
- * memory region FLASH. Essentially what we are doing is treating the FLASH as
- * disk, and SRAM as RAM
- */

@@ -1,35 +1,32 @@
 /******************************************************************************
  * Authour	:	Ben Haubrich																										*
- * File			:	hw.c																													*
+ * File			:	hw.c																														*
  * Synopsis	:	Hardware peripheral calls for TM4C123														*
  * Date			:	May 16th, 2019																									*
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <hw.h>
 /*********************************SYSTICK*************************************/
-void systick_init() {
-	/* Make sure systic is disabled for initialization */
+/* PIOSC clock is default. Uses 16MHz clock divided by 4. */
+static void systick_init() {
+	/* Make sure systick is disabled for initialization */
 	NVIC_ST_CTRL_R = 0;
-	NVIC_ST_RELOAD_R = 0x00FFFFFF;
+	NVIC_ST_RELOAD_R = CLOCK_FREQ;
 	NVIC_ST_CURRENT_R = 0;
 	NVIC_ST_CTRL_R = 0x1;
 	return;
 }
 void delay_1ms() {
 	systick_init();
-	NVIC_ST_RELOAD_R = 16000;
+	NVIC_ST_RELOAD_R = CLOCK_TICK;
+	NVIC_ST_CURRENT_R = 0;
 	while(!(NVIC_ST_CTRL_R & (1 << 16)));
-	led_roff();
-	led_blon();
-	led_gron();
-	int whereami = 2;
-	//int *ret = (int *)0x000012b0;
-	//*ret = 0x00000081;
 	return;
 }
 void start_clocktick() {
 	systick_init();
-	NVIC_ST_CTRL_R |= (1 << 0);
+	NVIC_ST_RELOAD_R = CLOCK_TICK;
+	NVIC_ST_CURRENT_R = 0;
 	return;
 }
 

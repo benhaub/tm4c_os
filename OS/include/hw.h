@@ -7,11 +7,14 @@
 #ifndef __HW_H__
 #define __HW_H__
 
-/* 16 MHz crystal freqency */
-#define CLOCK_FREQ 16E6
+/* 16/4 MHz crystal freqency */
+#define CLOCK_FREQ 4000000
+/* 1ms clock tick */
+#define CLOCK_TICK 4000
 
 /* Systick calls */
-void delay_1ms();
+void delay_1ms(void);
+void start_clocktick(void);
 /* LED calls */
 void led_init(void);
 void led_ron(void);

@@ -14,6 +14,9 @@ void hfault_handler() {
 	faultstat_vect  = (NVIC_HFAULT_STAT_R & 1 << 1);
 	faultstat_forced = (NVIC_HFAULT_STAT_R & 1 << 30);
 	faultstat_dbg = (NVIC_HFAULT_STAT_R & 1 << 31);
+	/* Eliminate unsed variable warnings. */
+	faultstat_vect=faultstat_vect;faultstat_forced=faultstat_forced;
+	faultstat_dbg=faultstat_dbg;
 	while(1);
 }
 void mm_handler() {

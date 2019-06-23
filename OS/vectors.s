@@ -9,8 +9,9 @@
 
 	.section .stack, "wx"
 	.align 4
+/* Might use address 0 as NULL. */
 STACK_TOP:
-//	.skip 0x1000, 0x0
+	.skip 0x1000, 0x0
 	
 	.data
 /* Needs to be global so it can be used as an entry point. */

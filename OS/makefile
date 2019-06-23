@@ -12,7 +12,6 @@ CC=arm-none-eabi-gcc
 #Architecture specific options for C compiler
 CPU=-mcpu=cortex-m4 -march=armv7e-m -mtune=cortex-m4
 FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=hard
-PART=TM4C123GH6PM
 #Flags for C compiler.
 CFLAGS=-mthumb \
 			 -nodefaultlibs \
@@ -21,21 +20,23 @@ CFLAGS=-mthumb \
 			 ${FPU} \
 			 -Iinclude \
 			 -MD \
-			 -Dgcc \
 			 -ffunction-sections \
 			 -fdata-sections \
 			 -std=c99 \
 			 -Wall \
 			 -pedantic \
-			 -DPART_${PART}
 #-static: Stops ld from looking for .so's. No point in doing that since we are
 #linking .a's only
 #-MD produces the .d files
 
-#Optionally include the symbol table for debugging. The odd versions of -g are
-#to make sure that preprocessor information is also included (macros).
+#Optionally include the symbol table for debugging. The 3 on the end of -g is
+#the level. level 3 debugging symbols include everything up to preprocessors
+#symbols. The -ggdb is the debugging symbol format. This one is specifically
+#for gbd. -O0 eliminates compiler optomizations, so that the codes binary is
+#the same as the way we wrote it. View page 120 of the GNU gcc docs for more
+#info
 ifdef DEBUG
-	CFLAGS+=-g3 -gdwarf-2 -O0
+	CFLAGS+=-g3 -ggdb -O0
 endif
 
 #Linker options
@@ -50,7 +51,7 @@ LDFLAGS=-Wl,--gc-sections \
 OBJCOPY=arm-none-eabi-objcopy
 OBJCFLAGS=-O binary
 #C object files. This same effect could also be achieved with $@
-OBJECTS=vectors.o init.o hw.o handlers.o
+OBJECTS=vectors.o init.o hw.o handlers.o proc.o mem.o sched.o string.o
 
 tm4c_os.bin: tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
@@ -58,10 +59,10 @@ tm4c_os.bin: tm4c_os.elf
 tm4c_os.elf: ${OBJECTS} link.ld
 	${CC} ${CFLAGS} ${LDFLAGS} -otm4c_os.elf ${OBJECTS}
 
-init.o: init.c init.h hw.h
+init.o: init.c init.h hw.h mem.h sched.h string.h proc.h
 	${CC} ${CFLAGS} -c init.c
 
-hw.o:	hw.c
+hw.o:	hw.c hw.h
 	${CC} ${CFLAGS} -c hw.c
 
 handlers.o: handlers.c
@@ -69,6 +70,18 @@ handlers.o: handlers.c
 
 vectors.o: vectors.s
 	${CC} ${CFLAGS} -c vectors.s
+
+mem.o: mem.c
+	${CC} ${CFLAGS} -c mem.c
+
+proc.o: proc.c mem.h proc.h string.h
+	${CC} ${CFLAGS} -c proc.c
+
+sched.o: sched.c proc.h
+	${CC} ${CFLAGS} -c sched.c
+
+string.o: string.c mem.h
+	${CC} ${CFLAGS} -c string.c
 
 flash:
 	lm4flash -s 0E2222BA -S 0x00000000 tm4c_os.bin
