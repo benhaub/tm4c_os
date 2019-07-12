@@ -8,12 +8,11 @@
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <hw.h>
-#include <sched.h>
 #include <mem.h>
 #include <proc.h>
 #include <cstring.h>
 
-/* From sched.c */
+/* From proc.c */
 extern struct pcb ptable[];
 
 int main() {

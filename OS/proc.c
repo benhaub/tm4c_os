@@ -61,10 +61,17 @@ int allocproc(char *name) {
 /* process will reside in the third block. The kernel is located in the */
 /* first block. swtch() will branch to this address, so bit[0] must be */
 /* 1 because EPSR has the thumb bit set on all a4mv7-m acrchitectures, hence */
-/* why we add 1 to the address. */
+/* why we add 1 to the address. All branches to the link register in thumb */
+/* mode must be to an address whose bit[0] is 1. */
 	ptable[i].context.pc = ((i + 1) * FLASH_PAGE_SIZE) + 1;
 /* Multiply by twice the stack size since the top of the stack at position */
 /* 1 is 0x20002000, and decreases to 0x20001000. */
+/*TODO:
+ * Look into fixing stack allocation addresses. Right now they go 0-0x1000,
+ * 0x1000-0x2000, but should end at 0xFFE. Also, the stack pointer after
+ * swtch is done is landing on 0x20002004. This should be fixed before going
+ * any further or before I forget it was a potential issue.
+ */
 	ptable[i].context.sp = _SRAM + ((get_stackspace() * STACK_SIZE) + STACK_SIZE);
 /* Leave room for the stack frame to pop into when swtch()'ed to. Init code */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */

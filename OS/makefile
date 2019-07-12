@@ -61,7 +61,7 @@ tm4c_os.bin: tm4c_os.elf
 tm4c_os.elf: ${OBJECTS} link.ld
 	${CC} ${CFLAGS} ${LDFLAGS} -otm4c_os.elf ${OBJECTS}
 
-init.o: init.c hw.h mem.h sched.h cstring.h proc.h
+init.o: init.c hw.h mem.h cstring.h proc.h
 	${CC} ${CFLAGS} -c init.c
 
 hw.o:	hw.c hw.h
