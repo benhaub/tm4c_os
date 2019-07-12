@@ -6,38 +6,31 @@
  * Synopsis	:	Process related structs and functions
  * Date			:	June 5th, 2019
  *****************************************************************************/
-/* 2KB blocks in 256KB of flash memory */
-#define MAX_PROC 128
+#include <types.h>
+/* 2KB blocks in 256KB of flash memory, minus the space for kernel */
+#define MAX_PROC 127
 
 enum procstate {SLEEPING, RUNNABLE, RUNNING, UNUSED, EMBRYO};
 
 /* Note that any changes to a processes context do not take affect until */
 /* The next time a context switch changes to it. */
 struct context {
-	 unsigned long int r1;
-	 unsigned long int r2;
-	 unsigned long int r3;
-	 unsigned long int r4;
-	 unsigned long int r5;
-	 unsigned long int r6;
-	 unsigned long int r7;
-	 unsigned long int r8;
-	 unsigned long int r9;
-	 unsigned long int r10;
-	 unsigned long int r11;
-	 unsigned long int sp;
-	 unsigned long int lr;
-	 unsigned long int pc;
+	 word sp;
+	 word lr;
+	 word pc;
 };
 
 /* Process control block. */
 struct pcb {
+	struct context context;
 	char name[16];
 	int pid;
 	enum procstate state;
-	struct context context;
 };
 
+int user_init(void);
 int allocproc(char[]);
+void init_ptable(void);
+struct pcb currproc(void);
 
 #endif /*__PROC_H__*/

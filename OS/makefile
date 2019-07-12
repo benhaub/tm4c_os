@@ -22,9 +22,10 @@ CFLAGS=-mthumb \
 			 -MD \
 			 -ffunction-sections \
 			 -fdata-sections \
+			 -ffreestanding \
 			 -std=c99 \
 			 -Wall \
-			 -pedantic \
+			 -pedantic
 #-static: Stops ld from looking for .so's. No point in doing that since we are
 #linking .a's only
 #-MD produces the .d files
@@ -51,7 +52,8 @@ LDFLAGS=-Wl,--gc-sections \
 OBJCOPY=arm-none-eabi-objcopy
 OBJCFLAGS=-O binary
 #C object files. This same effect could also be achieved with $@
-OBJECTS=vectors.o init.o hw.o handlers.o proc.o mem.o sched.o string.o
+OBJECTS=vectors.o init.o hw.o handlers.o proc.o mem.o cstring.o context.o \
+				initshell.o
 
 tm4c_os.bin: tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
@@ -59,7 +61,7 @@ tm4c_os.bin: tm4c_os.elf
 tm4c_os.elf: ${OBJECTS} link.ld
 	${CC} ${CFLAGS} ${LDFLAGS} -otm4c_os.elf ${OBJECTS}
 
-init.o: init.c init.h hw.h mem.h sched.h string.h proc.h
+init.o: init.c hw.h mem.h sched.h cstring.h proc.h
 	${CC} ${CFLAGS} -c init.c
 
 hw.o:	hw.c hw.h
@@ -74,14 +76,17 @@ vectors.o: vectors.s
 mem.o: mem.c
 	${CC} ${CFLAGS} -c mem.c
 
-proc.o: proc.c mem.h proc.h string.h
+proc.o: proc.c mem.h proc.h cstring.h
 	${CC} ${CFLAGS} -c proc.c
 
-sched.o: sched.c proc.h
-	${CC} ${CFLAGS} -c sched.c
+cstring.o: cstring.c mem.h types.h
+	${CC} ${CFLAGS} -c cstring.c
 
-string.o: string.c mem.h
-	${CC} ${CFLAGS} -c string.c
+context.o: context.s
+	${CC} ${CFLAGS} -c context.s
+
+initshell.o: initshell.c
+	${CC} ${CFLAGS} -c initshell.c
 
 flash:
 	lm4flash -s 0E2222BA -S 0x00000000 tm4c_os.bin

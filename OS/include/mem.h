@@ -12,6 +12,8 @@
 /* Do not change the value of flash page size. flash memory detection is */
 /* based off 2KB page sizes. */
 #define FLASH_PAGE_SIZE 0x800
+/* Beginning of SRAM */
+#define _SRAM 0x20000000
 
 #define NULL (void *)0x0
 

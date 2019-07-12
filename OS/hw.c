@@ -16,6 +16,9 @@ static void systick_init() {
 	NVIC_ST_CTRL_R = 0x1;
 	return;
 }
+/*
+ * 1ms delay
+ */
 void delay_1ms() {
 	systick_init();
 	NVIC_ST_RELOAD_R = CLOCK_TICK;
@@ -23,10 +26,14 @@ void delay_1ms() {
 	while(!(NVIC_ST_CTRL_R & (1 << 16)));
 	return;
 }
+/*
+ * Start a system clock tick with interrupts enabled.
+ */
 void start_clocktick() {
-	systick_init();
+	NVIC_ST_CTRL_R = 0;
 	NVIC_ST_RELOAD_R = CLOCK_TICK;
 	NVIC_ST_CURRENT_R = 0;
+	NVIC_ST_CTRL_R = 0x3;
 	return;
 }
 

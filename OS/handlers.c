@@ -5,6 +5,7 @@
  *Date		: May 18th, 2019																									*
  **************************************************************************/
 #include <tm4c123gh6pm.h>
+#include <types.h>
 
 void nmi_handler() {
 	while(1);
@@ -14,20 +15,58 @@ void hfault_handler() {
 	faultstat_vect  = (NVIC_HFAULT_STAT_R & 1 << 1);
 	faultstat_forced = (NVIC_HFAULT_STAT_R & 1 << 30);
 	faultstat_dbg = (NVIC_HFAULT_STAT_R & 1 << 31);
-	/* Eliminate unsed variable warnings. */
+/* Eliminate unsed variable warnings. */
 	faultstat_vect=faultstat_vect;faultstat_forced=faultstat_forced;
 	faultstat_dbg=faultstat_dbg;
 	while(1);
 }
+/* Memory Management Handler. */
 void mm_handler() {
 	while(1);
 }
+/* Bus Fault Handler. */
 void b_handler() {
+	word fault_addr;
+	word bfarv, blsperr, bstke, bustke, impre, precise, ibus;
+/* Get the address of the fault. */
+	fault_addr = NVIC_FAULT_ADDR_R;
+/* Make sure memory contents are valid. */
+	bfarv = (NVIC_FAULT_STAT_R & (1 << 15));
+/* See Pg. 179, datasheet. */
+	blsperr = (NVIC_FAULT_STAT_R & (1 << 13));
+	bstke = (NVIC_FAULT_STAT_R & (1 << 12));
+	bustke = (NVIC_FAULT_STAT_R & (1 << 11));
+	impre = (NVIC_FAULT_STAT_R & (1 << 10));
+	precise = (NVIC_FAULT_STAT_R & (1 << 9));
+	ibus = (NVIC_FAULT_STAT_R & (1 << 8));
+/* Eliminate unsed variable warnings. */
+	fault_addr=fault_addr;bfarv=bfarv;blsperr=blsperr;bstke=bstke;bustke=bustke;
+	impre=impre;precise=precise;ibus=ibus;
+/* View the contents with a debugger. */
 	while(1);
 }
+/* Usage Fault Handler. */
 void u_handler() {
+	word div0, unalign, nocp, invpc, invstat, undef;
+/* Divide by zero */
+	div0 = (NVIC_FAULT_STAT_R & (1 << 25));
+/* Unaligned memory access */
+	unalign = (NVIC_FAULT_STAT_R & (1 << 24));
+/* Processor attempted to access a coprocessor */
+	nocp = (NVIC_FAULT_STAT_R & (1 << 19));
+/* Processor attempted an illegal load of EXC_RETURN to the pc as a result */
+/* of an invalid context or an invalid EXC_RETURN value. */
+	invpc = (NVIC_FAULT_STAT_R & (1 << 18));
+/* The processor has attempted to execute an instruction that makes illegal */
+/* use of the epsr register. */
+	invstat = (NVIC_FAULT_STAT_R & (1 << 17));
+/* The processir has attemped  to execute an undefined instruction. */
+	undef = (NVIC_FAULT_STAT_R & (1 << 16));
+/* Eliminate unsed variable warnings. */
+	div0=div0;unalign=unalign;nocp=nocp;invpc=invpc;invstat=invstat;undef=undef;
 	while(1);
 }
+/* Supervisor Call (syscall) Handler */
 void svc_handler() {
 	while(1);
 }

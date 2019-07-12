@@ -34,6 +34,14 @@ SECTIONS
 		*(.text)
 		_etext = .;
 	} >FLASH
+/* Flash memory can be protected in 2KB (0x800) blocks, but must also be */
+/* word aligned to avoid usage faults. */
+	.text.smain 0x00000800 : 
+	{
+		_text.smain = .;
+		KEEP(*(.text.smain))
+		_etext.smain = .;
+	} >FLASH
 	
 	.data : 
 	{

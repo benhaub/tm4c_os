@@ -1,6 +1,6 @@
 /**************************************************************************
  *Authour	:	Ben Haubrich																									*
- *File		:	vectors.S																											*
+ *File		:	vectors.s																											*
  *Synopsis:	vector table, fault & reset handlers for ARM Cortex M-series	*
  *Date		: May 6th, 2019																									*
  **************************************************************************/
@@ -9,13 +9,15 @@
 
 	.section .stack, "wx"
 	.align 4
-/* Might use address 0 as NULL. */
 STACK_TOP:
 	.skip 0x1000, 0x0
 	
 	.data
 /* Needs to be global so it can be used as an entry point. */
 	.global Reset_EXCP
+/* Kernel Ram usage. */
+KRAM_USE:
+	.global KRAM_USE
 
 	.section .intvecs
 
@@ -24,7 +26,7 @@ STACK_TOP:
 /* unsigned int Vectors[16] = {STACK_TOP, Reset_EXCP,...,SYST_ISR}; */
 
 /*
- * The STACK_TOP expressions says: Take the address of STACK_TOP, move it by
+ * The STACK_TOP expression says: Take the address of STACK_TOP, move it by
  * 4KB. Then at the STACK_TOP label above, it says, now give me 4KB of space
  * for this address.
  */
@@ -51,6 +53,19 @@ Vectors:
 	.align 2
 	.type Reset_EXCP, %function
 Reset_EXCP: .fnstart
+/* Calculate how much ram the kernel is using so we know where to start */
+/* allocating ram pages for user programs. See get_stackspace(). */
+/* Where ever the top of stack is determines how much space the kernel is */
+/* using. */
+/* 32KB of ram in r0. */
+						mov r0, #0x8000
+						mov r1, sp
+						sub r1, r1, #0x20000000
+/* Divide this by the current position of the sp to get an integer for */
+/* get_stackspace. */
+						udiv r0, r1
+						ldr r3,=KRAM_USE
+						str r0, [r3]
 						b main
 						.fnend
 
