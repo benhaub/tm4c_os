@@ -51,9 +51,9 @@ LDFLAGS=-Wl,--gc-sections \
 #will likely cause undefined instruction errors.
 OBJCOPY=arm-none-eabi-objcopy
 OBJCFLAGS=-O binary
-#C object files. This same effect could also be achieved with $@
+#C object files.
 OBJECTS=vectors.o init.o hw.o handlers.o proc.o mem.o cstring.o context.o \
-				initshell.o
+				initshell.o syscalls.o syscallsasm.o kernel_services.o
 
 tm4c_os.bin: tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
@@ -87,6 +87,15 @@ context.o: context.s
 
 initshell.o: initshell.c
 	${CC} ${CFLAGS} -c initshell.c
+
+syscalls.o: syscalls.c syscalls.h types.h
+	${CC} ${CFLAGS} -c syscalls.c
+
+syscallsasm.o: syscallsasm.s
+	${CC} ${CFLAGS} -c syscallsasm.s
+
+kernel_services.o: kernel_services.c kernel_services.h
+	${CC} ${CFLAGS} -c kernel_services.c
 
 flash:
 	lm4flash -s 0E2222BA -S 0x00000000 tm4c_os.bin

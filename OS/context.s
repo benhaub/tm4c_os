@@ -25,7 +25,7 @@ swtch: .fnstart
 /* Switch to psp and thread mode using the procedure on Pg. 23 of cortex m4 */
 /* generic user guide. */
 				mrs r0, CONTROL
-				orr r0, r0, #0x2
+				orr r0, r0, #0x3
 				msr CONTROL, r0 /* Now unprivledged and using psp */
 				pop {r0-r12, r14}
 				bx lr

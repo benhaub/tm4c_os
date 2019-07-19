@@ -41,12 +41,16 @@ int allocproc(char *name) {
 	}
 /* Find an UNUSED process from the process table. */
 	int i = 0;
-	while(i < MAX_PROC) {
+	while(1) {
 		if(ptable[i].state == UNUSED) {
 			if(maxpid < i) {
 				maxpid = i;
 			}
 			break;
+		}
+		else if(i > MAX_PROC) {
+			return -1;
+			/* TODO: Implement something like dmesg for errors. */
 		}
 		else {
 			i++;
@@ -66,12 +70,6 @@ int allocproc(char *name) {
 	ptable[i].context.pc = ((i + 1) * FLASH_PAGE_SIZE) + 1;
 /* Multiply by twice the stack size since the top of the stack at position */
 /* 1 is 0x20002000, and decreases to 0x20001000. */
-/*TODO:
- * Look into fixing stack allocation addresses. Right now they go 0-0x1000,
- * 0x1000-0x2000, but should end at 0xFFE. Also, the stack pointer after
- * swtch is done is landing on 0x20002004. This should be fixed before going
- * any further or before I forget it was a potential issue.
- */
 	ptable[i].context.sp = _SRAM + ((get_stackspace() * STACK_SIZE) + STACK_SIZE);
 /* Leave room for the stack frame to pop into when swtch()'ed to. Init code */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
@@ -94,6 +92,9 @@ struct pcb currproc() {
 	return ptable[currpid];
 }
 
+/*
+ * Round Robin scheduler. Triggered by tick interrupt every 1ms
+ */
 void scheduler() {
 /* Current index of the scheduler. */
 	static int index = 0;
@@ -105,6 +106,7 @@ void scheduler() {
 		}
 		else if(ptable[index].state == RUNNABLE) {
 			currpid = ptable[index].pid;
+			swtch(ptable[index].context.sp);
 		}
 		else {
 			index++;

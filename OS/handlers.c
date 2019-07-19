@@ -6,6 +6,7 @@
  **************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <types.h>
+#include <kernel_services.h>
 
 void nmi_handler() {
 	while(1);
@@ -67,8 +68,15 @@ void u_handler() {
 	while(1);
 }
 /* Supervisor Call (syscall) Handler */
-void svc_handler() {
-	while(1);
+void svc_handler(int sysnum) {
+	switch(sysnum) {
+		case 0: sysfork();
+						break;
+/* TODO: Need to exit the kernel immediately here and bring the error up in */
+/* user space and terminate the misbehaving program instead of terminating */
+/* the kernel and thus, the whole operating system, */
+		default: while(1); 
+	}
 }
 void dm_handler() {
 	while(1);
