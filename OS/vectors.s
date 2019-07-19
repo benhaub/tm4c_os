@@ -4,6 +4,10 @@
  *Synopsis:	vector table, fault & reset handlers for ARM Cortex M-series	*
  *Date		: May 6th, 2019																									*
  **************************************************************************/
+/* Please refer to "Using as - The GNU Assembler" for all syntax. Only the
+/* opcodes (ldr, mov, str) and the operands they accept are ARM specific. */
+/* Some machine configurations provide additional directives such as  */
+/* .thumb and .syntax for ARM. */
 	.syntax unified
 	.thumb
 

@@ -4,18 +4,8 @@
  * Synopsis	:	linkerscript for tm4c_os																				*
  * Date			: May 16th, 2019																									*
  *****************************************************************************/
-/* Full Description of an output section:
-	section [address] [(type)] :
-	[AT(lma)]
-	[ALIGN(section_algin)]
-	[SUBALIGN(subsection_align)]
-	[constraint]
-	{
-		output-section-command
-		output-section-command
-		...
-	} [>region] [AT>lma_region] : [:phdr :phdr ...] [=fillexp]
-*/
+/* Please see "The GNU linker" documentation for information on linker */
+/* scripts. */
 
 MEMORY
 {
@@ -34,8 +24,7 @@ SECTIONS
 		*(.text)
 		_etext = .;
 	} >FLASH
-/* Flash memory can be protected in 2KB (0x800) blocks, but must also be */
-/* word aligned to avoid usage faults. */
+	
 	.text.smain 0x00000800 : 
 	{
 		_text.smain = .;
