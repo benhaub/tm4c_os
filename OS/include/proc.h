@@ -9,6 +9,8 @@
 #include <types.h>
 /* 2KB blocks in 256KB of flash memory, minus the space for kernel */
 #define MAX_PROC 127
+/* A pid that no valid process will ever have. */
+#define NULLPID MAX_PROC + 1
 
 enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING};
 
@@ -36,7 +38,8 @@ void user_init(void);
 struct pcb* reserveproc(char *);
 void initproc(struct pcb *);
 void init_ptable(void);
-struct pcb currproc(void);
+void init_context(void);
+struct pcb *currproc(void);
 void scheduler(void);
 
 #endif /*__PROC_H__*/

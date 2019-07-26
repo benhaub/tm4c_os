@@ -5,7 +5,8 @@
  * Date			:	July 10th, 2019
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
-#include <hw.h>
+#include <hw.h> /* For led functions */
+#include <proc.h> /* For NULLPID */
 #include <syscalls.h>
 
 /*
@@ -17,7 +18,7 @@ int smain() {
 	led_gron();
 /* Temporary test of system calls and fork(). */
 	int pid = fork();
-	if(128 == pid) {
+	if(NULLPID == pid) {
 		/* Child process */
 		led_groff();
 	}

@@ -85,10 +85,10 @@ cstring.o: cstring.c mem.h types.h
 context.o: context.s
 	${CC} ${CFLAGS} -c context.s
 
-initshell.o: initshell.c syscalls.h hw.h
+initshell.o: initshell.c syscalls.h hw.h proc.h
 	${CC} ${CFLAGS} -c initshell.c
 
-syscalls.o: syscalls.c syscalls.h types.h
+syscalls.o: syscalls.c syscalls.h types.h proc.h
 	${CC} ${CFLAGS} -c syscalls.c
 
 syscallsasm.o: syscallsasm.s

@@ -17,6 +17,11 @@
 	.global syscall
 	.type syscall, %function
 syscall: .fnstart
+/* Put the program counter into the processes struct context. */
+/* The pc from the original call to fork is in the stacked link register */
+					ldr r2, [sp, #4]
+					str r2, [r1, #4]
+
 					push {r0-r12, r14}
 /* The immediate value for svc is not used. The number used for determining */
 /* The kernel service is passed through as an argument to syscall() (here */

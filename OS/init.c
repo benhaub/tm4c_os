@@ -28,11 +28,8 @@ int main() {
 	init_ram();
 /* Get the process table ready for scheduling. */
 	init_ptable();
+	init_context();
 /* Set up the first user process (the shell) */
-/*TODO:
- * This actually sets up and runs the first user process. Maybe it should run
- * later on by some other means?
- */
 	user_init();
 	return 0;
 }
