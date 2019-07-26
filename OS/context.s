@@ -12,14 +12,14 @@
  * Context switcher. Save the currently running processes registers, and load
  * the registers from the process that is running. Function prototype is as
  * follows: 
- * void swtch(word sp), where sp is the top of the stack to load psp
- * with and pc is the location to start execution.
+ * void swtch(word sp), where sp is the top of the stack of the process to
+ * switch to.
  */
 	.global swtch
 	.type swtch, %function
 swtch: .fnstart
-/* Assume for now that SVC will not keep us in handler mode. */
-/* That means we will be in privledge mode, and be using psp. */
+/* Assume for now that SVC will not keep us in handler mode, so writes to */
+/* CONTROL to change the stack pointer will not be ignored. */
 				push {r0-r12, r14}
 				msr psp, r0
 /* Switch to psp and thread mode using the procedure on Pg. 23 of cortex m4 */
@@ -32,7 +32,9 @@ swtch: .fnstart
 				.fnend
 
 /*
- * All new processes run initcode first to set up cpu registers
+ * All new processes run initcode first to set up cpu registers to make it
+ * look as if the process had been interrupted by an svc with it's registers
+ * pushed on the stack. initcode places the value of pc into the link register.
  * initcode(word sp, word pc)
  */
 	.global initcode

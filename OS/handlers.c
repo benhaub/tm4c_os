@@ -67,14 +67,15 @@ void u_handler() {
 	div0=div0;unalign=unalign;nocp=nocp;invpc=invpc;invstat=invstat;undef=undef;
 	while(1);
 }
-/* Supervisor Call (syscall) Handler */
+/* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */
+/* up here, and then it's decided how to handle it based on the sysnum. */
 void svc_handler(int sysnum) {
 	switch(sysnum) {
 		case 0: sysfork();
 						break;
 /* TODO: Need to exit the kernel immediately here and bring the error up in */
 /* user space and terminate the misbehaving program instead of terminating */
-/* the kernel and thus, the whole operating system, */
+/* the kernel and thus, the whole operating system. */
 		default: while(1); 
 	}
 }

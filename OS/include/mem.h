@@ -15,8 +15,6 @@
 /* Beginning of SRAM */
 #define _SRAM 0x20000000
 
-#define NULL (void *)0x0
-
 int get_stackspace(void);
 void init_ram(void);
 

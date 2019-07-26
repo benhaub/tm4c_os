@@ -14,30 +14,35 @@ extern void swtch(word);
 extern void initcode(word sp, word pc);
 /* The largest pid currently RUNNING. Keeping track of this speeds up */
 /* scheduling. */
-int maxpid = 0;
+int maxpid;
 /* Array of processes for the scheduler. */
 struct pcb ptable[MAX_PROC];
 /* Pid of the current process. */
-int currpid = 0;
+int currpid;
+
 /*
- * Returns the index of the found process in the process table.
+ * Initializes the first user process and runs it.
  * param name
  * 	The name of the new process
- * returns -1 on error, index of the new process on success.
  */
-int user_init() {
-	int pid = allocproc("initShell");
-	/* return to user space. See context.s */
-	swtch(ptable[pid].context.sp);
-	return 0;
+void user_init() {
+/* Set all globals. Compiler doesn't seem to want to cooperate with global */
+/* initializations of variables. */
+	maxpid = 0;
+	currpid = 0;
+	struct pcb *initshell = reserveproc("initShell");
+	initproc(initshell);
+	scheduler();
+	//swtch(initshell->context.sp);
 }
+
 /*
- * Secure an UNUSED process from the process table and return the index of the
- * process that was used.
+ * Reserve a process for further initialization and scheduling. Returns the
+ * pcb of the reserved process.
  */
-int allocproc(char *name) {
-	if(sizeof(name) > 16) {
-		return -1;
+struct pcb* reserveproc(char *name) {
+	if(sizeof(name) > 16 && NULL != name) {
+		return NULL;
 	}
 /* Find an UNUSED process from the process table. */
 	int i = 0;
@@ -49,36 +54,41 @@ int allocproc(char *name) {
 			break;
 		}
 		else if(i > MAX_PROC) {
-			return -1;
+			return NULL;
 			/* TODO: Implement something like dmesg for errors. */
 		}
 		else {
 			i++;
 		}
 	}
-/* Initialize the pcb. */
-	ptable[i].state = EMBRYO;
+	ptable[i].state = RESERVED;
+	strncpy(name, ptable[i].name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
-/* For every proc in the ptable. It's index determines where it will reside */
-/* in flash. The first process will reside in the second block, the second */
-/* process will reside in the third block. The kernel is located in the */
-/* first block. swtch() will branch to this address, so bit[0] must be */
-/* 1 because EPSR has the thumb bit set on all a4mv7-m acrchitectures, hence */
-/* why we add 1 to the address. All branches to the link register in thumb */
-/* mode must be to an address whose bit[0] is 1. */
-	ptable[i].context.pc = ((i + 1) * FLASH_PAGE_SIZE) + 1;
+	return (ptable + i);
+}
+/*
+ * Initialize a RESERVED process so it's ready to be run by the scheduler
+ */
+void initproc(struct pcb *reserved) {
+	reserved->state = EMBRYO;
+/* For every proc in the ptable. It's pid (or index in the ptable) determines*/
+/* where it will reside in flash. The first process will reside in the second*/
+/* block, the second process will reside in the third block. The kernel is */
+/* located in the first block. swtch() will branch to this address, so bit[0]*/
+/* must be 1 because EPSR has the thumb bit set on all armv7-m */
+/* acrchitectures, hence why we add 1 to the address. All branches to */
+/* link register in thumb mode must be to an address whose bit[0] is 1. */
+	reserved->context.pc = ((reserved->pid + 1) * FLASH_PAGE_SIZE) + 1;
 /* Multiply by twice the stack size since the top of the stack at position */
 /* 1 is 0x20002000, and decreases to 0x20001000. */
-	ptable[i].context.sp = _SRAM + ((get_stackspace() * STACK_SIZE) + STACK_SIZE);
-/* Leave room for the stack frame to pop into when swtch()'ed to. Init code */
+	reserved->context.sp = _SRAM + ((get_stackspace()*STACK_SIZE)+STACK_SIZE);
+/* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
 /* into lr. */
-	ptable[i].context.sp = ptable[i].context.sp - 52;
-	strncpy(name, ptable[i].name, strlen(name));
-	initcode(ptable[i].context.sp, ptable[i].context.pc);
-	ptable[i].state = RUNNABLE;
-	return i;
+	reserved->context.sp = ptable[reserved->pid].context.sp - 52;
+	initcode(ptable[reserved->pid].context.sp, ptable[reserved->pid].context.pc);
+	reserved->state = RUNNABLE;
 }	
 /* Set all procs to unused state. */
 void init_ptable() {
@@ -97,7 +107,11 @@ struct pcb currproc() {
  */
 void scheduler() {
 /* Current index of the scheduler. */
-	static int index = 0;
+	static int index;
+/* For initialization. arm-none-eabi-gcc initialises to -1 */
+	if(index < 0) {
+		index = 0;
+	}
 	while(1) {
 /* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
 /* processes passed that index. */

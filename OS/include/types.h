@@ -14,5 +14,7 @@
 #define MAX_INT ((1 << 32) - 1)
 /* Define the size of a word (32-bits) */
 typedef unsigned long int word;
+/* No pointer should ever be 0x0 */
+#define NULL (void *)0x0
 
 #endif /*__TYPES_H__*/

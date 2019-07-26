@@ -10,14 +10,18 @@
 /* 2KB blocks in 256KB of flash memory, minus the space for kernel */
 #define MAX_PROC 127
 
-enum procstate {SLEEPING, RUNNABLE, RUNNING, UNUSED, EMBRYO};
+enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING};
 
 /* Note that any changes to a processes context do not take affect until */
 /* The next time a context switch changes to it. */
 struct context {
 	 word sp;
-	 word lr;
 	 word pc;
+	 word lr;
+	 word r0;
+	 word r1;
+	 word r2;
+	 word r3;
 };
 
 /* Process control block. */
@@ -28,9 +32,11 @@ struct pcb {
 	enum procstate state;
 };
 
-int user_init(void);
-int allocproc(char[]);
+void user_init(void);
+struct pcb* reserveproc(char *);
+void initproc(struct pcb *);
 void init_ptable(void);
 struct pcb currproc(void);
+void scheduler(void);
 
 #endif /*__PROC_H__*/

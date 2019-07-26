@@ -9,17 +9,21 @@
 #include <syscalls.h>
 
 /*
- * Shell main
+ * Shell main. The first user program run by the kernel after reset.
  */
 int smain(void) __attribute__ ((section (".text.smain")));
 int smain() {
 	led_init();
 	led_gron();
+/* Temporary test of system calls and fork(). */
 	int pid = fork();
-	if(0 == pid) {
+	if(128 == pid) {
 		/* Child process */
 		led_groff();
 	}
-	led_blon();
+	else {
+		/* Parent process. */
+		led_blon();
+	}
 	return 0;
 }

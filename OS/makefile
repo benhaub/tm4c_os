@@ -85,7 +85,7 @@ cstring.o: cstring.c mem.h types.h
 context.o: context.s
 	${CC} ${CFLAGS} -c context.s
 
-initshell.o: initshell.c
+initshell.o: initshell.c syscalls.h hw.h
 	${CC} ${CFLAGS} -c initshell.c
 
 syscalls.o: syscalls.c syscalls.h types.h
@@ -94,7 +94,7 @@ syscalls.o: syscalls.c syscalls.h types.h
 syscallsasm.o: syscallsasm.s
 	${CC} ${CFLAGS} -c syscallsasm.s
 
-kernel_services.o: kernel_services.c kernel_services.h
+kernel_services.o: kernel_services.c kernel_services.h proc.h types.h
 	${CC} ${CFLAGS} -c kernel_services.c
 
 flash:
