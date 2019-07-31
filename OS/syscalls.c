@@ -9,7 +9,7 @@
 /* Syscall numbers */
 #define FORK 0
 #define WAIT 1
-#define EXIT 2
+#define PROC_EXIT 2
 
 /* From syscall.s */
 extern int syscall(int sysnum, struct pcb *);
@@ -22,7 +22,7 @@ int wait() {
 	return syscall(WAIT, currproc());
 }
 
-int exit() {
-	return syscall(EXIT, currproc());
+int procexit() {
+	return syscall(PROC_EXIT, currproc());
 }
 

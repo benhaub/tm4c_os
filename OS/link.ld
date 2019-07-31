@@ -9,9 +9,7 @@
 
 MEMORY
 {
-	/* TODO: Flash should be further divided into kernel and user. */
-	FLASH (wx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 /* 256KB FLASH
-	/* TODO: Maybe add the allocatable flag to sram for malloc()? */
+	FLASH (wx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 /* 256KB FLASH */
 	SRAM	(wx)	: ORIGIN = 0x20000000, LENGTH = 0x00008000 /* 32KB SRAM */
 }
 

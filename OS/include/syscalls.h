@@ -9,6 +9,6 @@
 
 int fork(void);
 int wait(int);
-int exit(int);
+int procexit(int);
 
 #endif /*__SYSCALLS_H__*/

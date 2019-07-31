@@ -72,6 +72,11 @@ void u_handler() {
 }
 /* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */
 /* up here, and then it's decided how to handle it based on the sysnum. */
+/*TODO:
+ * Does this system work for system calls with any arguments (especially one
+ * with one argument). sysnum is already in r0, so the first argument is kind
+ * of botched.
+ */
 void svc_handler(int sysnum) {
 /* Disable interrupts to prevent scheduling while performing kernel */
 /* services. */
@@ -81,11 +86,8 @@ void svc_handler(int sysnum) {
 						break;
 		case 1: syswait();
 						break;
-		case 2: sysexit();
+		case 2: sysprocexit();
 						break;
-/* TODO: Need to exit the kernel immediately here and bring the error up in */
-/* user space and terminate the misbehaving program instead of terminating */
-/* the kernel and thus, the whole operating system. */
 		default: while(1); 
 	}
 /* Re-enable interrupts. */

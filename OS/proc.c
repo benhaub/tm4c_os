@@ -12,6 +12,7 @@
 /* From context.s */
 extern void swtch(word);
 extern void initcode(word sp, word pc);
+
 /* The largest pid currently RUNNING. Keeping track of this speeds up */
 /* scheduling. */
 int maxpid;
@@ -54,7 +55,6 @@ struct pcb* reserveproc(char *name) {
 		}
 		else if(i > MAX_PROC) {
 			return NULL;
-			/* TODO: Implement something like dmesg for errors. */
 		}
 		else {
 			i++;
@@ -69,9 +69,17 @@ struct pcb* reserveproc(char *name) {
 
 /*
  * Initialize a RESERVED process so it's ready to be run by the scheduler
+ * TODO:
+ * I added a bunch of stuff to the proc struct? What should the initial values
+ * be and where should the be initialized and where should we allow them to be
+ * changed?
  */
 void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
+	int i;
+	if(reserved->numchildren != 0) {
+		reserved->numchildren = 0;
+	}
 /* For every proc in the ptable. It's pid (or index in the ptable) determines*/
 /* where it will reside in flash. The first process will reside in the second*/
 /* block, the second process will reside in the third block. The kernel is */
@@ -80,12 +88,11 @@ void initproc(struct pcb *reserved) {
 /* acrchitectures, hence why we add 1 to the address. All branches to */
 /* link register in thumb mode must be to an address whose bit[0] is 1. */
 
-/* The addition of 1 to reserved->pid is incase the pid is 0. */
-
 /* The default value of all members in the context of new procs is */
 /* initialized is zero. If they are not zero, it means they have been */
 /* deliberately set to something else. */
 	if(reserved->context.pc == 0) {
+/* The addition of 1 to reserved->pid is in-case the pid is 0. */
 		reserved->context.pc = ((reserved->pid + 1) * FLASH_PAGE_SIZE) + 1;
 	}
 /* Multiply by twice the stack size since the top of the stack at position */
@@ -151,6 +158,7 @@ void scheduler() {
 		if(index > maxpid || index > MAX_PROC) {
 			index = 0;
 		}
+		if(ptable[index].state == WAITING && ptable[index].
 		else if(ptable[index].state == RUNNABLE) {
 			currpid = ptable[index].pid;
 			swtch(ptable[index].context.sp);

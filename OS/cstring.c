@@ -52,3 +52,16 @@ void *memcpy(void *dest, const void *src, unsigned int n) {
 	}
 	return dest;
 }
+
+/*
+ * Fills the first n bytes of dest with the constant value of src.
+ * UNTESTED
+ */
+void *memset(void *dest, const int src, unsigned int n) {
+	int i = 0;
+	while(i < n) {
+		*((char *)dest + 1) = (char)src;
+		i++;
+	}
+	return dest;
+}	
