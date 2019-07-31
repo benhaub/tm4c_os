@@ -30,6 +30,10 @@ int main() {
 	init_ptable();
 	init_context();
 /* Set up the first user process (the shell) */
+/*TODO:
+ * Set up clock tick interrupts to activate the scheduler.
+ */
+	start_clocktick();
 	user_init();
 	return 0;
 }

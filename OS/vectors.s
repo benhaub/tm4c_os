@@ -17,8 +17,10 @@ STACK_TOP:
 	.skip 0x1000, 0x0
 	
 	.data
-/* Needs to be global so it can be used as an entry point. */
+/* Reset_EXCP needs to be global so it can be used as an entry point. */
 	.global Reset_EXCP
+/* processor_state is externed in handlers.c for svc calls. */
+	.global processor_state
 /* Kernel Ram usage. */
 KRAM_USE:
 	.global KRAM_USE
@@ -105,7 +107,12 @@ UFAULT:	.fnstart
 	.align 2
 	.type SVC_ISR, %function
 SVC_ISR: .fnstart
+/* Disable interrupts to prevent */
+/* scheduling while performing kernel services. */
+				 cpsid i
 				 b svc_handler
+				 cpsie i
+				 mrs r0, PRIMASK
 				 .fnend
 
 	.align 2
@@ -125,5 +132,18 @@ PSV_ISR: .fnstart
 SYST_ISR: .fnstart
 					b syst_handler
 					.fnend
+
+/* Change the processor state to either enable or disable interrupts. */
+/* use 1 as a parameter to enable, 0 to disable. */
+	.align 2
+	.type processor_state, %function
+processor_state: .fnstart
+								 cmp r0, #0
+								 beq Disable
+								 cpsie i
+								 b Return
+Disable:				 cpsid i
+Return:					 bx lr
+								 .fnend
 /* Pg.111, ALT */
 	.end

@@ -30,7 +30,7 @@ void user_init() {
 /* initializations of variables. */
 	maxpid = 0;
 	currpid = 0;
-	struct pcb *initshell = reserveproc("initShell");
+	struct pcb *initshell = reserveproc("initshell");
 	initproc(initshell);
 	scheduler();
 }
@@ -120,6 +120,19 @@ void init_context() {
 /* Return the process that is currently RUNNING. */
 struct pcb* currproc() {
 	return (ptable + currpid);
+}
+
+/*
+ * Return the process belonging to pid, or NULL if it couldn't be found.
+ */
+struct pcb* pidproc(int pid) {
+	int i;
+	for(i = 0; i < MAX_PROC; i++) {
+		if(pid == ptable[i].pid) {
+			return (ptable + i);
+		}
+	}
+	return NULL;
 }
 
 /*

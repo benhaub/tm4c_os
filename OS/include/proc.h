@@ -11,6 +11,9 @@
 #define MAX_PROC 127
 /* A pid that no valid process will ever have. */
 #define NULLPID MAX_PROC + 1
+/* Exit codes */
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE 1
 
 enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING};
 
@@ -40,6 +43,7 @@ void initproc(struct pcb *);
 void init_ptable(void);
 void init_context(void);
 struct pcb *currproc(void);
+struct pcb *pidproc(int);
 void scheduler(void);
 
 #endif /*__PROC_H__*/

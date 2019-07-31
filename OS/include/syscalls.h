@@ -8,5 +8,7 @@
 #define __SYSCALLS_H__
 
 int fork(void);
+int wait(int);
+int exit(int);
 
 #endif /*__SYSCALLS_H__*/

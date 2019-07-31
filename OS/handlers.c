@@ -2,11 +2,14 @@
  *Authour	:	Ben Haubrich																									*
  *File		:	handlers.c																										*
  *Synopsis:	fault handlers																								*
- *Date		: May 18th, 2019																									*
+ *Date		: May 18th, 2019																								*
  **************************************************************************/
-#include <tm4c123gh6pm.h>
-#include <types.h>
-#include <kernel_services.h>
+#include <tm4c123gh6pm.h> /* Hardware register macros. */
+#include <types.h> /* For the word data type. */
+#include <kernel_services.h> /* Syscalls for svc_handler. */
+#include <proc.h> /* For scheduler() */
+
+extern void processor_state(int);
 
 void nmi_handler() {
 	while(1);
@@ -70,14 +73,23 @@ void u_handler() {
 /* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */
 /* up here, and then it's decided how to handle it based on the sysnum. */
 void svc_handler(int sysnum) {
+/* Disable interrupts to prevent scheduling while performing kernel */
+/* services. */
+	processor_state(0);
 	switch(sysnum) {
 		case 0: sysfork();
+						break;
+		case 1: syswait();
+						break;
+		case 2: sysexit();
 						break;
 /* TODO: Need to exit the kernel immediately here and bring the error up in */
 /* user space and terminate the misbehaving program instead of terminating */
 /* the kernel and thus, the whole operating system. */
 		default: while(1); 
 	}
+/* Re-enable interrupts. */
+	processor_state(1);
 }
 void dm_handler() {
 	while(1);
@@ -85,6 +97,8 @@ void dm_handler() {
 void psv_handler() {
 	while(1);
 }
+/* Systick handler (clock tick interrupt) */
 void syst_handler() {
+	scheduler();
 	while(1);
 }

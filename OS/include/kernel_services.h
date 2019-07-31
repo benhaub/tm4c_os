@@ -8,5 +8,7 @@
 #define __KERNELSERVICES_H__
 
 int sysfork(void);
+int syswait(int);
+int sysexit(int);
 
 #endif /*__KERNELSERVICES_H__*/

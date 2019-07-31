@@ -6,7 +6,7 @@
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <hw.h> /* For led functions */
-#include <proc.h> /* For NULLPID */
+#include <proc.h> /* For NULLPID, exit macros */
 #include <syscalls.h>
 
 /*
@@ -21,10 +21,13 @@ int smain() {
 	if(NULLPID == pid) {
 		/* Child process */
 		led_groff();
+		exit(EXIT_SUCCESS);
 	}
 	else {
 		/* Parent process. */
 		led_blon();
+		wait(pid);
+		exit(EXIT_SUCCESS);
 	}
 	return 0;
 }
