@@ -7,10 +7,10 @@
 #ifndef __HW_H__
 #define __HW_H__
 
-/* 16/4 MHz crystal freqency */
-#define CLOCK_FREQ 4000000
+/* 16 MHz PIOSC freqency */
+#define CLOCK_FREQ 16000000
 /* 1ms clock tick */
-#define CLOCK_TICK 4000
+#define CLOCK_TICK 16000
 
 /* Systick calls */
 void delay_1ms(void);

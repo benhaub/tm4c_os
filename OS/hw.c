@@ -7,7 +7,7 @@
 #include <tm4c123gh6pm.h>
 #include <hw.h>
 /*********************************SYSTICK*************************************/
-/* PIOSC clock is default. Uses 16MHz clock divided by 4. */
+/* PIOSC clock is default. See Pg. 220 and Pg. 256-257 */
 static void systick_init() {
 	/* Make sure systick is disabled for initialization */
 	NVIC_ST_CTRL_R = 0;
@@ -33,7 +33,7 @@ void start_clocktick() {
 	NVIC_ST_CTRL_R = 0;
 	NVIC_ST_RELOAD_R = CLOCK_TICK;
 	NVIC_ST_CURRENT_R = 0;
-	NVIC_ST_CTRL_R = 0x3;
+	NVIC_ST_CTRL_R = 0x7;
 	return;
 }
 

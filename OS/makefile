@@ -44,7 +44,7 @@ endif
 LDFLAGS=-Wl,--gc-sections \
 			  -Wl,--entry=Reset_EXCP \
 				-Wl,-Tlink.ld \
-				-Wl,-lm,-lc,-lgcc
+				-Wl,-lm,-lgcc
 
 #Define objcopy to extract out elf headers from binaries. Bare metal code does
 #not have the ability to read these properly and will try to execute them which

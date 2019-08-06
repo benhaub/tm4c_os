@@ -12,6 +12,8 @@
 /* From context.s */
 extern void swtch(word);
 extern void initcode(word sp, word pc);
+/* From initshell.c */
+extern int smain(void);
 
 /* The largest pid currently RUNNING. Keeping track of this speeds up */
 /* scheduling. */
@@ -32,6 +34,7 @@ void user_init() {
 	maxpid = 0;
 	currpid = 0;
 	struct pcb *initshell = reserveproc("initshell");
+	initshell->context.pc = (word)smain;
 	initproc(initshell);
 	scheduler();
 }
@@ -69,14 +72,9 @@ struct pcb* reserveproc(char *name) {
 
 /*
  * Initialize a RESERVED process so it's ready to be run by the scheduler
- * TODO:
- * I added a bunch of stuff to the proc struct? What should the initial values
- * be and where should the be initialized and where should we allow them to be
- * changed?
  */
 void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
-	int i;
 	if(reserved->numchildren != 0) {
 		reserved->numchildren = 0;
 	}
@@ -90,10 +88,9 @@ void initproc(struct pcb *reserved) {
 
 /* The default value of all members in the context of new procs is */
 /* initialized is zero. If they are not zero, it means they have been */
-/* deliberately set to something else. */
+/* deliberately set to something else (e.g. fork() editing the pc). */
 	if(reserved->context.pc == 0) {
-/* The addition of 1 to reserved->pid is in-case the pid is 0. */
-		reserved->context.pc = ((reserved->pid + 1) * FLASH_PAGE_SIZE) + 1;
+		reserved->context.pc = ((reserved->pid) * FLASH_PAGE_SIZE) + 1;
 	}
 /* Multiply by twice the stack size since the top of the stack at position */
 /* 1 is 0x20002000, and decreases to 0x20001000. */
@@ -104,15 +101,30 @@ void initproc(struct pcb *reserved) {
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
 /* into lr. */
 	reserved->context.sp = ptable[reserved->pid].context.sp - 52;
+/*TODO:
+ * Change initcode to take a struct context and make sure r0 is updated for
+ * calls to sysfork().
+ */
 	initcode(ptable[reserved->pid].context.sp, ptable[reserved->pid].context.pc);
 	reserved->state = RUNNABLE;
 }
 
-/* Set all procs to unused state. */
+/* Set all unused procs to unused state, and kernel proc space to KERNEL. */
+/* Also initialize pcb members. */
 void init_ptable() {
+/* The kernel ends at smain. We'll find out how many pages it used, then */
+/* start after that. */
 	int i;
-	for(i = 0; i < MAX_PROC; i++) {
+	for(i = 0; i < ((word)smain/FLASH_PAGE_SIZE + 1); i++) {
+		ptable[i].state = KERNEL;
+		ptable[i].numchildren = 0;
+		ptable[i].waitpid = NULLPID;
+	}
+	while(i < MAX_PROC) {
 		ptable[i].state = UNUSED;
+		ptable[i].numchildren = 0;
+		ptable[i].waitpid = NULLPID;
+		i++;
 	}
 }
 
@@ -158,7 +170,11 @@ void scheduler() {
 		if(index > maxpid || index > MAX_PROC) {
 			index = 0;
 		}
-		if(ptable[index].state == WAITING && ptable[index].
+/* If the process is waiting for another, check to see if it's exited. */
+		if(ptable[index].state == WAITING && \
+			 ptable[ptable[index].waitpid].state == UNUSED) {
+				ptable[index].state = RUNNABLE;
+		}
 		else if(ptable[index].state == RUNNABLE) {
 			currpid = ptable[index].pid;
 			swtch(ptable[index].context.sp);

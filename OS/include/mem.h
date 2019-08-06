@@ -14,6 +14,12 @@
 #define FLASH_PAGE_SIZE 0x800
 /* Beginning of SRAM */
 #define _SRAM 0x20000000
+/* End of SRAM */
+#define SRAM_ 0x20008000
+/* Beginning of FLASH */
+#define _FLASH 0x0
+/* End of FLASH */
+#define FLASH_ 0x00040000
 
 int get_stackspace(void);
 void init_ram(void);

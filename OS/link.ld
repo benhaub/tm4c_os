@@ -23,7 +23,7 @@ SECTIONS
 		_etext = .;
 	} >FLASH
 	
-	.text.smain 0x00000800 : 
+	.text.smain : 
 	{
 		_text.smain = .;
 		KEEP(*(.text.smain))

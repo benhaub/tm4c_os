@@ -30,4 +30,25 @@ syscall: .fnstart
 					bx lr
 				.fnend
 
+/*
+ * This is the assembly routine for system calls that have one argument.
+ */
+	.global syscall1
+	.type syscall1, %function
+syscall1: .fnstart
+/* Put the program counter into the processes struct context. */
+/* The pc from the original system call is in the stacked link register */
+					ldr r3, [sp, #4]
+					str r3, [r1, #4]
+					push {r0-r12, r14}
+/* Move the syscalls argument over to r1 and overwrite the currproc pointer. */
+					ldr r1, [r2]
+/* The immediate value for svc is not used. The number used for determining */
+/* The kernel service is passed through as an argument to syscall() (here */
+/* that manifests itself as r0. */
+					svc #0
+					pop {r0-r12, r14}
+					bx lr
+				.fnend
+
 	.end

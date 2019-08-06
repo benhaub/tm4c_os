@@ -17,17 +17,20 @@ int smain() {
 	led_init();
 	led_gron();
 /* Temporary test of system calls and fork(). */
+/*TODO:
+ * pid is wrong. should be 2 but it's 0.
+ */
 	int pid = fork();
 	if(NULLPID == pid) {
 		/* Child process */
 		led_groff();
-		exit(EXIT_SUCCESS);
+		exit();
 	}
 	else {
 		/* Parent process. */
 		led_blon();
 		wait(pid);
-		exit(EXIT_SUCCESS);
+		exit();
 	}
 	return 0;
 }

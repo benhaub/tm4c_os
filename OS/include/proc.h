@@ -18,6 +18,9 @@
 #define MAX_CHILD 4
 
 /*
+ * KERNEL:
+ * 	The space for this process is being used by the kernel and is unavailable
+ * 	for use.
  * UNUSED:
  * 	The process is unused and can be reserved by a new process.
  * RESERVED:
@@ -33,7 +36,8 @@
  * WAITING:
  * 	The processes is waiting for another process to exit
  */
-enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, WAITING};
+enum procstate {KERNEL, UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING,\
+	WAITING};
 
 /* Note that any changes to a processes context do not take affect until */
 /* The next time a context switch changes to it. */
@@ -55,6 +59,7 @@ struct pcb {
 	int numchildren; /* Number of child processes. */
 	int pid; /* Process ID */
 	int ppid; /* Parent process ID */
+	int waitpid; /* The process is waiting for this pid to change state. */
 	enum procstate state; /* Process state */
 };
 

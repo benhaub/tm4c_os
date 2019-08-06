@@ -107,12 +107,7 @@ UFAULT:	.fnstart
 	.align 2
 	.type SVC_ISR, %function
 SVC_ISR: .fnstart
-/* Disable interrupts to prevent */
-/* scheduling while performing kernel services. */
-				 cpsid i
 				 b svc_handler
-				 cpsie i
-				 mrs r0, PRIMASK
 				 .fnend
 
 	.align 2

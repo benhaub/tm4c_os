@@ -72,21 +72,16 @@ void u_handler() {
 }
 /* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */
 /* up here, and then it's decided how to handle it based on the sysnum. */
-/*TODO:
- * Does this system work for system calls with any arguments (especially one
- * with one argument). sysnum is already in r0, so the first argument is kind
- * of botched.
- */
-void svc_handler(int sysnum) {
+void svc_handler(int sysnum, word arg1) {
 /* Disable interrupts to prevent scheduling while performing kernel */
 /* services. */
 	processor_state(0);
 	switch(sysnum) {
 		case 0: sysfork();
 						break;
-		case 1: syswait();
+		case 1: syswait(arg1);
 						break;
-		case 2: sysprocexit();
+		case 2: sysexit();
 						break;
 		default: while(1); 
 	}
