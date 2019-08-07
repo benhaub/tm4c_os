@@ -46,9 +46,6 @@ struct context {
 	 word pc;
 	 word lr;
 	 word r0;
-	 word r1;
-	 word r2;
-	 word r3;
 };
 
 /* Process control block. */
@@ -60,6 +57,7 @@ struct pcb {
 	int pid; /* Process ID */
 	int ppid; /* Parent process ID */
 	int waitpid; /* The process is waiting for this pid to change state. */
+	int initflag; /* 0 for not initialised yet, 1 for initialised. */
 	enum procstate state; /* Process state */
 };
 

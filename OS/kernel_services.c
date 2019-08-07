@@ -20,7 +20,6 @@ int sysfork() {
 /* Copy the the process that forked to the forked process. */
 	forked->context.pc = forker->context.pc;
 	forked->ppid = forker->pid;
-	initproc(forked);
 /* Forked will return NULLPID to the user process. */
 	forked->context.r0 = NULLPID;
 	return forked->pid;
@@ -35,12 +34,13 @@ int syswait(int pid) {
 	struct pcb *waiting = currproc();
 	waiting->state = WAITING;
 	waiting->waitpid = pid;
-	scheduler();
 	return 0;
 }
 
 /*
  * Clears out the pcb of the process and notifies it's parent of the exit.
+ * TODO:
+ * Need to adjust the array for stackspace
  */
 int sysexit() {
 	struct pcb *exitproc = currproc();
@@ -48,9 +48,6 @@ int sysexit() {
 	exitproc->context.sp = 0;
 	exitproc->context.lr = 0;
 	exitproc->context.r0 = 0;
-	exitproc->context.r1 = 0;
-	exitproc->context.r2 = 0;
-	exitproc->context.r3 = 0;
 	int i;
 	for(i = 0; i < MAX_CHILD; i++) {
 		exitproc->children[i] = NULLPID;
@@ -60,6 +57,7 @@ int sysexit() {
 	exitproc->ppid = 0;
 	exitproc->waitpid = NULLPID;
 	exitproc->state = UNUSED;
+	exitproc->initflag = 0;
 	strncpy(exitproc->name, "\0", 1); 
 	return 0;
 }

@@ -15,19 +15,25 @@
  * void swtch(word sp), where sp is the top of the stack of the process to
  * switch to.
  */
+
+/*
+ *TODO:
+ * This context switcher is totally useless. It doesn't save the previous
+ * processes context at all. It pushes the kernel context onto the stack
+ * which doesn't need to be done, and it's stuck in handler mode. This needs
+ * a huge rework.
+ */
 	.global swtch
 	.type swtch, %function
 swtch: .fnstart
-/* Assume for now that SVC will not keep us in handler mode, so writes to */
-/* CONTROL to change the stack pointer will not be ignored. */
 				push {r0-r12, r14}
 				msr psp, r0
-/* Switch to psp and thread mode using the procedure on Pg. 23 of cortex m4 */
-/* generic user guide. */
+/* Switch to psp and unprivledge mode. */
 				mrs r0, CONTROL
 				orr r0, r0, #0x3
 				msr CONTROL, r0 /* Now unprivledged and using psp */
-				pop {r0-r12, r14}
+				pop {r0-r12}
+				pop {r14}
 				bx lr
 				.fnend
 
@@ -35,12 +41,18 @@ swtch: .fnstart
  * All new processes run initcode first to set up cpu registers to make it
  * look as if the process had been interrupted by an svc with it's registers
  * pushed on the stack. initcode places the value of pc into the link register.
- * initcode(word sp, word pc)
+ * initcode(word sp)
  */
 	.global initcode
 	.type initcode, %function
 initcode: .fnstart
-					str r1 , [r0, #52]
+					add r1, r0, #4
+					ldr r2, [r1] //context.pc
+					ldr r3, [r0] //context.sp
+					str r2, [r3, #52] //store pc on the stack
+					add r1, r0, #12
+					ldr r2, [r1] //context.r0
+					str r2, [r3] //store r0 on the stack
 					bx lr
 					.fnend	
 	.end

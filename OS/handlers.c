@@ -11,6 +11,14 @@
 
 extern void processor_state(int);
 
+/*
+ * Puts the return value from system calls into the processes context.
+ */
+static void syscreturn(word val) {
+	struct pcb *userproc = currproc();
+	userproc->context.r0 = val;
+}
+
 void nmi_handler() {
 	while(1);
 }
@@ -73,18 +81,22 @@ void u_handler() {
 /* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */
 /* up here, and then it's decided how to handle it based on the sysnum. */
 void svc_handler(int sysnum, word arg1) {
+/* Return values from system calls. */
+	word ret;
 /* Disable interrupts to prevent scheduling while performing kernel */
 /* services. */
 	processor_state(0);
 	switch(sysnum) {
-		case 0: sysfork();
+		case 0: ret = sysfork();
 						break;
-		case 1: syswait(arg1);
+		case 1: ret = syswait(arg1);
 						break;
-		case 2: sysexit();
+		case 2: ret = sysexit();
 						break;
 		default: while(1); 
 	}
+/* Store return values */
+	syscreturn(ret);
 /* Re-enable interrupts. */
 	processor_state(1);
 }

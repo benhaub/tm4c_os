@@ -21,12 +21,14 @@ syscall: .fnstart
 /* The pc from the original system call is in the stacked link register */
 					ldr r2, [sp, #4]
 					str r2, [r1, #4]
-					push {r0-r12, r14}
 /* The immediate value for svc is not used. The number used for determining */
 /* The kernel service is passed through as an argument to syscall() (here */
 /* that manifests itself as r0. */
+/* The cortex-m4 exception entry and return model take care of context. */
 					svc #0
-					pop {r0-r12, r14}
+/* Move the returned value from the syscall to r0 so that the kernel */
+/* services return the right value */
+					ldr r0, [r1, #12]
 					bx lr
 				.fnend
 
@@ -40,14 +42,12 @@ syscall1: .fnstart
 /* The pc from the original system call is in the stacked link register */
 					ldr r3, [sp, #4]
 					str r3, [r1, #4]
-					push {r0-r12, r14}
 /* Move the syscalls argument over to r1 and overwrite the currproc pointer. */
 					ldr r1, [r2]
 /* The immediate value for svc is not used. The number used for determining */
 /* The kernel service is passed through as an argument to syscall() (here */
 /* that manifests itself as r0. */
 					svc #0
-					pop {r0-r12, r14}
 					bx lr
 				.fnend
 

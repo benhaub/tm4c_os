@@ -11,7 +11,7 @@
 
 /* From context.s */
 extern void swtch(word);
-extern void initcode(word sp, word pc);
+extern void initcode(word);
 /* From initshell.c */
 extern int smain(void);
 
@@ -35,7 +35,6 @@ void user_init() {
 	currpid = 0;
 	struct pcb *initshell = reserveproc("initshell");
 	initshell->context.pc = (word)smain;
-	initproc(initshell);
 	scheduler();
 }
 
@@ -67,17 +66,19 @@ struct pcb* reserveproc(char *name) {
 	strncpy(name, ptable[i].name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
+/* The process still needs to be initialised */
+	ptable[i].initflag = 1;
 	return (ptable + i);
 }
 
 /*
- * Initialize a RESERVED process so it's ready to be run by the scheduler
+ * Initialize a RESERVED process so it's ready to be context switched too.
+ * This function alters context, so must be run just before the context
+ * switchet or if assurance is made that context will not be corruped before
+ * it's switched to.
  */
 void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
-	if(reserved->numchildren != 0) {
-		reserved->numchildren = 0;
-	}
 /* For every proc in the ptable. It's pid (or index in the ptable) determines*/
 /* where it will reside in flash. The first process will reside in the second*/
 /* block, the second process will reside in the third block. The kernel is */
@@ -100,12 +101,11 @@ void initproc(struct pcb *reserved) {
 /* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
 /* into lr. */
-	reserved->context.sp = ptable[reserved->pid].context.sp - 52;
-/*TODO:
- * Change initcode to take a struct context and make sure r0 is updated for
- * calls to sysfork().
- */
-	initcode(ptable[reserved->pid].context.sp, ptable[reserved->pid].context.pc);
+	reserved->context.sp = reserved->context.sp - 52;
+/* Pointer to proc is cast to a word because the compiler didn't seem to */
+/* want to give me the pointer. It always came out to the value of sp in */
+/* context struct. */
+	initcode((word)reserved);
 	reserved->state = RUNNABLE;
 }
 
@@ -175,9 +175,20 @@ void scheduler() {
 			 ptable[ptable[index].waitpid].state == UNUSED) {
 				ptable[index].state = RUNNABLE;
 		}
-		else if(ptable[index].state == RUNNABLE) {
+		else if(ptable[index].state == RESERVED || \
+						ptable[index].state == RUNNABLE) {
 			currpid = ptable[index].pid;
-			swtch(ptable[index].context.sp);
+			ptable[index].state = RUNNING;
+			if(1 == ptable[index].initflag) {
+				initproc(ptable + index);
+			}
+			if(RUNNABLE == ptable[index].state) {
+				swtch(ptable[index].context.sp);
+			}
+/* The process should have been RUNNABLE */
+			else {
+				while(1);
+			}
 		}
 		else {
 			index++;

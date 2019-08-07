@@ -17,13 +17,13 @@ STACK_TOP:
 	.skip 0x1000, 0x0
 	
 	.data
+/* Kernel Ram usage. */
+	.global KRAM_USE
+	.set KRAM_USE, Vectors
 /* Reset_EXCP needs to be global so it can be used as an entry point. */
 	.global Reset_EXCP
 /* processor_state is externed in handlers.c for svc calls. */
 	.global processor_state
-/* Kernel Ram usage. */
-KRAM_USE:
-	.global KRAM_USE
 
 	.section .intvecs
 
@@ -63,15 +63,16 @@ Reset_EXCP: .fnstart
 /* allocating ram pages for user programs. See get_stackspace(). */
 /* Where ever the top of stack is determines how much space the kernel is */
 /* using. */
-/* 32KB of ram in r0. */
-						mov r0, #0x8000
+/* 4KB stack size */
+						mov r0, #0x1000
 						mov r1, sp
 						sub r1, r1, #0x20000000
 /* Divide this by the current position of the sp to get an integer for */
 /* get_stackspace. */
-						udiv r0, r1
-						ldr r3,=KRAM_USE
-						str r0, [r3]
+						udiv r1, r0
+/* push the value onto the first spot in the stack marked by the symbol */
+/* KRAM_USAGE. */
+						push {r1}
 						b main
 						.fnend
 
@@ -139,6 +140,7 @@ processor_state: .fnstart
 								 b Return
 Disable:				 cpsid i
 Return:					 bx lr
+
 								 .fnend
 /* Pg.111, ALT */
 	.end

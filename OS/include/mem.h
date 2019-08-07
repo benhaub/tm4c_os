@@ -20,6 +20,10 @@
 #define _FLASH 0x0
 /* End of FLASH */
 #define FLASH_ 0x00040000
+/* Number of flash pages. */
+#define FLASH_PAGES FLASH_ / FLASH_PAGE_SIZE
+/* Number of SRAM Pages. */
+#define SRAM_PAGES (SRAM_ - _SRAM) / STACK_SIZE
 
 int get_stackspace(void);
 void init_ram(void);

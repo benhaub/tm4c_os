@@ -20,7 +20,14 @@ int fork() {
 }
 
 int wait(int pid) {
-	return syscall1(WAIT, currproc(), &pid);
+	int ret;
+	struct pcb *waitproc = currproc();
+	ret = syscall1(WAIT, waitproc, &pid);
+/* Wait for state to change. This is done here because privledged code */
+/* disables interrupts, so the tick interrupt gets masked out. Interrupts are */
+/* allowed here. */
+	while(WAITING == waitproc->state);
+	return ret;
 }
 
 int exit() {

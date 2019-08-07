@@ -73,7 +73,7 @@ handlers.o: handlers.c
 vectors.o: vectors.s
 	${CC} ${CFLAGS} -c vectors.s
 
-mem.o: mem.c
+mem.o: mem.c types.h mem.h
 	${CC} ${CFLAGS} -c mem.c
 
 proc.o: proc.c mem.h proc.h cstring.h
