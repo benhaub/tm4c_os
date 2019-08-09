@@ -36,6 +36,9 @@ void user_init() {
 	struct pcb *initshell = reserveproc("initshell");
 	initshell->context.pc = (word)smain;
 	scheduler();
+	if(RUNNABLE == currproc()->state) {
+		swtch(currproc()->context.sp);
+	}
 }
 
 /*
@@ -170,25 +173,19 @@ void scheduler() {
 		if(index > maxpid || index > MAX_PROC) {
 			index = 0;
 		}
+		struct pcb schedproc = ptable[index];
 /* If the process is waiting for another, check to see if it's exited. */
-		if(ptable[index].state == WAITING && \
-			 ptable[ptable[index].waitpid].state == UNUSED) {
-				ptable[index].state = RUNNABLE;
+		if(schedproc.state == WAITING && ptable[schedproc.waitpid].state == UNUSED){
+			ptable[index].state = RUNNABLE;
 		}
-		else if(ptable[index].state == RESERVED || \
-						ptable[index].state == RUNNABLE) {
-			currpid = ptable[index].pid;
-			ptable[index].state = RUNNING;
-			if(1 == ptable[index].initflag) {
+		if(schedproc.state == RESERVED || schedproc.state == RUNNABLE) {
+			currpid = schedproc.pid;
+			schedproc.state = RUNNING;
+			if(1 == schedproc.initflag) {
 				initproc(ptable + index);
 			}
-			if(RUNNABLE == ptable[index].state) {
-				swtch(ptable[index].context.sp);
-			}
-/* The process should have been RUNNABLE */
-			else {
-				while(1);
-			}
+			index++;
+			return;
 		}
 		else {
 			index++;

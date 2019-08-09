@@ -17,9 +17,6 @@ int smain() {
 	led_init();
 	led_gron();
 /* Temporary test of system calls and fork(). */
-/*TODO:
- * pid is wrong. should be 2 but it's 0.
- */
 	int pid = fork();
 	if(NULLPID == pid) {
 		/* Child process */

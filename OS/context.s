@@ -10,30 +10,22 @@
 
 /*
  * Context switcher. Save the currently running processes registers, and load
- * the registers from the process that is running. Function prototype is as
- * follows: 
+ * the registers from the process that is running.
  * void swtch(word sp), where sp is the top of the stack of the process to
  * switch to.
  */
-
-/*
- *TODO:
- * This context switcher is totally useless. It doesn't save the previous
- * processes context at all. It pushes the kernel context onto the stack
- * which doesn't need to be done, and it's stuck in handler mode. This needs
- * a huge rework.
+/*TODO:
+ * We will need to merge all of initcode into the context switcher.
  */
 	.global swtch
 	.type swtch, %function
 swtch: .fnstart
-				push {r0-r12, r14}
-				msr psp, r0
+				msr psp, r0 //Switch psp stack to new one
 /* Switch to psp and unprivledge mode. */
-				mrs r0, CONTROL
-				orr r0, r0, #0x3
-				msr CONTROL, r0 /* Now unprivledged and using psp */
-				pop {r0-r12}
-				pop {r14}
+				mrs r2, CONTROL
+				orr r2, r2, #0x3
+				msr CONTROL, r2
+				pop {r0-r3, r12, r14}
 				bx lr
 				.fnend
 
@@ -49,7 +41,7 @@ initcode: .fnstart
 					add r1, r0, #4
 					ldr r2, [r1] //context.pc
 					ldr r3, [r0] //context.sp
-					str r2, [r3, #52] //store pc on the stack
+					str r2, [r3, #20] //Store the pc to it's popped to the lr
 					add r1, r0, #12
 					ldr r2, [r1] //context.r0
 					str r2, [r3] //store r0 on the stack

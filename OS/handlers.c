@@ -9,7 +9,10 @@
 #include <kernel_services.h> /* Syscalls for svc_handler. */
 #include <proc.h> /* For scheduler() */
 
+/* From vectors.s */
 extern void processor_state(int);
+/* From context.s */
+extern void swtch(word sp);
 
 /*
  * Puts the return value from system calls into the processes context.
@@ -107,7 +110,13 @@ void psv_handler() {
 	while(1);
 }
 /* Systick handler (clock tick interrupt) */
-void syst_handler() {
+void syst_handler(word sp, word pc) {
+	currproc()->state = RUNNABLE;
+	currproc()->context.sp = sp;
+	currproc()->context.pc = pc;
+	currproc()->context.lr = lr;
 	scheduler();
-	while(1);
+	if(RUNNABLE == currproc()->state) {
+		swtch(currproc()->context.sp);
+	}
 }

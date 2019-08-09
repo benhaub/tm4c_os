@@ -123,10 +123,23 @@ PSV_ISR: .fnstart
 				 b psv_handler
 				 .fnend
 
+/*
+ * The reason we don't do a direct branch to the handler is to avoid context
+ * switching while in handler mode. The processor's exception mechanism makes
+ * that very difficult. One nice thing it does do is automatically push it's
+ * context.
+ */
 	.align 2
 	.type SYST_ISR, %function
 SYST_ISR: .fnstart
-					b syst_handler
+					mrs r0, psp //Get the processes stack pointer and save it
+					ldr r1, [r0, #24] //Save the processes pc
+					ldr r3,=syst_handler
+					str r3, [r0, #24] //Place syst_handler on the stacked pc.
+					mrs r3, CONTROL //Change thread mode privledge level to privledged
+					orr r3, r3, #0x1
+					msr CONTROL, r3
+					bx lr
 					.fnend
 
 /* Change the processor state to either enable or disable interrupts. */
