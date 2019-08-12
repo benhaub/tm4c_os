@@ -11,7 +11,6 @@
 
 /* From context.s */
 extern void swtch(word);
-extern void initcode(word);
 /* From initshell.c */
 extern int smain(void);
 
@@ -37,7 +36,7 @@ void user_init() {
 	initshell->context.pc = (word)smain;
 	scheduler();
 	if(RUNNABLE == currproc()->state) {
-		swtch(currproc()->context.sp);
+		swtch((word)currproc());
 	}
 }
 
@@ -69,8 +68,6 @@ struct pcb* reserveproc(char *name) {
 	strncpy(name, ptable[i].name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
-/* The process still needs to be initialised */
-	ptable[i].initflag = 1;
 	return (ptable + i);
 }
 
@@ -80,7 +77,7 @@ struct pcb* reserveproc(char *name) {
  * switchet or if assurance is made that context will not be corruped before
  * it's switched to.
  */
-void initproc(struct pcb *reserved) {
+static void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
 /* For every proc in the ptable. It's pid (or index in the ptable) determines*/
 /* where it will reside in flash. The first process will reside in the second*/
@@ -108,7 +105,6 @@ void initproc(struct pcb *reserved) {
 /* Pointer to proc is cast to a word because the compiler didn't seem to */
 /* want to give me the pointer. It always came out to the value of sp in */
 /* context struct. */
-	initcode((word)reserved);
 	reserved->state = RUNNABLE;
 }
 
@@ -178,12 +174,17 @@ void scheduler() {
 		if(schedproc.state == WAITING && ptable[schedproc.waitpid].state == UNUSED){
 			ptable[index].state = RUNNABLE;
 		}
-		if(schedproc.state == RESERVED || schedproc.state == RUNNABLE) {
+/* Reserved proc's need to be initialised with initproc() */
+		if(schedproc.state == RESERVED) {
 			currpid = schedproc.pid;
 			schedproc.state = RUNNING;
-			if(1 == schedproc.initflag) {
-				initproc(ptable + index);
-			}
+			initproc(&schedproc);
+			index++;
+			return;
+		}
+		else if(schedproc.state == RUNNABLE) {
+			currpid = schedproc.pid;
+			schedproc.state = RUNNING;
 			index++;
 			return;
 		}

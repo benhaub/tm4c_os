@@ -132,11 +132,15 @@ PSV_ISR: .fnstart
 	.align 2
 	.type SYST_ISR, %function
 SYST_ISR: .fnstart
-					mrs r0, psp //Get the processes stack pointer and save it
-					ldr r1, [r0, #24] //Save the processes pc
+/* Get the processes stack pointer and save it */
+					mrs r0, psp
+/* Save the processes pc */
+					ldr r1, [r0, #24]
 					ldr r3,=syst_handler
-					str r3, [r0, #24] //Place syst_handler on the stacked pc.
-					mrs r3, CONTROL //Change thread mode privledge level to privledged
+/* Place syst_handler on the stacked pc. */
+					str r3, [r0, #24]
+/* Change thread mode privledge level to privledged */
+					mrs r3, CONTROL
 					orr r3, r3, #0x1
 					msr CONTROL, r3
 					bx lr

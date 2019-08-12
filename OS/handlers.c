@@ -114,9 +114,8 @@ void syst_handler(word sp, word pc) {
 	currproc()->state = RUNNABLE;
 	currproc()->context.sp = sp;
 	currproc()->context.pc = pc;
-	currproc()->context.lr = lr;
 	scheduler();
 	if(RUNNABLE == currproc()->state) {
-		swtch(currproc()->context.sp);
+		swtch((word)currproc());
 	}
 }

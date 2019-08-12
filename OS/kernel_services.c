@@ -57,7 +57,6 @@ int sysexit() {
 	exitproc->ppid = 0;
 	exitproc->waitpid = NULLPID;
 	exitproc->state = UNUSED;
-	exitproc->initflag = 0;
 	strncpy(exitproc->name, "\0", 1); 
 	return 0;
 }

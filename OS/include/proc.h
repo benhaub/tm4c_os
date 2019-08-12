@@ -57,13 +57,12 @@ struct pcb {
 	int pid; /* Process ID */
 	int ppid; /* Parent process ID */
 	int waitpid; /* The process is waiting for this pid to change state. */
-	int initflag; /* 0 for not initialised yet, 1 for initialised. */
 	enum procstate state; /* Process state */
 };
 
 void user_init(void);
 struct pcb* reserveproc(char *);
-void initproc(struct pcb *);
+static void initproc(struct pcb *);
 void init_ptable(void);
 void init_context(void);
 struct pcb *currproc(void);
