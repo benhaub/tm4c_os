@@ -24,6 +24,8 @@ STACK_TOP:
 	.global Reset_EXCP
 /* processor_state is externed in handlers.c for svc calls. */
 	.global processor_state
+/* A way to dance around and deal with exception mechanisms */
+	.global kernel_entry
 
 	.section .intvecs
 
@@ -126,21 +128,50 @@ PSV_ISR: .fnstart
 /*
  * The reason we don't do a direct branch to the handler is to avoid context
  * switching while in handler mode. The processor's exception mechanism makes
- * that very difficult. One nice thing it does do is automatically push it's
- * context.
+ * that very difficult.
  */
 	.align 2
 	.type SYST_ISR, %function
 SYST_ISR: .fnstart
-					mrs r0, psp //Get the processes stack pointer and save it
-					ldr r1, [r0, #24] //Save the processes pc
+/* Get the processes stack pointer and save it */
+					mrs r0, psp
+					mov r4, r0
+/* Save the value of r0 on the exception stack. */
+					ldr r6, [r0]
+/* Save the pc. */
+					ldr r5, [r0, #24]
 					ldr r3,=syst_handler
-					str r3, [r0, #24] //Place syst_handler on the stacked pc.
-					mrs r3, CONTROL //Change thread mode privledge level to privledged
-					orr r3, r3, #0x1
+/* overwrite r0 on the stack for a function call. It will be returned in. */
+/* kernel_entry(). */
+					str r0, [r4]
+/* Place syst_handler on the stacked pc. Exception mechanism retores it to lr*/
+					str r3, [r0, #24]
+/* Exception return mechanism will return r0-r3 to pre-exception values. */
+/* r4 and r5 remain unscathed. */
+/* Change thread mode privledge level to privledged. */
+					mrs r3, CONTROL
+					bic r3, r3, #0x1
 					msr CONTROL, r3
 					bx lr
 					.fnend
+
+/*
+ * Entry to the kernel from the systick isr. This function executed from thread
+ * mode instead of handler mode, and makes it possible to save stacks and 
+ * context switch properly.
+ */
+	.align 2
+	.type kernel_entry, %function
+kernel_entry: .fnstart
+/* Return r0 to it's initial value */
+							mov r0, r6
+							push {r0-r3, r12, r5}
+/* Switch stacks to msp */
+							mrs r3, CONTROL
+							bic r3, r3, #0x2
+							msr CONTROL, r3
+							bx lr
+							.fnend
 
 /* Change the processor state to either enable or disable interrupts. */
 /* use 1 as a parameter to enable, 0 to disable. */
@@ -153,7 +184,6 @@ processor_state: .fnstart
 								 b Return
 Disable:				 cpsid i
 Return:					 bx lr
-
 								 .fnend
 /* Pg.111, ALT */
 	.end

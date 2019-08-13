@@ -27,6 +27,8 @@ int smain() {
 		/* Parent process. */
 		led_blon();
 		wait(pid);
+		led_bloff();
+		led_ron();
 		exit();
 	}
 	return 0;
