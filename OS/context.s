@@ -14,9 +14,6 @@
  * void swtch(word sp), where sp is the top of the stack of the process to
  * switch to.
  */
-/*TODO:
- * We will need to merge all of initcode into the context switcher.
- */
 	.global swtch
 	.type swtch, %function
 swtch: .fnstart
