@@ -26,6 +26,7 @@
 #define SRAM_PAGES (SRAM_ - _SRAM) / STACK_SIZE
 
 int get_stackspace(void);
+int free_stackspace(int);
 void init_ram(void);
 
 #endif /*__MEM_H__*/

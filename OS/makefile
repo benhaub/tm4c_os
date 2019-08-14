@@ -94,7 +94,8 @@ syscalls.o: syscalls.c syscalls.h types.h proc.h
 syscallsasm.o: syscallsasm.s
 	${CC} ${CFLAGS} -c syscallsasm.s
 
-kernel_services.o: kernel_services.c kernel_services.h proc.h types.h cstring.h
+kernel_services.o: kernel_services.c kernel_services.h proc.h types.h \
+									 cstring.h mem.h
 	${CC} ${CFLAGS} -c kernel_services.c
 
 flash:

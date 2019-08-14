@@ -11,6 +11,7 @@
 
 /* From context.s */
 extern void swtch(word);
+extern void initcode(word);
 /* From initshell.c */
 extern int smain(void);
 
@@ -36,7 +37,7 @@ void user_init() {
 	initshell->context.pc = (word)smain;
 	scheduler();
 	if(RUNNABLE == currproc()->state) {
-		swtch((word)currproc());
+		swtch(currproc()->context.sp);
 	}
 }
 
@@ -68,6 +69,8 @@ struct pcb* reserveproc(char *name) {
 	strncpy(name, ptable[i].name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
+/* The process still needs to be initialised */
+	ptable[i].initflag = 1;
 	return (ptable + i);
 }
 
@@ -77,7 +80,7 @@ struct pcb* reserveproc(char *name) {
  * switchet or if assurance is made that context will not be corruped before
  * it's switched to.
  */
-static void initproc(struct pcb *reserved) {
+void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
 /* For every proc in the ptable. It's pid (or index in the ptable) determines*/
 /* where it will reside in flash. The first process will reside in the second*/
@@ -105,6 +108,7 @@ static void initproc(struct pcb *reserved) {
 /* Pointer to proc is cast to a word because the compiler didn't seem to */
 /* want to give me the pointer. It always came out to the value of sp in */
 /* context struct. */
+	initcode((word)reserved);
 	reserved->state = RUNNABLE;
 }
 
@@ -174,17 +178,18 @@ void scheduler() {
 		if(schedproc.state == WAITING && ptable[schedproc.waitpid].state == UNUSED){
 			ptable[index].state = RUNNABLE;
 		}
-/* Reserved proc's need to be initialised with initproc() */
-		if(schedproc.state == RESERVED) {
+		if(schedproc.state == RESERVED || schedproc.state == RUNNABLE) {
 			currpid = schedproc.pid;
+/*TODO:
+ * Now that the kernel is running in thread mode instead of handler, is it
+ * possible to have the scheduler be the only thing that calls swtch now?
+ * This would fix the issue of initproc overwriting the RUNNING status with
+ * RUNNABLE.
+ */
 			schedproc.state = RUNNING;
-			initproc(&schedproc);
-			index++;
-			return;
-		}
-		else if(schedproc.state == RUNNABLE) {
-			currpid = schedproc.pid;
-			schedproc.state = RUNNING;
+			if(1 == schedproc.initflag) {
+				initproc(ptable + index);
+			}
 			index++;
 			return;
 		}

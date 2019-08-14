@@ -11,6 +11,7 @@
 
 /* From vectors.s */
 extern void processor_state(int);
+extern void kernel_entry(void);
 /* From context.s */
 extern void swtch(word sp);
 
@@ -110,12 +111,13 @@ void psv_handler() {
 	while(1);
 }
 /* Systick handler (clock tick interrupt) */
-void syst_handler(word sp, word pc) {
+void syst_handler(word sp) {
+/* Subtract 20 away because we haven't push the stack yet, but we will. */
+	currproc()->context.sp = sp - 20;
+	kernel_entry();
 	currproc()->state = RUNNABLE;
-	currproc()->context.sp = sp;
-	currproc()->context.pc = pc;
 	scheduler();
 	if(RUNNABLE == currproc()->state) {
-		swtch((word)currproc());
+		swtch((word)currproc()->context.sp);
 	}
 }
