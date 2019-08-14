@@ -180,6 +180,12 @@ void scheduler() {
 		}
 		if(schedproc.state == RESERVED || schedproc.state == RUNNABLE) {
 			currpid = schedproc.pid;
+/*TODO:
+ * Now that the kernel is running in thread mode instead of handler, is it
+ * possible to have the scheduler be the only thing that calls swtch now?
+ * This would fix the issue of initproc overwriting the RUNNING status with
+ * RUNNABLE.
+ */
 			schedproc.state = RUNNING;
 			if(1 == schedproc.initflag) {
 				initproc(ptable + index);

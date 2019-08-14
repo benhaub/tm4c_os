@@ -58,6 +58,7 @@ struct pcb {
 	int ppid; /* Parent process ID */
 	int waitpid; /* The process is waiting for this pid to change state. */
 	int initflag; /* 0 for not initialised yet, 1 for initialised. */
+	int rampg; /* Index of this processes allocated ram page. */
 	enum procstate state; /* Process state */
 };
 

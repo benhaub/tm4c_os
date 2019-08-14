@@ -7,13 +7,27 @@
 #include <proc.h>
 #include <types.h>
 #include <cstring.h>
+#include <mem.h>
+
+/* From proc.c */
+extern int maxpid;
+extern struct pcb ptable[];
 
 /*
  * Creates a new process. The forker forks the forked. Forker returns the pid
- * of the new process, forked returns NULLPID
+ * of the new process, forked returns NULLPID. Returns -1 on failure.
+ */
+/*TODO:
+ * There's a chance (a likely chance) that fork can return successfully even
+ * though it could fail while running initproc and trying to get_stackspace().
+ * The parent needs to be informed here if such failures will occur and call
+ * exit() on the reserved proc and return -1.
  */
 int sysfork() {
 	struct pcb *forked = reserveproc(NULL);
+	if(NULL == forked) {
+		return -1;
+	}
 	struct pcb *forker = currproc();
 	forked->numchildren++;
 	forked->children[forked->numchildren] = forker->pid;
@@ -39,8 +53,6 @@ int syswait(int pid) {
 
 /*
  * Clears out the pcb of the process and notifies it's parent of the exit.
- * TODO:
- * Need to adjust the array for stackspace
  */
 int sysexit() {
 	struct pcb *exitproc = currproc();
@@ -52,6 +64,14 @@ int sysexit() {
 	for(i = 0; i < MAX_CHILD; i++) {
 		exitproc->children[i] = NULLPID;
 	}
+	if(maxpid == exitproc->pid) {
+		for(i = maxpid; i >= 0; i--) {
+			if(RUNNABLE == ptable[i].state || RESERVED == ptable[i].state) {
+				maxpid = i;
+			}
+		}
+	}
+	free_stackspace(exitproc->rampg);
 	exitproc->numchildren = 0;
 	exitproc->pid = 0;
 	exitproc->ppid = 0;
