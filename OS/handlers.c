@@ -117,7 +117,4 @@ void syst_handler(word sp) {
 	kernel_entry();
 	currproc()->state = RUNNABLE;
 	scheduler();
-	if(RUNNABLE == currproc()->state) {
-		swtch((word)currproc()->context.sp);
-	}
 }
