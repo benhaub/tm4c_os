@@ -68,17 +68,17 @@ int sysexit() {
 		for(i = maxpid; i >= 0; i--) {
 			if(RUNNABLE == ptable[i].state || RESERVED == ptable[i].state) {
 				maxpid = i;
+				break;
 			}
 		}
 	}
 	free_stackspace(exitproc->rampg);
 	exitproc->numchildren = 0;
-	exitproc->pid = 0;
-	exitproc->ppid = 0;
+	exitproc->pid = NULLPID;
+	exitproc->ppid = NULLPID;
 	exitproc->waitpid = NULLPID;
 	exitproc->state = UNUSED;
 	exitproc->initflag = 0;
 	strncpy(exitproc->name, "\0", 1);
-	scheduler();
 	return 0;
 }

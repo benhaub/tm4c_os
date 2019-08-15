@@ -101,7 +101,7 @@ void initproc(struct pcb *reserved) {
 /* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
 /* into lr. */
-	reserved->context.sp = reserved->context.sp - 52;
+	reserved->context.sp = reserved->context.sp - 20;
 /* Pointer to proc is cast to a word because the compiler didn't seem to */
 /* want to give me the pointer. It always came out to the value of sp in */
 /* context struct. */
@@ -170,19 +170,21 @@ void scheduler() {
 		if(index > maxpid || index > MAX_PROC) {
 			index = 0;
 		}
-		struct pcb schedproc = ptable[index];
+		struct pcb *schedproc = &ptable[index];
 /* If the process is waiting for another, check to see if it's exited. */
-		if(schedproc.state == WAITING && ptable[schedproc.waitpid].state == UNUSED){
+		if(schedproc->state == WAITING && \
+																	ptable[schedproc->waitpid].state == UNUSED){
 			ptable[index].state = RUNNABLE;
 		}
-		if(schedproc.state == RESERVED || schedproc.state == RUNNABLE) {
-			currpid = schedproc.pid;
-			if(1 == schedproc.initflag) {
+		if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
+			currpid = schedproc->pid;
+			if(1 == schedproc->initflag) {
+				schedproc->initflag = 0;
 				initproc(ptable + index);
 			}
 			index++;
-			schedproc.state = RUNNING;
-			swtch(reserved->context.sp);
+			schedproc->state = RUNNING;
+			swtch(schedproc->context.sp);
 		}
 		else {
 			index++;

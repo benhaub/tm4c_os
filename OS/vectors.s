@@ -136,7 +136,7 @@ SYST_ISR: .fnstart
 /* Get the processes stack pointer and save it */
 					mrs r0, psp
 					mov r4, r0
-/* Save the value of r0 on the exception stack. */
+/* Save the value of the exception stack r0. */
 					ldr r6, [r0]
 /* Save the pc. */
 					ldr r5, [r0, #24]

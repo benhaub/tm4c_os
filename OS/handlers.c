@@ -112,9 +112,18 @@ void psv_handler() {
 }
 /* Systick handler (clock tick interrupt) */
 void syst_handler(word sp) {
-/* Subtract 20 away because we haven't push the stack yet, but we will. */
-	currproc()->context.sp = sp - 20;
+/* exit()'d processes go here to be scheduled out */
+	if(UNUSED == currproc()->state) {
+		goto Unused;
+	}
+/* Subtract 4 away because we haven't push the stack yet, but we will. */
+/* We're only subtracting 4 instead of 24 because the stack pointer was */
+/* saved before the exception mechanism popped the stack. So it's 28 - 24 */
+	currproc()->context.sp = sp - 4;
 	kernel_entry();
 	currproc()->state = RUNNABLE;
+	scheduler();
+Unused:
+	kernel_entry();
 	scheduler();
 }

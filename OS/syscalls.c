@@ -32,5 +32,8 @@ int wait(int pid) {
 
 int exit() {
 	return syscall(EXIT, currproc());
+/* Wait to be scheduled. This is done because the scheduler can't be called */
+/* from handler mode. All sys*() calls run in handler mode. */
+	while(1);
 }
 
