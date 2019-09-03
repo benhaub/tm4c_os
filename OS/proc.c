@@ -96,7 +96,8 @@ void initproc(struct pcb *reserved) {
 /* Multiply by twice the stack size since the top of the stack at position */
 /* 1 is 0x20002000, and decreases to 0x20001000. */
 	if(reserved->context.sp == 0) {
-		reserved->context.sp = _SRAM + ((get_stackspace()*STACK_SIZE)+STACK_SIZE);
+		reserved->rampg = get_stackspace();
+		reserved->context.sp = _SRAM + ((reserved->rampg*STACK_SIZE)+STACK_SIZE);
 	}
 /* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
