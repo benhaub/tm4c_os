@@ -21,9 +21,6 @@ int smain() {
 	if(NULLPID == pid) {
 		/* Child process */
 		led_groff();
-/*TODO:
- * Exit is returning to the fork() call instead of exit()
- */
 		exit();
 	}
 	else {

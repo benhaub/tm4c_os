@@ -22,6 +22,10 @@ swtch: .fnstart
 				mrs r2, CONTROL
 				orr r2, r2, #0x3
 				msr CONTROL, r2
+/*TODO:
+ * wait() works fine, but for some reason, the value that should go in r14 is
+ * one off in the stack. Pops only 20, proper value is 24.
+ */
 				pop {r0-r3, r12, r14}
 				bx lr
 				.fnend

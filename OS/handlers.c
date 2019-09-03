@@ -89,7 +89,7 @@ void svc_handler(int sysnum, word arg1) {
 	word ret;
 /* Disable interrupts to prevent scheduling while performing kernel */
 /* services. */
-	//processor_state(0);
+	processor_state(0);
 	switch(sysnum) {
 		case 0: ret = sysfork();
 						break;
@@ -102,7 +102,7 @@ void svc_handler(int sysnum, word arg1) {
 /* Store return values */
 	syscreturn(ret);
 /* Re-enable interrupts. */
-	//processor_state(1);
+	processor_state(1);
 }
 void dm_handler() {
 	while(1);
