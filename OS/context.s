@@ -22,11 +22,7 @@ swtch: .fnstart
 				mrs r2, CONTROL
 				orr r2, r2, #0x3
 				msr CONTROL, r2
-/*TODO:
- * wait() works fine, but for some reason, the value that should go in r14 is
- * one off in the stack. Pops only 20, proper value is 24.
- */
-				pop {r0-r3, r12, r14}
+				pop {r0-r3, r7, r12, r14}
 				bx lr
 				.fnend
 
@@ -42,7 +38,7 @@ initcode: .fnstart
 					add r1, r0, #4
 					ldr r2, [r1] //context.pc
 					ldr r3, [r0] //context.sp
-					str r2, [r3, #20] //Store the pc to it's popped to the lr
+					str r2, [r3, #24] //Store the pc to it's popped to the lr
 					add r1, r0, #12
 					ldr r2, [r1] //context.r0
 					str r2, [r3] //store r0 on the stack

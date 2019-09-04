@@ -16,6 +16,12 @@
 #define EXIT_FAILURE 1
 /* Maximum number of child processes. */
 #define MAX_CHILD 4
+/* Context switch stack size (in bytes, 4 bytes per word saved) */
+/* NOTE: Make sure to edit the value of this line:
+ * "str r2, [r3, #24] //Store the pc to it's popped to the lr"
+ * in context.s to match.
+ */
+#define CTXSTACK 24
 
 /*
  * KERNEL:
@@ -69,6 +75,6 @@ void init_ptable(void);
 void init_context(void);
 struct pcb *currproc(void);
 struct pcb *pidproc(int);
-void scheduler(void);
+void scheduler(void) __attribute__((noreturn));
 
 #endif /*__PROC_H__*/

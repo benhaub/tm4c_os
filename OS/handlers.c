@@ -14,6 +14,8 @@ extern void processor_state(int);
 extern void kernel_entry(void);
 /* From context.s */
 extern void swtch(word sp);
+/* Function prototypes. */
+void syst_handler(word) __attribute__((noreturn));
 
 /*
  * Puts the return value from system calls into the processes context.

@@ -31,7 +31,7 @@ int sysfork() {
 	struct pcb *forker = currproc();
 	forked->numchildren++;
 	forked->children[forked->numchildren] = forker->pid;
-/* Copy the the process that forked to the forked process. */
+/* Copy some info from the process that forked to the forked process. */
 	forked->context.pc = forker->context.pc;
 	forked->ppid = forker->pid;
 /* Forked will return NULLPID to the user process. */

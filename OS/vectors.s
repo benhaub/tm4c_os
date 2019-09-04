@@ -140,12 +140,22 @@ SYST_ISR: .fnstart
 					ldr r6, [r0]
 /* Save the pc. */
 					ldr r5, [r0, #24]
+/* Make sure r5 has bit one set for thumb instructions. */
+					ands r8, r5, #0x1
+					bne Thumb
+					add r5, r5, #0x1
+Thumb:
 					ldr r3,=syst_handler
 /* overwrite r0 on the stack for a function call. It will be returned in. */
 /* kernel_entry(). */
 					str r0, [r4]
 /* Place syst_handler on the stacked pc. Exception mechanism retores it to lr*/
 					str r3, [r0, #24]
+/* Save r7 in case syst_handler changes it. */
+/*TODO:
+ * At the context switch, the value 3 was in r4 instead of 0x4fdc
+ */
+					mov r8, r7
 /* Exception return mechanism will return r0-r3 to pre-exception values. */
 /* r4 and r5 remain unscathed. */
 /* Change thread mode privledge level to privledged. */
@@ -158,15 +168,21 @@ SYST_ISR: .fnstart
 /*
  * Entry to the kernel from the systick isr. This function executed from thread
  * mode instead of handler mode, and makes it possible to save stacks and 
- * context switch properly.
+ * context switch properly. It makes sure the process stack is returned to
+ * it's orginal state, and then pushes the context onto the stack before 
+ * switching stacks from psp to msp.
  */
 	.align 2
 	.type kernel_entry, %function
 kernel_entry: .fnstart
 /* Return r0 to it's initial value */
 							mov r0, r6
-							push {r0-r3, r12, r5}
-/* Switch stacks to msp */
+/* Save the lr before moving the saved pc from systick isr into it. */
+							mov r6, r14
+							mov r14, r5
+							push {r0-r3, r8, r12, r14}
+/* Switch stacks to msp and restore lr to it's original value */
+							mov r14, r6
 							mrs r3, CONTROL
 							bic r3, r3, #0x2
 							msr CONTROL, r3

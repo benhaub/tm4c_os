@@ -102,7 +102,7 @@ void initproc(struct pcb *reserved) {
 /* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
 /* into lr. */
-	reserved->context.sp = reserved->context.sp - 20;
+	reserved->context.sp = reserved->context.sp - CTXSTACK;
 /* Pointer to proc is cast to a word because the compiler didn't seem to */
 /* want to give me the pointer. It always came out to the value of sp in */
 /* context struct. */

@@ -38,10 +38,6 @@ syscall: .fnstart
 	.global syscall1
 	.type syscall1, %function
 syscall1: .fnstart
-/* Put the program counter into the processes struct context. */
-/* The pc from the original system call is in the stacked link register */
-					ldr r3, [sp, #4]
-					str r3, [r1, #4]
 /* Move the syscalls argument over to r1 and overwrite the currproc pointer. */
 					ldr r1, [r2]
 /* The immediate value for svc is not used. The number used for determining */
