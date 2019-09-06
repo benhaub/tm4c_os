@@ -16,6 +16,12 @@ int stackusage[SRAM_PAGES];
 
 /* Return the index of the ram space that is not being used, or -1 if there */
 /* is no space. */
+/*TODO:
+ * Make sure memory allocation works correctly. Process 3 has it's stack
+ * pointer at 0x20006004 instead of 0x20006000. If there are any bugs in here,
+ * it may fix the issue where smain fork test only runs correctly when memory
+ * is accessed with gdb.
+ */
 int get_stackspace() {
 /* Each element represents the top of the stack that will be used. 0 will */
 /* use stack space from 0x0 to 0x1000, 1 will use 0x1000 to 0x2000 etc. */

@@ -11,7 +11,7 @@
 
 /* From vectors.s */
 extern void processor_state(int);
-extern void kernel_entry(void);
+extern void kernel_entry(struct pcb *);
 /* From context.s */
 extern void swtch(word sp);
 /* Function prototypes. */
@@ -114,18 +114,15 @@ void psv_handler() {
 }
 /* Systick handler (clock tick interrupt) */
 void syst_handler(word sp) {
+	struct pcb *systproc = currproc();
 /* exit()'d processes go here to be scheduled out */
-	if(UNUSED == currproc()->state) {
+	if(UNUSED == systproc->state) {
 		goto Unused;
 	}
-/* Subtract 4 away because we haven't push the stack yet, but we will. */
-/* We're only subtracting 4 instead of 24 because the stack pointer was */
-/* saved before the exception mechanism popped the stack. So it's 28 - 24 */
-	currproc()->context.sp = sp - 4;
-	kernel_entry();
-	currproc()->state = RUNNABLE;
+	kernel_entry(systproc);
+	systproc->state = RUNNABLE;
 	scheduler();
 Unused:
-	kernel_entry();
+	kernel_entry(systproc);
 	scheduler();
 }
