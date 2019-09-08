@@ -9,8 +9,10 @@
 	.thumb
 
 /*
- * Context switcher. Save the currently running processes registers, and load
- * the registers from the process that is running.
+ * Context switcher. Load the registers from the process that is running.
+ * Registers from the previous process are saved at the systick interrupt
+ * before the cpu is switched to privledged and the stack pointer is switched
+ * to msp.
  * void swtch(word sp), where sp is the top of the stack of the process to
  * switch to.
  */
@@ -30,7 +32,7 @@ swtch: .fnstart
  * All new processes run initcode first to set up cpu registers to make it
  * look as if the process had been interrupted by an svc with it's registers
  * pushed on the stack. initcode places the value of pc into the link register.
- * initcode(word sp)
+ * initcode(word sp), where sp is the top of the stack of the new process.
  */
 	.global initcode
 	.type initcode, %function
