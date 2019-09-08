@@ -41,7 +41,9 @@ initcode: .fnstart
 					str r2, [r3, #24] //Store the pc to it's popped to the lr
 					add r1, r0, #12
 					ldr r2, [r1] //context.r0
-					str r2, [r3] //store r0 on the stack
+					str r2, [r3] //store context.r0 on the stack in r0's spot
+					mov r2, r3
+					str r2, [r3, #16] //store context.sp on the stack in r7's spot
 					bx lr
 					.fnend	
 	.end
