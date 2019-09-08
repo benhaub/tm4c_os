@@ -18,6 +18,9 @@ int smain() {
 	led_gron();
 /* Temporary test of system calls and fork(). */
 	int pid = fork();
+	if(-1 == pid) {
+		exit();
+	}
 	if(NULLPID == pid) {
 		/* Child process */
 		led_groff();

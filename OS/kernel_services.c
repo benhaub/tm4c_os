@@ -54,6 +54,10 @@ int syswait(int pid) {
 /*
  * Clears out the pcb of the process and notifies it's parent of the exit.
  */
+/*
+ * TODO:
+ * Add exit code parameter.
+ */
 int sysexit() {
 	struct pcb *exitproc = currproc();
 	exitproc->context.pc = 0;

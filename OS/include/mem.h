@@ -8,7 +8,7 @@
  *****************************************************************************/
 /* Process stack size. This is independant of the kernel stack which is */
 /* created in vectors.s */
-#define STACK_SIZE 0x1000 /*4KB Stack */
+#define STACK_SIZE 0x1000 /*4KB Stack, offset 0 */
 /* Do not change the value of flash page size. flash memory detection is */
 /* based off 2KB page sizes. */
 #define FLASH_PAGE_SIZE 0x800
