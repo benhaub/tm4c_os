@@ -8,7 +8,11 @@
  *****************************************************************************/
 /* Process stack size. This is independant of the kernel stack which is */
 /* created in vectors.s */
-#define STACK_SIZE 0x1000 /*4KB Stack, offset 0 */
+/*TODO:
+ * Change this to 0x400 and make sure it works. I'd like to leave processes
+ * that the kernel sets up like initshell with 4KB stacks.
+ */
+#define STACK_SIZE 0x1000 /*4KB Stack */
 /* Do not change the value of flash page size. flash memory detection is */
 /* based off 2KB page sizes. */
 #define FLASH_PAGE_SIZE 0x800

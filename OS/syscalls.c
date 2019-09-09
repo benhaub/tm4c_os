@@ -21,9 +21,8 @@ int fork() {
 
 int wait(int pid) {
 	int ret;
-	int waitpid = pid;
 	struct pcb *waitproc = currproc();
-	ret = syscall1(WAIT, waitproc, &waitpid);
+	ret = syscall1(WAIT, waitproc, &pid);
 /* Wait for state to change. This is done here because privledged code */
 /* disables interrupts, so the tick interrupt gets masked out. Interrupts are */
 /* allowed here. */
@@ -32,8 +31,7 @@ int wait(int pid) {
 }
 
 int exit(int exitcode) {
-	int ec = exitcode;
-	syscall1(EXIT, currproc(), &ec);
+	syscall1(EXIT, currproc(), &exitcode);
 /* Wait to be scheduled. This is done because the scheduler can't be called */
 /* from handler mode. All sys*() calls run in handler mode. */
 	while(1);
