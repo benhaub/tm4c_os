@@ -12,6 +12,8 @@
 /* From proc.c */
 extern int maxpid;
 extern struct pcb ptable[];
+/* From mem.c */
+extern int ispid;
 
 /*
  * Creates a new process. The forker forks the forked. Forker returns the pid
@@ -54,11 +56,7 @@ int syswait(int pid) {
 /*
  * Clears out the pcb of the process and notifies it's parent of the exit.
  */
-/*
- * TODO:
- * Add exit code parameter.
- */
-int sysexit() {
+int sysexit(int exitcode) {
 	struct pcb *exitproc = currproc();
 	exitproc->context.pc = 0;
 	exitproc->context.sp = 0;
@@ -84,5 +82,7 @@ int sysexit() {
 	exitproc->state = UNUSED;
 	exitproc->initflag = 1;
 	strncpy(exitproc->name, "\0", 1);
-	return 0;
+/* Return the exit code to initshell. */
+  pidproc(ispid)->context.r0 = exitcode;
+	return exitcode;
 }

@@ -9,6 +9,6 @@
 
 int sysfork(void);
 int syswait(int);
-int sysexit();
+int sysexit(int);
 
 #endif /*__KERNELSERVICES_H__*/

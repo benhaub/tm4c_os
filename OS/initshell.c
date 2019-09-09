@@ -19,12 +19,12 @@ int smain() {
 /* Temporary test of system calls and fork(). */
 	int pid = fork();
 	if(-1 == pid) {
-		exit();
+		exit(EXIT_FAILURE);
 	}
 	if(NULLPID == pid) {
 		/* Child process */
 		led_groff();
-		exit();
+		exit(EXIT_SUCCESS);
 	}
 	else {
 		/* Parent process. */
@@ -32,7 +32,7 @@ int smain() {
 		wait(pid);
 		led_bloff();
 		led_ron();
-		exit();
+		exit(EXIT_SUCCESS);
 	}
 	return 0;
 }

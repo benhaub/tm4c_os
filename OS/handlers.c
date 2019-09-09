@@ -92,12 +92,13 @@ void svc_handler(int sysnum, word arg1) {
 /* Disable interrupts to prevent scheduling while performing kernel */
 /* services. */
 	processor_state(0);
+	//kernel_entry(currproc());
 	switch(sysnum) {
 		case 0: ret = sysfork();
 						break;
 		case 1: ret = syswait(arg1);
 						break;
-		case 2: ret = sysexit();
+		case 2: ret = sysexit(arg1);
 						break;
 		default: while(1); 
 	}

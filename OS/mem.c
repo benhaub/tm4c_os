@@ -7,12 +7,14 @@
 #include <types.h>
 #include <mem.h>
 
-/* From context.s */
+/* From vectors.s */
 extern int KRAM_USE;
 /* Bit array to determine what space in ram is being used. */
 /* Kernel stack usage is automatically determined at reset and stored on the */
 /* stack and retrieved with KRAM_USE. */
 int stackusage[SRAM_PAGES];
+/* The pid of initshell */
+int ispid;
 
 /* Return the index of the ram space that is not being used, or -1 if there */
 /* is no space. */
@@ -23,8 +25,12 @@ int get_stackspace() {
 /* space that use being used by the kernel. */
 
 /* The amount of RAM usage was pushed on the stack during reset. We need to */
-/* round the value up to make sure there's not stack overlap. */
-	int i = *((word *)(KRAM_USE - 4)) + 1;
+/* round the value up to make sure there's not stack overlap (+ 1). After a */
+/* push, the processor increments the stack pointer to the next word. */
+/* KRAM_USE is stored one word back (- 4). Since initshell is the first */
+/* processes created, i is also the pid of initshell. */
+	int i;
+	ispid = i = *((word *)(KRAM_USE - 4)) + 1;
 	while(stackusage[i]) {
 		i++;
 		if(i > SRAM_PAGES) {

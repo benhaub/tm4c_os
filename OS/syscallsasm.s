@@ -17,8 +17,9 @@
 	.global syscall
 	.type syscall, %function
 syscall: .fnstart
-/* Put the program counter into the processes struct context. */
-/* The pc from the original system call is in the stacked link register */
+/* Put the program counter into the processes struct context. This is */
+/* required for fork(). The pc from the original system call is in the */
+/* stacked link register */
 					ldr r2, [sp, #4]
 					str r2, [r1, #4]
 /* The immediate value for svc is not used. The number used for determining */
@@ -38,12 +39,18 @@ syscall: .fnstart
 	.global syscall1
 	.type syscall1, %function
 syscall1: .fnstart
+/* Argument needs to be placed in r1 so svc_handler gets it in arg1. First */
+/* save currproc though. */
+					mov r3, r1
 /* Move the syscalls argument over to r1 and overwrite the currproc pointer. */
 					ldr r1, [r2]
 /* The immediate value for svc is not used. The number used for determining */
 /* The kernel service is passed through as an argument to syscall() (here */
 /* that manifests itself as r0. */
 					svc #0
+/* Move the returned value from the syscall to r0 so that the kernel */
+/* services return the right value */
+					ldr r0, [r3, #12]
 					bx lr
 				.fnend
 
