@@ -19,12 +19,6 @@ extern int ispid;
  * Creates a new process. The forker forks the forked. Forker returns the pid
  * of the new process, forked returns NULLPID. Returns -1 on failure.
  */
-/*TODO:
- * There's a chance (a likely chance) that fork can return successfully even
- * though it could fail while running initproc and trying to get_stackspace().
- * The parent needs to be informed here if such failures will occur and call
- * exit() on the reserved proc and return -1.
- */
 int sysfork() {
 	struct pcb *forked = reserveproc(NULL);
 	if(NULL == forked) {
