@@ -77,8 +77,6 @@ struct pcb* reserveproc(char *name) {
 	else {
 		return NULL;
 	}
-/* The process still needs to be initialised */
-	ptable[i].initflag = 1;
 	return (ptable + i);
 }
 
@@ -136,6 +134,8 @@ void init_ptable() {
 		ptable[i].state = UNUSED;
 		ptable[i].numchildren = 0;
 		ptable[i].waitpid = NULLPID;
+		ptable[i].ppid = NULLPID;
+		ptable[i].initflag = 1;
 		i++;
 	}
 }
