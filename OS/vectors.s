@@ -65,8 +65,7 @@ Reset_EXCP: .fnstart
 /* allocating ram pages for user programs. See get_stackspace(). */
 /* Where ever the top of stack is determines how much space the kernel is */
 /* using. */
-/* 4KB stack size */
-						mov r0, #0x1000
+						mov r0, #0x400
 						mov r1, sp
 						sub r1, r1, #0x20000000
 /* Divide this by the current position of the sp to get an integer for */
