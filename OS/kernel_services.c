@@ -25,8 +25,7 @@ int sysfork() {
 		return -1;
 	}
 	struct pcb *forker = currproc();
-	forked->numchildren++;
-	forked->children[forked->numchildren] = forker->pid;
+	forker->numchildren++;
 /* Copy some info from the process that forked to the forked process. */
 	forked->context.pc = forker->context.pc;
 	forked->ppid = forker->pid;
@@ -57,9 +56,6 @@ int sysexit(int exitcode) {
 	exitproc->context.lr = 0;
 	exitproc->context.r0 = 0;
 	int i;
-	for(i = 0; i < MAX_CHILD; i++) {
-		exitproc->children[i] = NULLPID;
-	}
 	if(maxpid == exitproc->pid) {
 		for(i = maxpid; i >= 0; i--) {
 			if(RUNNABLE == ptable[i].state || RESERVED == ptable[i].state) {
@@ -71,6 +67,10 @@ int sysexit(int exitcode) {
 	free_stackspace(exitproc->rampg);
 	exitproc->numchildren = 0;
 	exitproc->pid = NULLPID;
+/* If this process was the child of another, subtract it's number of children */
+	if(exitproc->ppid != NULLPID) {
+		pidproc(exitproc->ppid)->numchildren--;
+	}
 	exitproc->ppid = NULLPID;
 	exitproc->waitpid = NULLPID;
 	exitproc->state = UNUSED;

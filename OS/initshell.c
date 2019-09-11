@@ -16,23 +16,27 @@ int smain(void) __attribute__ ((section (".text.smain")));
 int smain() {
 	led_init();
 	led_gron();
-/* Temporary test of system calls and fork(). */
-	int pid = fork();
-	if(-1 == pid) {
-		exit(EXIT_FAILURE);
+	/* Temporary test of system calls and fork(). */
+	int i;
+	int pids[3];
+	for(i = 0; i < 3; i++) {
+		pids[i] = fork();
+		if(-1 == pids[i]) {
+			exit(EXIT_FAILURE);
+		}
+		if(NULLPID == pids[i]) {
+			/* Child process */
+			led_groff();
+			exit(EXIT_SUCCESS);
+		}
+		else {
+			/* Parent process. */
+			led_blon();
+		}
 	}
-	if(NULLPID == pid) {
-		/* Child process */
-		led_groff();
-		exit(EXIT_SUCCESS);
+	for(i = 0; i < 3; i++) {
+		wait(pids[i]);
 	}
-	else {
-		/* Parent process. */
-		led_blon();
-		wait(pid);
-		led_bloff();
-		led_ron();
-		exit(EXIT_SUCCESS);
-	}
+	exit(EXIT_SUCCESS);
 	return 0;
 }

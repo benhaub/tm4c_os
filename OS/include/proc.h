@@ -58,7 +58,6 @@ struct context {
 struct pcb {
 	struct context context; /* CPU register contentst */
 	char name[16];	/* For debugging */
-	int children[MAX_CHILD]; /* Hold pid's of children. */
 	int numchildren; /* Number of child processes. */
 	int pid; /* Process ID */
 	int ppid; /* Parent process ID */
