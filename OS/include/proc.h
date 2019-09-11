@@ -70,7 +70,6 @@ struct pcb {
 
 void user_init(void);
 struct pcb* reserveproc(char *);
-void initproc(struct pcb *);
 void init_ptable(void);
 void init_context(void);
 struct pcb *currproc(void);

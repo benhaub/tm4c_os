@@ -34,6 +34,9 @@ void user_init() {
 	maxpid = 0;
 	currpid = 0;
 	struct pcb *initshell = reserveproc("initshell");
+	if(NULL == initshell) {
+		return;
+	}
 	initshell->context.pc = (word)smain;
 	scheduler();
 }
@@ -46,6 +49,7 @@ struct pcb* reserveproc(char *name) {
 	if(sizeof(name) > 16 && NULL != name) {
 		return NULL;
 	}
+	int ret;
 /* Find an UNUSED process from the process table. */
 	int i = 0;
 	while(1) {
@@ -66,6 +70,13 @@ struct pcb* reserveproc(char *name) {
 	strncpy(name, ptable[i].name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
+/* Make sure we have ram space */
+	if(-1 != (ret = get_stackspace())) {
+		ptable[i].rampg = ret;
+	}
+	else {
+		return NULL;
+	}
 /* The process still needs to be initialised */
 	ptable[i].initflag = 1;
 	return (ptable + i);
@@ -77,7 +88,7 @@ struct pcb* reserveproc(char *name) {
  * switchet or if assurance is made that context will not be corruped before
  * it's switched to.
  */
-void initproc(struct pcb *reserved) {
+static void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
 /* For every proc in the ptable. It's pid (or index in the ptable) determines*/
 /* where it will reside in flash. The first process will reside in the second*/
@@ -96,7 +107,6 @@ void initproc(struct pcb *reserved) {
 /* Multiply by twice the stack size since the top of the stack at position */
 /* 1 is 0x20002000, and decreases to 0x20001000. */
 	if(reserved->context.sp == 0) {
-		reserved->rampg = get_stackspace();
 		reserved->context.sp = _SRAM + ((reserved->rampg*STACK_SIZE)+STACK_SIZE);
 	}
 /* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
