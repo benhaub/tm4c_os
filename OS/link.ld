@@ -23,13 +23,6 @@ SECTIONS
 		_etext = .;
 	} >FLASH
 	
-	.text.smain : 
-	{
-		_text.smain = .;
-		KEEP(*(.text.smain))
-		_etext.smain = .;
-	} >FLASH
-	
 	.data : 
 	{
 		_data = .;
