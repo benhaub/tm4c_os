@@ -53,7 +53,7 @@ OBJCOPY=arm-none-eabi-objcopy
 OBJCFLAGS=-O binary
 #C object files.
 OBJECTS=vectors.o init.o hw.o handlers.o proc.o mem.o cstring.o context.o \
-				initshell.o syscalls.o syscallsasm.o kernel_services.o
+				initshell.o syscalls.o syscallsasm.o kernel_services.o fs.o
 
 tm4c_os.bin: tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
@@ -97,6 +97,9 @@ syscallsasm.o: syscallsasm.s
 kernel_services.o: kernel_services.c kernel_services.h proc.h types.h \
 									 cstring.h mem.h
 	${CC} ${CFLAGS} -c kernel_services.c
+
+fs.o: fs.c fs.h types.h
+	${CC} ${CFLAGS} -c fs.c
 
 flash:
 	lm4flash -s 0E2222BA -S 0x00000000 tm4c_os.bin
