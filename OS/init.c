@@ -11,19 +11,23 @@
 #include <mem.h>
 #include <proc.h>
 #include <cstring.h>
+#include <types.h>
 
 /* From proc.c */
 extern struct pcb ptable[];
+/* From link.ld */
+extern void * _text; extern void * _etext;
+word _eflash;
 
 int main() {
 /* Enable all the faults and exceptions. Pg. 173, datasheet */
 	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 18); /* USAGE Enable */
-/* Secure a page for the kernel. The memory is already being used, but */
-/* Hasn't been protected yet. This is a permanent change so no ony data that */
-/* is in flash permanently will be protected. */
-	FLASH_FMPPE0_R &= ~(3 << 30);
+/* Find out how much flash we need to protect */
+	_eflash = (word)(&_etext) - (word)(&_text);
+/* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
+	protect_flash(_eflash);
 /* Configure Interrupt priorities. Tick exceptions are higher priority */
 /* than system calls. SVC is 1 and systick is 0. */
 	NVIC_SYS_PRI2_R |= (1 << 29);

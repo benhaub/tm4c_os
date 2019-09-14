@@ -26,6 +26,10 @@
 #define FLASH_PAGES FLASH_ / FLASH_PAGE_SIZE
 /* Number of SRAM Pages. */
 #define SRAM_PAGES (SRAM_ - _SRAM) / STACK_SIZE
+/* 1 KB */
+#define KB 1024
+/* 1 MB */
+#define MB 1024*KB
 
 int get_stackspace(void);
 int free_stackspace(int);
