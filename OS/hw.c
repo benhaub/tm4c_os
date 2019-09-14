@@ -99,9 +99,9 @@ void led_bloff() {
  * Write value into flash starting at saddr and ending at eaddr.
  * Returns 0 on success, -1 on error.
  */
-int write_flash(word addr, void *saddr, void *eaddr) {
+int write_flash(void *saddr, void *eaddr) {
 /* Check for word alignment */
-	if((addr & 0x0000007F) > 0) {
+	if(((word)((word *)saddr) & 0x0000007F) > 0) {
 		return -1;
 	}
 /* If the write can't be done with one set of buffer registers, then set the */

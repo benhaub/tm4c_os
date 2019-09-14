@@ -12,10 +12,20 @@
 #define FSSIZE 32768u
 /* Block size in bytes */
 #define BSIZE 512u
+
+//struct dinode;
+//struct inode;
+
+/* File index node. */
+struct inode {
+	char name[NAMESIZE];
+	word *location;
+};
+
 /* Maximum files that can be stored in a directory. Every block will have a */
 /* dinode, so the max number of inodes is however many can fit in what */
 /* remains. */
-#define MAXFILES ((BSIZE - sizeof(struct dinode)) / sizeof(struct inode));
+#define MAXFILES ((BSIZE / sizeof(struct inode)))
 
 /* Directory index node. */
 struct dinode {
@@ -25,15 +35,10 @@ struct dinode {
 	word size;
 };
 
-/* File index node. */
-struct inode {
-	char name[NAMESIZE];
-	word *location;
-};
-
 /* Superblock contains general info about the entire file system. */
 struct superblock {
 	word *freeblocks[FSSIZE/BSIZE];
 	struct dinode *root;
 };
 
+struct dinode * create(char *, struct dinode *);

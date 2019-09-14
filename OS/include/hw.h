@@ -28,7 +28,7 @@ void led_groff(void);
 void led_blon(void);
 void led_bloff(void);
 /* Flash Memory calls */
-int write_flash(word, void *, void *);
+int write_flash(void *, void *);
 void protect_flash(word);
 
 #endif /*__HW_H__*/

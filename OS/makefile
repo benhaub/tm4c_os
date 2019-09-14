@@ -98,7 +98,7 @@ kernel_services.o: kernel_services.c kernel_services.h proc.h types.h \
 									 cstring.h mem.h
 	${CC} ${CFLAGS} -c kernel_services.c
 
-fs.o: fs.c fs.h types.h
+fs.o: fs.c fs.h cstring.h hw.h
 	${CC} ${CFLAGS} -c fs.c
 
 flash:

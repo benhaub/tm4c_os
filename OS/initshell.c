@@ -38,9 +38,4 @@ int smain() {
 	}
 	exit(EXIT_SUCCESS);
 	return 0;
-/*TODO:
- * Let's get a file system up and running in flash, then start making small
- * commands for it like cd and ls. Then for some programs we could just do
- * some things that test the OS.
- */
 }
