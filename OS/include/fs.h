@@ -11,7 +11,9 @@
 /* Size of the file system in flash in bytes */
 #define FSSIZE 32768u
 /* Block size in bytes */
-#define BSIZE 512u
+#define BSIZE 4096u
+/* Number of blocks */
+#define NUMBLOCKS FSSIZE/BSIZE
 
 
 /* File index node. */
@@ -26,9 +28,6 @@ struct inode {
 /* dinode, so the max number of inodes is however many can fit in what */
 /* remains. */
 #define MAXFILES ((BSIZE / sizeof(struct inode)))
-/*TODO:
- * Howwwww do I manage all this memory. I'm trying to picture it on draw.io
- */
 /* Directory index node. */
 struct dinode {
 	word size;
@@ -40,15 +39,16 @@ struct dinode {
 
 /* Superblock contains general info about the entire file system. */
 struct superblock {
-	word *blockaddr[FSSIZE/BSIZE];
+	int blockmem[NUMBLOCKS]; /* Memory left in each block */
+	word *blockaddr[NUMBLOCKS];
 	unsigned long long int usebits; /* Each bit represents a block */
-	struct dinode *root;
+	struct dinode root;
 };
 
 /* Function prototypes */
-struct dinode * create(char *, struct dinode *);
+struct dinode create(char *, struct dinode *);
 int init_fs(void);
-int closedir(struct dinode *);
+int closedir(struct dinode);
 
 /* Macro functions */
 #define opendir(addr) (struct dinode *)(addr)
