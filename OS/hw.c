@@ -7,6 +7,7 @@
 #include <tm4c123gh6pm.h>
 #include <hw.h>
 #include <mem.h>
+#include <types.h>
 
 /*********************************SYSTICK*************************************/
 /* PIOSC clock is default. See Pg. 220 and Pg. 256-257 */
@@ -101,25 +102,31 @@ void led_bloff() {
  */
 int write_flash(void *saddr, void *eaddr) {
 /* Check for word alignment */
-	if(((word)((word *)saddr) & 0x0000007F) > 0) {
+	if((FLASH_FMA_R & 0x0000007F) > 0) {
 		return -1;
 	}
 /* If the write can't be done with one set of buffer registers, then set the */
-/* cflag to continue writing. */
+/* cflag to re-fill the buffer regs and continue writing. */
 	int cflag = 0;
 /* Transfer value to the write buffer */
 	word *curraddr = (word *)saddr;
 	word nextaddr = 0x0;
-Continue:
+Write:
+/* Note the use of pointer arithmatic. Since the FLASH register and */
+/* curraddr are both 32 bit pointers, the compiler knows to increment by */
+/* n * 32. */
 	while(curraddr <= (word *)eaddr) {
 		*(&FLASH_FWBN_R + nextaddr) = *curraddr;
-		nextaddr += 0x4;
-		curraddr = curraddr + nextaddr;
-		if(nextaddr > 0x17C) {
+		nextaddr += 1;
+		curraddr += 1;
+/* Check to see if all the flash buffers have filled. If they have, then we */
+/* need to write and continue filling the buffers after the write has */
+/* completed. */
+		if(0xFFFFFFFF == FLASH_FWBVAL_R) {
 			cflag = 1;
+			break;
 		}
 	}
-	FLASH_FMA_R = (word)((word *)saddr);
 /* Initiate the write sequence */
 	FLASH_FMC2_R |= (BOOTKEY << 16);
 	FLASH_FMC2_R |= 1;
@@ -129,20 +136,26 @@ Continue:
 	if(1 == cflag) {
 		cflag = 0;
 		nextaddr = 0x0;
-		goto Continue;
+		goto Write;
 	}
 	return 0;
 }
 
 /* Protect flash in 2KB blocks up to the flash address given */
-void protect_flash(word flashaddr) {
+void protect_flash(int numpages) {
 	int protbits = 0;
 	int i = 0;
-	for(i = flashaddr / FLASH_PAGE_SIZE; i > 0; i--) {
-		protbits += (1 << i);
+	for(i = numpages - 1; i >= 0; i--) {
+		protbits |= (1 << i);
 	}
 	if(0 == protbits) {
 		protbits++;
 	}
 	FLASH_FMPPE0_R &= ~protbits;
+}
+
+void init_flash() {
+	//protect_flash(KFLASHPGS);
+/* Set the address to begin future flash writes. */
+	FLASH_FMA_R = (KFLASHPGS)*2*KB;
 }

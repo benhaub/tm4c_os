@@ -6,6 +6,8 @@
  * Synopsis	:	Process related structs and functions
  * Date			:	June 5th, 2019
  *****************************************************************************/
+#include <types.h>
+
 /* Process stack size. This is independant of the kernel stack which is */
 /* created in vectors.s at the top of the vector table. If you change this */
 /* value, also change the number in r0 of Reset_EXCP for the calculation of */
@@ -30,6 +32,15 @@
 #define KB 1024
 /* 1 MB */
 #define MB 1024*KB
+/* From link.ld */
+extern void *smainsize;
+/* From initshell. Not called. Only used to calculate ksize. */
+extern int smain(void);
+/* Size of the kernel in flash */
+#define KSIZE (word)((word)smain + (word)&smainsize)
+/* Number of flash pages used by the kernel */
+#define KFLASHPGS (KSIZE / FLASH_PAGE_SIZE) + 1
+
 
 int get_stackspace(void);
 int free_stackspace(int);

@@ -44,7 +44,7 @@ endif
 LDFLAGS=-Wl,--gc-sections \
 			  -Wl,--entry=Reset_EXCP \
 				-Wl,-Tlink.ld \
-				-Wl,-lm,-lgcc
+				-Wl,-lgcc
 
 #Define objcopy to extract out elf headers from binaries. Bare metal code does
 #not have the ability to read these properly and will try to execute them which
@@ -61,10 +61,10 @@ tm4c_os.bin: tm4c_os.elf
 tm4c_os.elf: ${OBJECTS} link.ld
 	${CC} ${CFLAGS} ${LDFLAGS} -otm4c_os.elf ${OBJECTS}
 
-init.o: init.c hw.h mem.h cstring.h proc.h types.h
+init.o: init.c hw.h mem.h cstring.h proc.h types.h fs.h
 	${CC} ${CFLAGS} -c init.c
 
-hw.o:	hw.c hw.h mem.h
+hw.o:	hw.c hw.h mem.h types.h
 	${CC} ${CFLAGS} -c hw.c
 
 handlers.o: handlers.c
@@ -76,7 +76,7 @@ vectors.o: vectors.s
 mem.o: mem.c types.h mem.h
 	${CC} ${CFLAGS} -c mem.c
 
-proc.o: proc.c mem.h proc.h cstring.h
+proc.o: proc.c mem.h proc.h cstring.h hw.h
 	${CC} ${CFLAGS} -c proc.c
 
 cstring.o: cstring.c mem.h types.h
@@ -98,11 +98,11 @@ kernel_services.o: kernel_services.c kernel_services.h proc.h types.h \
 									 cstring.h mem.h
 	${CC} ${CFLAGS} -c kernel_services.c
 
-fs.o: fs.c fs.h cstring.h hw.h
+fs.o: fs.c fs.h cstring.h hw.h mem.h
 	${CC} ${CFLAGS} -c fs.c
 
 flash:
-	lm4flash -s 0E2222BA -S 0x00000000 tm4c_os.bin
+	lm4flash -S 0x00000000 tm4c_os.bin
 
 clean:
 	rm -rf *.o *.d tm4c_os.map tm4c_os.elf tm4c_os.bin

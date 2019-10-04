@@ -12,6 +12,7 @@
 /*
  * Shell main. The first user program run by the kernel after reset.
  */
+int smain(void) __attribute__((section(".text.smain")));
 int smain() {
 	led_init();
 	led_gron();

@@ -13,6 +13,8 @@ MEMORY
 	SRAM	(wx)	: ORIGIN = 0x20000000, LENGTH = 0x00008000 /* 32KB SRAM */
 }
 
+smainsize = SIZEOF(.text.smain);
+
 SECTIONS
 {
 	.text 0x00000000 :
@@ -21,6 +23,13 @@ SECTIONS
 		KEEP(*(.intvecs))
 		*(.text)
 		_etext = .;
+	} >FLASH
+
+	.text.smain :
+	{
+		_text.smain = .;
+		KEEP(*(.text.smain))
+		_etext.smain = .;
 	} >FLASH
 	
 	.data : 

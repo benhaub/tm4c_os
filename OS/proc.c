@@ -8,6 +8,7 @@
 #include <proc.h>
 #include <cstring.h>
 #include <tm4c123gh6pm.h>
+#include <hw.h> /* For protect_flash() */
 
 /* From context.s */
 extern void swtch(word);
@@ -130,6 +131,8 @@ void init_ptable() {
 		ptable[i].numchildren = 0;
 		ptable[i].waitpid = NULLPID;
 	}
+/* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
+	//protect_flash(i);
 	while(i < MAX_PROC) {
 		ptable[i].state = UNUSED;
 		ptable[i].numchildren = 0;
