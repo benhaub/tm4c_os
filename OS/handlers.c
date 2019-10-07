@@ -92,7 +92,6 @@ void svc_handler(int sysnum, word arg1) {
 /* Disable interrupts to prevent scheduling while performing kernel */
 /* services. */
 	processor_state(0);
-	//kernel_entry(currproc());
 	switch(sysnum) {
 		case 0: ret = sysfork();
 						break;
@@ -116,14 +115,14 @@ void psv_handler() {
 /* Systick handler (clock tick interrupt) */
 void syst_handler(word sp) {
 	struct pcb *systproc = currproc();
-/* exit()'d processes go here to be scheduled out */
-	if(UNUSED == systproc->state) {
-		goto Unused;
+/* Don't change the state to RUNNABLE, just go to the scheduler */
+	if(UNUSED == systproc->state || WAITING == systproc->state) {
+		kernel_entry(systproc);
+		scheduler();
 	}
-	kernel_entry(systproc);
-	systproc->state = RUNNABLE;
-	scheduler();
-Unused:
-	kernel_entry(systproc);
-	scheduler();
+	else {
+		kernel_entry(systproc);
+		systproc->state = RUNNABLE;
+		scheduler();
+	}
 }

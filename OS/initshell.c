@@ -43,6 +43,12 @@ void forktest() {
 	led_ron();
 	exit(EXIT_SUCCESS);
 }
+
+/* This function tests reading and writing flash by writing the superblock from
+ * init_fs into ram and then reading back to a struct sb.
+ */
+void wrflash() {
+}
 /*
  * Shell main. The first user program run by the kernel after reset.
  */

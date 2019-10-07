@@ -25,7 +25,13 @@ int sysfork() {
 		return -1;
 	}
 	struct pcb *forker = currproc();
-	forker->numchildren++;
+	if(forker->numchildren < MAX_CHILD) {
+		forker->numchildren++;
+	}
+	else {
+		/* This process has already forked the max number of children. */
+		return -1;
+	}
 /* Copy some info from the process that forked to the forked process. */
 	forked->context.pc = forker->context.pc;
 	forked->ppid = forker->pid;
@@ -42,7 +48,7 @@ int sysfork() {
 int syswait(int pid) {
 	struct pcb *waiting = currproc();
 	waiting->state = WAITING;
-	waiting->waitpid = pid;
+	waiting->waitpids[waiting->numchildren] = pid;
 	return 0;
 }
 
@@ -72,11 +78,12 @@ int sysexit(int exitcode) {
 		pidproc(exitproc->ppid)->numchildren--;
 	}
 	exitproc->ppid = NULLPID;
-	exitproc->waitpid = NULLPID;
+	for(i = 0; i < MAX_CHILD; i++) {
+		exitproc->waitpids[i] = NULLPID;
+	}
 	exitproc->state = UNUSED;
 	exitproc->initflag = 1;
 	strncpy(exitproc->name, "\0", 1);
-/* Return the exit code to initshell. */
-  pidproc(ispid)->context.r0 = exitcode;
+/* Return the exit code to the parent */
 	return exitcode;
 }

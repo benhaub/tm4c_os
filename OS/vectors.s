@@ -127,7 +127,7 @@ PSV_ISR: .fnstart
 /*
  * The reason we don't do a direct branch to the handler is to avoid context
  * switching while in handler mode. The processor's exception mechanism makes
- * that very difficult.
+ * switching in handler mode very difficult.
  */
 	.align 2
 	.type SYST_ISR, %function
@@ -162,8 +162,8 @@ Thumb:
 					.fnend
 
 /*
- * Entry to the kernel from the systick isr. This function executed from thread
- * mode instead of handler mode, and makes it possible to save stacks and 
+ * Entry to the kernel from the systick isr. It is executed from thread
+ * mode instead, and makes it possible to save stacks and 
  * context switch properly. It makes sure the process stack is returned to
  * it's orginal state, and then pushes the context onto the stack and saves
  * the stack pointer (psp) before switching stacks from psp to msp.

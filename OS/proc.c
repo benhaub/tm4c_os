@@ -126,17 +126,23 @@ void init_ptable() {
 /* The kernel ends at smain. We'll find out how many pages it used, then */
 /* start after that. */
 	int i;
+	int j;
 	for(i = 0; i < ((word)smain/FLASH_PAGE_SIZE + 1); i++) {
 		ptable[i].state = KERNEL;
 		ptable[i].numchildren = 0;
-		ptable[i].waitpid = NULLPID;
+		for(j = 0; j < MAX_CHILD; j++) {
+			ptable[i].waitpids[j] = NULLPID;
+		}
 	}
 /* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
+/* Commented out until I feel it's ok to do this without permant writes. */
 	//protect_flash(i);
 	while(i < MAX_PROC) {
 		ptable[i].state = UNUSED;
 		ptable[i].numchildren = 0;
-		ptable[i].waitpid = NULLPID;
+		for(j = 0; j < MAX_CHILD; j++) {
+			ptable[i].waitpids[j] = NULLPID;
+		}
 		ptable[i].ppid = NULLPID;
 		ptable[i].initflag = 1;
 		i++;
@@ -175,6 +181,7 @@ struct pcb* pidproc(int pid) {
 void scheduler() {
 /* Current index of the scheduler. */
 	static int index;
+	int i;
 /* For initialization. arm-none-eabi-gcc initialises to -1 */
 	if(index < 0) {
 		index = 0;
@@ -187,9 +194,12 @@ void scheduler() {
 		}
 		struct pcb *schedproc = &ptable[index];
 /* If the process is waiting for another, check to see if it's exited. */
-		if(schedproc->state == WAITING && \
-																	ptable[schedproc->waitpid].state == UNUSED){
-			ptable[index].state = RUNNABLE;
+		for(i = 0; i < MAX_CHILD; i++) {
+			if(schedproc->state == WAITING && \
+															ptable[schedproc->waitpids[i]].state == UNUSED){
+				ptable[index].state = RUNNABLE;
+				break;
+			}
 		}
 		if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
 			currpid = schedproc->pid;
