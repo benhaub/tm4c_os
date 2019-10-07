@@ -75,12 +75,6 @@ int closedir(struct dinode opendir) {
 int init_fs() {
 /* All bits are 1 because all blocks are free */
 	sb.usebits = 0xFFFFFFFFFFFFFFFF;
-
-	sb.root = create("root", NULL);
-	if(sb.root.blocki < 0) {
-		return -1;
-	}
-
 	int i = 0;
 /* Fill in the free block list with the addresses of all the blocks */
 /* Also fill in block mem with the size of each block */
@@ -89,6 +83,10 @@ int init_fs() {
  	for(i = 1; i < KFLASHPGS; i++) {
 		sb.blockaddr[i] = (word *)((KFLASHPGS*FLASH_PAGE_SIZE) + i*BSIZE);
 		sb.blockmem[i] = BSIZE;
+	}
+	sb.root = create("root", NULL);
+	if(sb.root.blocki < 0) {
+		return -1;
 	}
 	return 0;
 }

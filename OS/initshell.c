@@ -9,11 +9,13 @@
 #include <proc.h> /* For NULLPID, exit macros */
 #include <syscalls.h>
 
-/*
- * Shell main. The first user program run by the kernel after reset.
+/* The light should be purple when this test is done.
+ * First the parent turns on the green led, then forks 4 processes. The
+ * children all turn off the green led and then exit while the parent waits
+ * from them. When all the children have exited, the parent turns on the red
+ * led and then exits.
  */
-int smain(void) __attribute__((section(".text.smain")));
-int smain() {
+void forktest() {
 	led_init();
 	led_gron();
 	/* Temporary test of system calls and fork(). */
@@ -28,6 +30,7 @@ int smain() {
 			/* Child process */
 			led_groff();
 			exit(EXIT_SUCCESS);
+			led_gron();
 		}
 		else {
 			/* Parent process. */
@@ -37,6 +40,14 @@ int smain() {
 	for(i = 0; i < 3; i++) {
 		wait(pids[i]);
 	}
+	led_ron();
 	exit(EXIT_SUCCESS);
+}
+/*
+ * Shell main. The first user program run by the kernel after reset.
+ */
+int smain(void) __attribute__((section(".text.smain")));
+int smain() {
+	forktest();
 	return 0;
 }
