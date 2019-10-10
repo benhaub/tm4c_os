@@ -5,13 +5,14 @@
  * Date			:	September 11th, 2019
  *****************************************************************************/
 #include <types.h>
+#include <mem.h>
 
 #define PATHSIZE 256u
 #define NAMESIZE 16u
 /* Size of the file system in flash in bytes */
-#define FSSIZE 32768u
+#define FSSIZE (64u*KB)
 /* Block size in bytes */
-#define BSIZE 4096u
+#define BSIZE (8u*KB)
 /* Number of blocks */
 #define NUMBLOCKS FSSIZE/BSIZE
 

@@ -9,7 +9,7 @@
 
 /* From vectors.s */
 extern int KRAM_USE;
-/* Bit array to determine what space in ram is being used. */
+/* Array to determine what space in ram is being used. */
 /* Kernel stack usage is automatically determined at reset and stored on the */
 /* stack and retrieved with KRAM_USE. */
 int stackusage[SRAM_PAGES];
@@ -34,9 +34,8 @@ int get_stackspace() {
 	return i;
 }
 
-int free_stackspace(int i) {
-	stackusage[i] = 0;
-	return 0;
+inline void free_stackspace(int i) {
+ 	stackusage[i] = 0;
 }
 
 /* Sets all ram to be unused. */
@@ -47,7 +46,7 @@ void init_ram() {
 /* push, the processor increments the stack pointer to the next word. */
 /* KRAM_USE is stored one word back (- 4). Since initshell is the first */
 /* processes created, i is also the pid of initshell. */
-	ispid = i = *((word *)(KRAM_USE - 4)) + 1;
+	ispid = *((word *)(KRAM_USE - 4)) + 1;
 	for(i = 0; i < *((word *)(KRAM_USE - 4)) + 1; i++) {
 		stackusage[i] = 1;
 	}

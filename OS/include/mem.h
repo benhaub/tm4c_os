@@ -29,9 +29,9 @@
 /* Number of SRAM Pages. */
 #define SRAM_PAGES (SRAM_ - _SRAM) / STACK_SIZE
 /* 1 KB */
-#define KB 1024
+#define KB 1024u
 /* 1 MB */
-#define MB 1024*KB
+#define MB 1024u*KB
 /* From link.ld */
 extern void *smainsize;
 /* From initshell. Not called. Only used to calculate ksize. */
@@ -41,9 +41,8 @@ extern int smain(void);
 /* Number of flash pages used by the kernel */
 #define KFLASHPGS (KSIZE / FLASH_PAGE_SIZE) + 1
 
-
 int get_stackspace(void);
-int free_stackspace(int);
+void free_stackspace(int);
 void init_ram(void);
 
 #endif /*__MEM_H__*/

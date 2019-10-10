@@ -47,6 +47,9 @@ struct dinode create(char *name, struct dinode *cwd) {
 					break;
 				}
 			}
+			else {
+				i++;
+			}
 		}
 		/* There wasn't enough space in the file system for the directory */
 		if(i >= NUMBLOCKS) {

@@ -34,6 +34,8 @@ int sysfork() {
 	}
 /* Copy some info from the process that forked to the forked process. */
 	forked->context.pc = forker->context.pc;
+	forked->context.r3 = forker->context.r3;
+	forked->context.r12 = forker->context.r12;
 	forked->ppid = forker->pid;
 /* Forked will return NULLPID to the user process. */
 	forked->context.r0 = NULLPID;
@@ -48,7 +50,9 @@ int sysfork() {
 int syswait(int pid) {
 	struct pcb *waiting = currproc();
 	waiting->state = WAITING;
-	waiting->waitpids[waiting->numchildren] = pid;
+	waiting->waitpids[waiting->waitpidsi] = pid;
+/* waitpids index is always one ahead of the pid we're waiting for */
+	waiting->waitpidsi++;
 	return 0;
 }
 

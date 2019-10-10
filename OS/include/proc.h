@@ -46,22 +46,28 @@ enum procstate {KERNEL, UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING,\
 	WAITING};
 
 /* Note that any changes to a processes context do not take affect until */
-/* The next time a context switch changes to it. */
+/* The next time a context switch changes to it. The registers here are */
+/* based off of the ones saved the cortex M4 exception return stack */
+/* r7 always needs the current stack pointer, and is taken care of in swtch */
 struct context {
 	 word sp;
 	 word pc;
 	 word lr;
 	 word r0;
+	 word r3;
+	 word r12;
 };
 
 /* Process control block. */
+/* *** Don't forget to initialise values in init_ptable if needed *** */
 struct pcb {
 	struct context context; /* CPU register context */
 	char name[16];	/* For debugging */
 	int numchildren; /* Number of child processes. */
 	int pid; /* Process ID */
 	int ppid; /* Parent process ID */
-	int waitpids[MAX_CHILD]; /* The process is waiting for this pid to change state. */
+	int waitpids[MAX_CHILD]; /*Process is waiting for this pid to change state.*/
+	int waitpidsi; /* waitpids array index */
 	int initflag; /* 0 for not initialised yet, 1 for initialised. */
 	int rampg; /* Index of this processes allocated ram page. */
 	enum procstate state; /* Process state */

@@ -84,8 +84,7 @@ struct pcb* reserveproc(char *name) {
 /*
  * Initialize a RESERVED process so it's ready to be context switched too.
  * This function alters context, so must be run just before the context
- * switchet or if assurance is made that context will not be corruped before
- * it's switched to.
+ * switcher.
  */
 static void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
@@ -135,7 +134,7 @@ void init_ptable() {
 		}
 	}
 /* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
-/* Commented out until I feel it's ok to do this without permant writes. */
+/* Commented out until I feel it's ok to do this without permanent writes. */
 	//protect_flash(i);
 	while(i < MAX_PROC) {
 		ptable[i].state = UNUSED;
@@ -144,6 +143,7 @@ void init_ptable() {
 			ptable[i].waitpids[j] = NULLPID;
 		}
 		ptable[i].ppid = NULLPID;
+		ptable[i].waitpidsi = 0;
 		ptable[i].initflag = 1;
 		i++;
 	}
@@ -181,7 +181,6 @@ struct pcb* pidproc(int pid) {
 void scheduler() {
 /* Current index of the scheduler. */
 	static int index;
-	int i;
 /* For initialization. arm-none-eabi-gcc initialises to -1 */
 	if(index < 0) {
 		index = 0;
@@ -194,18 +193,16 @@ void scheduler() {
 		}
 		struct pcb *schedproc = &ptable[index];
 /* If the process is waiting for another, check to see if it's exited. */
-		for(i = 0; i < MAX_CHILD; i++) {
-			if(schedproc->state == WAITING && \
-															ptable[schedproc->waitpids[i]].state == UNUSED){
-				ptable[index].state = RUNNABLE;
-				break;
-			}
+		if(schedproc->state == WAITING && \
+			ptable[schedproc->waitpids[schedproc->waitpidsi-1]].state == UNUSED){
+			schedproc->state = RUNNABLE;
+			schedproc->waitpidsi--;
 		}
 		if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
 			currpid = schedproc->pid;
 			if(1 == schedproc->initflag) {
-				schedproc->initflag = 0;
 				initproc(ptable + index);
+				schedproc->initflag = 0;
 			}
 			index++;
 			schedproc->state = RUNNING;
