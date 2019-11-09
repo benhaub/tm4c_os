@@ -32,10 +32,11 @@ struct inode {
 /* Directory index node. */
 struct dinode {
 	word size;
-	int blocki; /* Block address index */
+	int blocki; /* Block address index to use with the superblock */
+	word *seekaddr; /* Address of where the next file should go in the block */
 	char path[PATHSIZE];
 	char name[NAMESIZE];
-	struct inode files[MAXFILES];
+	word *files[MAXFILES]; /* Pointers to the block where the files resides */
 };
 
 /* Superblock contains general info about the entire file system. */

@@ -30,7 +30,7 @@ int main() {
 	init_ptable();
 	init_context();
 	init_flash();
-	//init_fs();
+	init_fs();
 /* Set up the first user process (the shell) */
 	start_clocktick();
 	user_init();

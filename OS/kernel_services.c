@@ -32,10 +32,27 @@ int sysfork() {
 		/* This process has already forked the max number of children. */
 		return -1;
 	}
-/* Copy some info from the process that forked to the forked process. */
+/* Copy context from the process that forked to the forked process. */
 	forked->context.pc = forker->context.pc;
-	forked->context.r3 = forker->context.r3;
-	forked->context.r12 = forker->context.r12;
+	//forked->context.r3 = forker->context.r3;
+	//forked->context.r12 = forker->context.r12;
+/* Copy the processes memory block that forked to the forked process */
+/* and make sure that we don't copy into the previous ram page */
+	if(forker->context.sp - 24 < (forker->rampg - 1)*STACK_SIZE) {
+		return -1;
+	}
+/* Why 24? I dunno. Seemed good. */
+/*TODO:
+ * Need to make this copy the stack over. Noticed that the top of stack from
+ * the call to fork in forktest is different than the one here. Some things
+ * probably got pushed on the stack. Maybe add in some more compiler
+ * dependant constants? We need to make sure that the top of stack from the
+ * time fork was called makes it here. The syscall process probably added some
+ * things to it.
+ */
+	memcpy((word *)(forked->rampg*STACK_SIZE),
+					(word *)forker->context.sp, 
+					24);
 	forked->ppid = forker->pid;
 /* Forked will return NULLPID to the user process. */
 	forked->context.r0 = NULLPID;

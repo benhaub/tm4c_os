@@ -23,7 +23,7 @@ int get_stackspace() {
 /* use stack space from 0x0 to 0x1000, 1 will use 0x1000 to 0x2000 etc. */
 /* KRAM_USE tells use where to start, since the numbers before that are RAM */
 /* space that use being used by the kernel. */
-	int i;
+	int i = 0;
 	while(stackusage[i]) {
 		i++;
 		if(i > SRAM_PAGES) {

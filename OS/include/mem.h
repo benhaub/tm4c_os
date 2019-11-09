@@ -7,6 +7,7 @@
  * Date			:	June 5th, 2019
  *****************************************************************************/
 #include <types.h>
+#include <proc.h>
 
 /* Process stack size. This is independant of the kernel stack which is */
 /* created in vectors.s at the top of the vector table. If you change this */

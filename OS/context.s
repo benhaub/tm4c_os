@@ -44,10 +44,8 @@ initcode: .fnstart
 					add r1, r0, #12
 					ldr r2, [r1] //context.r0
 					str r2, [r3] //store context.r0 on the stack in r0's spot
-					mov r2, r3
+					mov r2, r3 //Move stack pointer to r2
 					str r2, [r3, #16] //store context.sp on the stack in r7's spot
-					ldr r3, [r0, #16] //context.r3
-					ldr r12, [r0, #20] //context.r12
 					bx lr
 					.fnend	
 	.end
