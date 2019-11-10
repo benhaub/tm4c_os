@@ -9,7 +9,7 @@
 #include <proc.h> /* For NULLPID, exit macros */
 #include <syscalls.h>
 
-/* The light should be purple when this test is done.
+/* The led should be purple when this test is done.
  * First the parent turns on the green led, then forks 4 processes. The
  * children all turn off the green led and then exit while the parent waits
  * from them. When all the children have exited, the parent turns on the red
@@ -45,15 +45,39 @@ void forktest() {
 }
 
 /* This function tests reading and writing flash by writing the superblock from
- * init_fs into ram and then reading back to a struct sb.
+ * init_fs into ram and then reading back to a struct sb. Uses the default FMA
+ * from init_fs.
  */
 void wrflash() {
+	struct testwrite {
+		int first;
+		int second;
+		int third;
+	}tw;
+
+/*TODO;
+ * Appears to not be writing flash correctly */
+	word *faddr = (word *)FLASH_FMA_R; /* flash address */
+	word *raddr = (word *)&tw; /* ram address */
+
+	write_flash(&tw, &tw + 1);
+/* Compare the values at each address of flash and ram to see if they match */
+	while((word)faddr <= ((word)faddr + sizeof(tw))) {
+		if(*raddr != *faddr) {
+			return;
+		}
+		else {
+			raddr += sizeof(int);
+			faddr += sizeof(int);
+		}
+	}
 }
 /*
  * Shell main. The first user program run by the kernel after reset.
  */
 int smain(void) __attribute__((section(".text.smain")));
 int smain() {
+	wrflash();
 	forktest();
 	return 0;
 }

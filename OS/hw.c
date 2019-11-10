@@ -97,7 +97,8 @@ void led_bloff() {
 
 /*
  * Follows the procedure on Pg. 532, datasheet.
- * Write value into flash starting at saddr and ending at eaddr.
+ * Write value into flash starting at RAM address saddr and ending at RAM
+ * address eaddr.
  * Returns 0 on success, -1 on error.
  */
 int write_flash(void *saddr, void *eaddr) {
@@ -155,7 +156,9 @@ void protect_flash(int numpages) {
 }
 
 void init_flash() {
+/* Protection is commented out until I can verify that it won't protect */
+/* permanently. */
 	//protect_flash(KFLASHPGS);
 /* Set the address to begin future flash writes. */
-	FLASH_FMA_R = (KFLASHPGS)*2*KB;
+	FLASH_FMA_R = (KFLASHPGS)*FLASH_PAGE_SIZE;
 }
