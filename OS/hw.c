@@ -132,7 +132,7 @@ Write:
 	FLASH_FMC2_R |= (BOOTKEY << 16);
 	FLASH_FMC2_R |= 1;
 /* Wait for WRBUF to clear */
-	while(FLASH_FMC2_R & 1);
+	while(FLASH_FMC2_R);
 /* Load the buffer registers again if we need to */
 	if(1 == cflag) {
 		cflag = 0;
