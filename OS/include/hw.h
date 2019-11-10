@@ -14,7 +14,7 @@
 /* 1ms clock tick */
 #define CLOCK_TICK 16000
 /* BOOTCFG key for enabling flash writes */
-#define BOOTKEY 0x71D5
+#define BOOTKEY 0xA442
 
 /* Systick calls */
 void delay_1ms(void);

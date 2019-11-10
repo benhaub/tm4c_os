@@ -88,22 +88,9 @@ struct pcb* reserveproc(char *name) {
  */
 static void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
-/* For every proc in the ptable. It's pid (or index in the ptable) determines*/
-/* where it will reside in flash. The first process will reside in the second*/
-/* block, the second process will reside in the third block. The kernel is */
-/* located in the first block. swtch() will branch to this address, so bit[0]*/
-/* must be 1 because EPSR has the thumb bit set on all armv7-m */
-/* acrchitectures, hence why we add 1 to the address. All branches to */
-/* link register in thumb mode must be to an address whose bit[0] is 1. */
-
 /* The default value of all members in the context of new procs is */
 /* initialized is zero. If they are not zero, it means they have been */
 /* deliberately set to something else (e.g. fork() editing the pc). */
-	if(reserved->context.pc == 0) {
-		reserved->context.pc = ((reserved->pid) * FLASH_PAGE_SIZE) + 1;
-	}
-/* Multiply by twice the stack size since the top of the stack at position */
-/* 1 is 0x20002000, and decreases to 0x20001000. */
 	if(reserved->context.sp == 0) {
 		reserved->context.sp = _SRAM + (reserved->rampg*STACK_SIZE);
 	}

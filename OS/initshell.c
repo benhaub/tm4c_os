@@ -56,7 +56,8 @@ void wrflash() {
 	}tw;
 
 /*TODO;
- * Appears to not be writing flash correctly */
+ * Appears to not be writing flash correctly
+ */
 	word *faddr = (word *)FLASH_FMA_R; /* flash address */
 	word *raddr = (word *)&tw; /* ram address */
 
