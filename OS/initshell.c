@@ -56,9 +56,10 @@ void wrflash() {
 		int third;
 	}tw;
 
-/*TODO;
- * Appears to not be writing flash correctly
- */
+	tw.first = 0xDEADBEEF;
+	tw.second = 0xCAFEBABE;
+	tw.third = 0xC0FFEE;
+
 	word *faddr = (word *)(KFLASHPGS*FLASH_PAGE_SIZE); /* flash address */
 	word *raddr = (word *)&tw; /* ram address */
 
@@ -69,8 +70,8 @@ void wrflash() {
 			return;
 		}
 		else {
-			raddr += sizeof(int);
-			faddr += sizeof(int);
+			raddr++; 
+			faddr++;
 		}
 	}
 }

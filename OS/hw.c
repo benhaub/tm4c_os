@@ -102,25 +102,34 @@ void led_bloff() {
  * Returns 0 on success, -1 on error.
  */
 int write_flash(void *saddr, void *eaddr, void *faddr) {
-/* Check for word alignment */
-	if((FLASH_FMA_R & 0x0000007F) > 0) {
-		return -1;
-	}
-	else {
-		FLASH_FMA_R = (word)faddr;
-	}
+/* Align the flash address to the nearest 1KB boundary */
+	FLASH_FMA_R = ((word)faddr & ~(0x7F));
 /* If the write can't be done with one set of buffer registers, then set the */
 /* cflag to re-fill the buffer regs and continue writing. */
 	int cflag = 0;
 /* Transfer value to the write buffer */
 	word *curraddr = (word *)saddr;
-	word nextaddr = 0x0;
+	word nextaddr = 0;
+/* The base is where the flash writes begin at. The left shift of 2 */
+/* (division by 4) is so that the pointer arithmetic performed by the */
+/* works properly. */
+	word base = (((word)faddr & 0x7F) >> 2);
+/* Since 0's can not be programmed back to a 1. We have to copy and erase */
+/* flash before making the write. */
+	int i;
+	word fcopy[32];
+	for(i = 0; i < 32; i++) {
+		fcopy[i] = *((word *)FLASH_FMA_R + i);
+	}
+/* Commented out while because it's cause bus faults. Set a break point */
+/* on line 126, continue, then step. You will find that it hits return 0, */
+/* but execution comes back to the while loop. */
+/* Perform the 1-KB erase */
+//	FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
+//	while(FLASH_FMC_R);
 Write:
-/* Note the use of pointer arithmetic. Since the FLASH register and */
-/* curraddr are both 32 bit pointers, the compiler knows to increment by */
-/* n * 32. */
 	while(curraddr < (word *)eaddr) {
-		*(&FLASH_FWBN_R + nextaddr) = *curraddr;
+		*(&FLASH_FWBN_R + base + nextaddr) = *curraddr;
 		nextaddr += 1;
 		curraddr += 1;
 /* Check to see if all the flash buffers have filled. If they have, then we */
@@ -135,6 +144,19 @@ Write:
 	FLASH_FMC2_R |= FLASH_FMC_WRKEY | FLASH_FMC2_WRBUF;
 /* Wait for WRBUF to clear */
 	while(FLASH_FMC2_R);
+/* Check raw interupt status for any errors */
+	if(FLASH_FCRIS_R & FLASH_FCRIS_PROGRIS) {
+		return -1;
+	}
+	else if(FLASH_FCRIS_R & FLASH_FCRIS_ERRIS) {
+		return -1;
+	}
+	else if(FLASH_FCRIS_R & FLASH_FCRIS_INVDRIS) {
+		return -1;
+	}
+	else if(FLASH_FCRIS_R & FLASH_FCRIS_VOLTRIS) {
+		return -1;
+	}
 /* Load the buffer registers again if we need to */
 	if(1 == cflag) {
 		cflag = 0;
