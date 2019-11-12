@@ -8,6 +8,7 @@
 #include <hw.h> /* For led functions */
 #include <proc.h> /* For NULLPID, exit macros */
 #include <syscalls.h>
+#include <mem.h> /* For flash address macros */
 
 /* The led should be purple when this test is done.
  * First the parent turns on the green led, then forks 4 processes. The
@@ -58,10 +59,10 @@ void wrflash() {
 /*TODO;
  * Appears to not be writing flash correctly
  */
-	word *faddr = (word *)FLASH_FMA_R; /* flash address */
+	word *faddr = (word *)(KFLASHPGS*FLASH_PAGE_SIZE); /* flash address */
 	word *raddr = (word *)&tw; /* ram address */
 
-	write_flash(&tw, &tw + 1);
+	write_flash(&tw, &tw + 1, faddr);
 /* Compare the values at each address of flash and ram to see if they match */
 	while((word)faddr <= ((word)faddr + sizeof(tw))) {
 		if(*raddr != *faddr) {

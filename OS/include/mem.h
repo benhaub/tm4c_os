@@ -40,7 +40,7 @@ extern int smain(void);
 /* Size of the kernel in flash */
 #define KSIZE (word)((word)smain + (word)&smainsize)
 /* Number of flash pages used by the kernel */
-#define KFLASHPGS (KSIZE / FLASH_PAGE_SIZE) + 1
+#define KFLASHPGS ((KSIZE / FLASH_PAGE_SIZE) + 1)
 
 int get_stackspace(void);
 void free_stackspace(int);

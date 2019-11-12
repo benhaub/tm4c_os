@@ -69,7 +69,7 @@ struct dinode create(char *name, struct dinode *cwd) {
  * 	Returns 0 on success, -1 on failure
  */
 int closedir(struct dinode opendir) {
-	if(!write_flash(&sb.blockaddr[opendir.blocki], &opendir + 1)) {
+	if(!write_flash(&opendir, &opendir + 1, sb.blockaddr[opendir.blocki])) {
 		return 0;
 	}
 	return -1;

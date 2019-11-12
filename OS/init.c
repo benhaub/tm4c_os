@@ -29,7 +29,6 @@ int main() {
 /* Get the process table ready for scheduling. */
 	init_ptable();
 	init_context();
-	init_flash();
 	init_fs();
 /* Set up the first user process (the shell) */
 	start_clocktick();

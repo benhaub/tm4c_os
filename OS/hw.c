@@ -97,14 +97,17 @@ void led_bloff() {
 
 /*
  * Follows the procedure on Pg. 532, datasheet.
- * Write value into flash starting at RAM address saddr and ending at RAM
- * address eaddr.
+ * Write values in in ram from starting from saddr and ending at eaddr into
+ * flash memory that starts at faddr.
  * Returns 0 on success, -1 on error.
  */
-int write_flash(void *saddr, void *eaddr) {
+int write_flash(void *saddr, void *eaddr, void *faddr) {
 /* Check for word alignment */
 	if((FLASH_FMA_R & 0x0000007F) > 0) {
 		return -1;
+	}
+	else {
+		FLASH_FMA_R = (word)faddr;
 	}
 /* If the write can't be done with one set of buffer registers, then set the */
 /* cflag to re-fill the buffer regs and continue writing. */
@@ -113,10 +116,10 @@ int write_flash(void *saddr, void *eaddr) {
 	word *curraddr = (word *)saddr;
 	word nextaddr = 0x0;
 Write:
-/* Note the use of pointer arithmatic. Since the FLASH register and */
+/* Note the use of pointer arithmetic. Since the FLASH register and */
 /* curraddr are both 32 bit pointers, the compiler knows to increment by */
 /* n * 32. */
-	while(curraddr <= (word *)eaddr) {
+	while(curraddr < (word *)eaddr) {
 		*(&FLASH_FWBN_R + nextaddr) = *curraddr;
 		nextaddr += 1;
 		curraddr += 1;
@@ -129,14 +132,13 @@ Write:
 		}
 	}
 /* Initiate the write sequence */
-	FLASH_FMC2_R |= (BOOTKEY << 16);
-	FLASH_FMC2_R |= 1;
+	FLASH_FMC2_R |= FLASH_FMC_WRKEY | FLASH_FMC2_WRBUF;
 /* Wait for WRBUF to clear */
 	while(FLASH_FMC2_R);
 /* Load the buffer registers again if we need to */
 	if(1 == cflag) {
 		cflag = 0;
-		nextaddr = 0x0;
+		nextaddr = 0;
 		goto Write;
 	}
 	return 0;
@@ -153,12 +155,4 @@ void protect_flash(int numpages) {
 		protbits++;
 	}
 	FLASH_FMPPE0_R &= ~protbits;
-}
-
-void init_flash() {
-/* Protection is commented out until I can verify that it won't protect */
-/* permanently. */
-	//protect_flash(KFLASHPGS);
-/* Set the address to begin future flash writes. */
-	FLASH_FMA_R = (KFLASHPGS)*FLASH_PAGE_SIZE;
 }

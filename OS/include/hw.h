@@ -13,8 +13,6 @@
 #define CLOCK_FREQ 16000000
 /* 1ms clock tick */
 #define CLOCK_TICK 16000
-/* BOOTCFG key for enabling flash writes */
-#define BOOTKEY 0xA442
 
 /* Systick calls */
 void delay_1ms(void);
@@ -28,8 +26,7 @@ void led_groff(void);
 void led_blon(void);
 void led_bloff(void);
 /* Flash Memory calls */
-int write_flash(void *, void *);
+int write_flash(void *, void *, void *);
 void protect_flash(int);
-void init_flash(void);
 
 #endif /*__HW_H__*/
