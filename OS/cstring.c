@@ -41,6 +41,32 @@ return i;
 }
 
 /*
+ * concatenate dest with with len bytes of str. dest will be null terminated
+ * when the function returns. dest must be null terminated when the function
+ * is called.
+ * param dest
+ *   The destination string
+ * param str
+ *   The string to be appended onto dest
+ * param n
+ *   The number of bytes from str to append.
+ * returns a pointer to dest.
+ */
+//char *strncat(char *dest, char *str, unsigned int len) {
+//  int i = 0;
+//	int j = 0;
+//	while(*dest != 0) {
+//    i++;
+//	}
+//  i++;
+//	while(j < len) {
+//    dest[i] = str[j];
+//		j++;
+//	}
+//	return dest;
+//}
+
+/*
  * Copy n bytes from memory area src to memory area dst.
  * return NULL on failure, pointer to dest on success.
  */

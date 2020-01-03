@@ -8,6 +8,7 @@
 #define __CSTRING_H__
 
 int strncpy(char *, char *, unsigned int);
+//char *strncat(char *, char*, unsigned int);
 unsigned int strlen(char *);
 void *memcpy(void *, const void *, unsigned int);
 void *memmove(void *, const void *, unsigned int);

@@ -121,8 +121,8 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
 	for(i = 0; i < 32; i++) {
 		fcopy[i] = *((word *)FLASH_FMA_R + i);
 	}
-	FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
-	while(FLASH_FMC_R);
+//	FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
+//	while(FLASH_FMC_R);
 Write:
 	while(curraddr < (word *)eaddr) {
 		*(&FLASH_FWBN_R + base + nextaddr) = *curraddr;

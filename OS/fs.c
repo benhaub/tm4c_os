@@ -25,22 +25,19 @@ struct superblock sb;
 struct dinode create(char *name, struct dinode *cwd) {
 	struct dinode dn;
 	if(cwd != NULL) {
-/*TODO:
- * Need a strncat function. Then change path to append to cwd.
- * After that, start trying to build a series of files and navigate around
- * them. Once that's done, start the shell.
- */
+		//strncat(name, "/", 1);
+		//strncat(cwd->name, name, strlen(name));
 	}
-/* Directory is in root */
 	else {
+/* Directory is in root */
 		strncpy("/", dn.path, strlen("/"));
 		strncpy(name, dn.name, strlen(name));
 		dn.size = sizeof(struct dinode);
-		/* Find a block to save to. Free blocks are 1 and non-free are 0 */
+/* Find a block to save to. Free blocks are 1 and non-free are 0 */
 		int i = 0;
 		while(i < NUMBLOCKS) {
 			if((sb.usebits >> i) & 0x1) {
-				/* Check if there's room in the block for a new directory */
+/* Check if there's room in the block for a new directory */
 				if((sb.blockmem[i] - (int)sizeof(struct dinode)) < 0) {
 					(sb.usebits) &= ~(1 << i);
 					i++;
@@ -53,7 +50,7 @@ struct dinode create(char *name, struct dinode *cwd) {
 				i++;
 			}
 		}
-		/* There wasn't enough space in the file system for the directory */
+/* There wasn't enough space in the file system for the directory */
 		if(i >= NUMBLOCKS) {
 			dn.blocki = -1;
 			return dn;
