@@ -50,6 +50,7 @@ void forktest() {
  * from init_fs.
  */
 void wrflash() {
+
 	struct testwrite {
 		int first;
 		int second;

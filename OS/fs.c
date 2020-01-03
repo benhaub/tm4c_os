@@ -27,6 +27,8 @@ struct dinode create(char *name, struct dinode *cwd) {
 	if(cwd != NULL) {
 /*TODO:
  * Need a strncat function. Then change path to append to cwd.
+ * After that, start trying to build a series of files and navigate around
+ * them. Once that's done, start the shell.
  */
 	}
 /* Directory is in root */

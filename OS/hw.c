@@ -117,16 +117,12 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
 /* Since 0's can not be programmed back to a 1. We have to copy and erase */
 /* flash before making the write. */
 	int i;
-	word fcopy[32];
+	word fcopy[32]; /* 1KB of space */
 	for(i = 0; i < 32; i++) {
 		fcopy[i] = *((word *)FLASH_FMA_R + i);
 	}
-/* Commented out while because it's cause bus faults. Set a break point */
-/* on line 126, continue, then step. You will find that it hits return 0, */
-/* but execution comes back to the while loop. */
-/* Perform the 1-KB erase */
-//	FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
-//	while(FLASH_FMC_R);
+	FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
+	while(FLASH_FMC_R);
 Write:
 	while(curraddr < (word *)eaddr) {
 		*(&FLASH_FWBN_R + base + nextaddr) = *curraddr;
