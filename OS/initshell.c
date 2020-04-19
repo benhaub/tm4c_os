@@ -1,7 +1,8 @@
 /******************************************************************************
  * Authour	:	Ben Haubrich
  * File			:	initshell.c
- * Synopsis	:	Implements the shell for tm4c_os
+ * Synopsis	:	Implements the shell for tm4c_os. For now, it's being used to
+ *            write functions to test the operating system.
  * Date			:	July 10th, 2019
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
@@ -45,9 +46,10 @@ void forktest() {
 	exit(EXIT_SUCCESS);
 }
 
-/* This function tests reading and writing flash by writing the superblock from
- * init_fs into ram and then reading back to a struct sb. Uses the default FMA
- * from init_fs.
+/* 
+ * This function tests reading and writing flash by writing the testwrite
+ * struct into flash memory, and then reading it back and comparing the
+ * values.
  */
 void wrflash() {
 

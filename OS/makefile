@@ -4,6 +4,13 @@
 #Synopsis	:	makefile for tm4c_os
 ###############################################################################
 
+#Take inspiration from 434 project makefile. The directories to contain binaries
+# is nice, especially the symbolic link that it creates.
+# Also lizzie's make file has auto dependencies. I really need to get these
+# implemented because they are already out of control.
+# If the makefile starts to become too large, I'll entertain the though of
+# implicit rules.
+
 #Search for header files here as well as the current working directory
 VPATH=include
 
@@ -26,9 +33,16 @@ CFLAGS=-mthumb \
 			 -std=c99 \
 			 -Wall \
 			 -pedantic
-#-static: Stops ld from looking for .so's. No point in doing that since we are
+#-static: Stops ld from looking from .so's. No point in doing that since we are
 #linking .a's only
 #-MD produces the .d files
+
+#Linker options
+LDFLAGS=-Wl,--gc-sections \
+			  -Wl,--entry=Reset_EXCP \
+				-Wl,-Tlink.ld \
+				-Wl,-Map=link.map \
+				-Wl,-lgcc
 
 #Optionally include the symbol table for debugging. The 3 on the end of -g is
 #the level. level 3 debugging symbols include everything up to preprocessors
@@ -39,12 +53,6 @@ CFLAGS=-mthumb \
 ifdef DEBUG
 	CFLAGS+=-g3 -ggdb -O0
 endif
-
-#Linker options
-LDFLAGS=-Wl,--gc-sections \
-			  -Wl,--entry=Reset_EXCP \
-				-Wl,-Tlink.ld \
-				-Wl,-lgcc
 
 #Define objcopy to extract out elf headers from binaries. Bare metal code does
 #not have the ability to read these properly and will try to execute them which

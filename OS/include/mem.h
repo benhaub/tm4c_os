@@ -9,10 +9,13 @@
 #include <types.h>
 #include <proc.h>
 
+/* From link.ld */
+extern void *smainsize;
+/* From initshell. Not called. Only used to calculate ksize. */
+extern int smain(void);
+
 /* Process stack size. This is independant of the kernel stack which is */
-/* created in vectors.s at the top of the vector table. If you change this */
-/* value, also change the number in r0 of Reset_EXCP for the calculation of */
-/* kernel ram usage. */
+/* created in vectors.s at the top of the vector table. */
 #define STACK_SIZE 0x400 /*1KB Stack */
 /* Do not change the value of flash page size. flash memory detection is */
 /* based off 2KB page sizes. */
@@ -33,10 +36,6 @@
 #define KB 1024u
 /* 1 MB */
 #define MB 1024u*KB
-/* From link.ld */
-extern void *smainsize;
-/* From initshell. Not called. Only used to calculate ksize. */
-extern int smain(void);
 /* Size of the kernel in flash */
 #define KSIZE (word)((word)smain + (word)&smainsize)
 /* Number of flash pages used by the kernel */

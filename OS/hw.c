@@ -110,19 +110,23 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
 /* Transfer value to the write buffer */
 	word *curraddr = (word *)saddr;
 	word nextaddr = 0;
-/* The base is where the flash writes begin at. The left shift of 2 */
+/* The base is where the flash writes begin at. The right shift of 2 */
 /* (division by 4) is so that the pointer arithmetic performed by the */
 /* works properly. */
 	word base = (((word)faddr & 0x7F) >> 2);
 /* Since 0's can not be programmed back to a 1. We have to copy and erase */
 /* flash before making the write. */
+/*TODO: Still have to put fcopy back in flash. */
 	int i;
 	word fcopy[32]; /* 1KB of space */
 	for(i = 0; i < 32; i++) {
 		fcopy[i] = *((word *)FLASH_FMA_R + i);
 	}
-//	FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
-//	while(FLASH_FMC_R);
+/*TODO:
+ * Commented out for bus faults. See git log for bug info.
+ */
+  //FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
+  //while(FLASH_FMC_R);
 Write:
 	while(curraddr < (word *)eaddr) {
 		*(&FLASH_FWBN_R + base + nextaddr) = *curraddr;

@@ -36,7 +36,8 @@ STACK_TOP:
 /*
  * The STACK_TOP expression says: Take the address of STACK_TOP, move it by
  * 4KB. Then at the STACK_TOP label above, it says, now give me 4KB of space
- * for this address.
+ * for this address. Note that this is the KERNEL stack point, not a user
+ * stack pointer. It's not the same
  */
 Vectors:
 	.word STACK_TOP + 0x1000 /* Boot loader gets kernel stack pointer from here*/
@@ -65,7 +66,7 @@ Reset_EXCP: .fnstart
 /* allocating ram pages for user programs. See get_stackspace(). */
 /* Where ever the top of stack is determines how much space the kernel is */
 /* using. */
-						mov r0, #0x400 /* Stack Size */
+						mov r0, #0x1000 /* Stack Size */
 						mov r1, sp
 						sub r1, r1, #0x20000000
 /* Divide this by the current position of the sp to get an integer for */
@@ -98,8 +99,9 @@ MM_FAULT: .fnstart
 	.align 2
 	.type BFAULT, %function
 BFAULT: .fnstart
-					b b_handler
+         b b_handler
 				.fnend
+
 	.align 2
 	.type UFAULT, %function
 UFAULT:	.fnstart

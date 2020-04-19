@@ -13,6 +13,7 @@
 extern int maxpid;
 extern struct pcb ptable[];
 /* From mem.c */
+/*TODO What's ispid here for? */
 extern int ispid;
 
 /*

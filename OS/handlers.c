@@ -36,6 +36,7 @@ void hfault_handler() {
 /* Eliminate unsed variable warnings. */
 	faultstat_vect=faultstat_vect;faultstat_forced=faultstat_forced;
 	faultstat_dbg=faultstat_dbg;
+  NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 	while(1);
 }
 /* Memory Management Handler. */
@@ -46,10 +47,15 @@ void mm_handler() {
 void b_handler() {
 	word fault_addr;
 	word bfarv, blsperr, bstke, bustke, impre, precise, ibus;
-/* Get the address of the fault. */
-	fault_addr = NVIC_FAULT_ADDR_R;
 /* Make sure memory contents are valid. */
 	bfarv = (NVIC_FAULT_STAT_R & (1 << 15));
+/* Get the address of the fault has a valid address. */
+  if(bfarv) {
+    fault_addr = NVIC_FAULT_ADDR_R;
+  }
+  else {
+    fault_addr = 0;
+  }
 /* See Pg. 179, datasheet. */
 	blsperr = (NVIC_FAULT_STAT_R & (1 << 13));
 	bstke = (NVIC_FAULT_STAT_R & (1 << 12));
@@ -60,6 +66,8 @@ void b_handler() {
 /* Eliminate unsed variable warnings. */
 	fault_addr=fault_addr;bfarv=bfarv;blsperr=blsperr;bstke=bstke;bustke=bustke;
 	impre=impre;precise=precise;ibus=ibus;
+/* Clear the contents of the fault register */
+  NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 /* View the contents with a debugger. */
 	while(1);
 }
