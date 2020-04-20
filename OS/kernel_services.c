@@ -12,9 +12,6 @@
 /* From proc.c */
 extern int maxpid;
 extern struct pcb ptable[];
-/* From mem.c */
-/*TODO What's ispid here for? */
-extern int ispid;
 
 /*
  * Creates a new process. The forker forks the forked. Forker returns the pid

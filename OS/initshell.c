@@ -66,6 +66,9 @@ void wrflash() {
 	word *faddr = (word *)(KFLASHPGS*FLASH_PAGE_SIZE); /* flash address */
 	word *raddr = (word *)&tw; /* ram address */
 
+  /*
+   * TODO: See git log for bug info
+   */
 	write_flash(&tw, &tw + 1, faddr);
 /* Compare the values at each address of flash and ram to see if they match */
 	while((word)faddr <= ((word)faddr + sizeof(tw))) {

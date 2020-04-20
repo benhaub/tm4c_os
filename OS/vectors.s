@@ -129,25 +129,27 @@ PSV_ISR: .fnstart
 /*
  * The reason we don't do a direct branch to the handler is to avoid context
  * switching while in handler mode. The processor's exception mechanism makes
- * switching in handler mode very difficult.
+ * switching in handler mode very difficult. The exception mechanism exits
+ * handler mode on the bx lr, and stack saving happens in kernel_entry.
  */
 	.align 2
 	.type SYST_ISR, %function
 SYST_ISR: .fnstart
 /* Get the processes stack pointer and save it */
 					mrs r0, psp
-					mov r4, r0
 /* Save the value of the exception stack r0. */
-					ldr r6, [r0]
-/* Save the pc. */
+					mov r4, r0
+/* Save the value of the exception stack pc. */
 					ldr r5, [r0, #24]
+/* Save the value of the exception stack lr. */
+					ldr r6, [r0, #20]
 /* Make sure r5 has bit one set for thumb instructions. */
 					ands r8, r5, #0x1
 					bne Thumb
 					add r5, r5, #0x1
 Thumb:
 					ldr r3,=syst_handler
-/* overwrite r0 on the stack for a function call. It will be returned in. */
+/* overwrite r0 on the stack for a function call. It will be returned in */
 /* kernel_entry(). */
 					str r0, [r4]
 /* Place syst_handler on the stacked pc. Exception mechanism retores it to lr*/
@@ -155,7 +157,7 @@ Thumb:
 /* Save r7 in case syst_handler changes it. */
 					mov r8, r7
 /* Exception return mechanism will return r0-r3 to pre-exception values. */
-/* r4 and r5 remain unscathed. */
+/* r4, r5, and r6 remain unscathed. */
 /* Change thread mode privledge level to privledged. */
 					mrs r3, CONTROL
 					bic r3, r3, #0x1
@@ -177,15 +179,15 @@ kernel_entry: .fnstart
 /* interrupt value. */
 							mov r9, r0
 /* Return r0 to it's initial value */
-							mov r0, r6
+							mov r0, r4
 /* Save the lr before moving the saved pc from systick isr into it. */
-							mov r6, r14
-							mov r14, r5
+							mov r5, r14
+							mov r14, r6
 							push {r0-r3, r8, r12, r14}
 /* Save the stack pointer to context struct */
 							str sp, [r9] 
 /* Switch stacks to msp and restore lr to it's original value */
-							mov r14, r6
+							mov r14, r5
 							mrs r3, CONTROL
 							bic r3, r3, #0x2
 							msr CONTROL, r3
