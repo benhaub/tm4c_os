@@ -24,6 +24,8 @@ syscall: .fnstart
 					str r2, [r1, #4]
 /* Restore stack pointer to where it was before system call. (before the */
 /* push {r7, lr} */
+/*TODO: This seems a little bit too compiler version dependant. Does GDB have
+/* a no-prologue attribute? */
 					add r4, sp, #8
 					str r4, [r1]
 /* The immediate value for svc is not used. The number used for determining */
