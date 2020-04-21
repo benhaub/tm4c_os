@@ -24,8 +24,8 @@ swtch: .fnstart
 				mrs r2, CONTROL
 				orr r2, r2, #0x3
 				msr CONTROL, r2
-				pop {r0-r3, r7, r12, r14}
-				bx lr
+				pop {r0-r3, r5, r7, r12, r14}
+				bx r5
 				.fnend
 
 /*
@@ -37,16 +37,20 @@ swtch: .fnstart
 	.global initcode
 	.type initcode, %function
 initcode: .fnstart
-					add r1, r0, #4
-					ldr r2, [r1] //context.pc
-					ldr r3, [r0] //context.sp
-					str r2, [r3, #24] //Store the pc to it's popped to the lr
-					add r1, r0, #12
-					ldr r2, [r1] //context.r0
-					str r2, [r3] //store context.r0 on the stack in r0's spot
-					mov r2, r3 //Move stack pointer to r2
-					str r2, [r3, #16] //store context.sp on the stack in r7's spot
-					bx lr
-					.fnend	
+          add r1, r0, #4
+          ldr r2, [r1] //context.pc
+          ldr r3, [r0] //context.sp
+//Move pc to r5's spot on the stack so it gets branched to in swtch()
+          str r2, [r3, #16]
+          add r1, r0, #12
+          ldr r2, [r1] //context.r0
+//store context.r0 on the stack in r0's spot
+          str r2, [r3]
+//Move stack pointer to r2
+          mov r2, r3
+//store context.sp on the stack in r7's spot
+          str r2, [r3, #20]
+          bx lr
+          .fnend	
 	.end
 	

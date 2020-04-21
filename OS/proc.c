@@ -180,6 +180,9 @@ void scheduler() {
 		}
 		struct pcb *schedproc = &ptable[index];
 /* If the process is waiting for another, check to see if it's exited. */
+/*TODO:
+ * The waitpids list is out of order. The wrong pids are being set to UNUSED.
+ */
 		if(schedproc->state == WAITING && \
 			ptable[schedproc->waitpids[schedproc->waitpidsi-1]].state == UNUSED){
 			schedproc->state = RUNNABLE;

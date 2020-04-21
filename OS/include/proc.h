@@ -17,11 +17,7 @@
 /* Maximum number of child processes. */
 #define MAX_CHILD 4
 /* Context switch stack size (in bytes, 4 bytes per word saved) */
-/* NOTE: Make sure to edit the value of this line:
- * "str r2, [r3, #24] //Store the pc to it's popped to the lr"
- * in context.s to match.
- */
-#define CTXSTACK 24
+#define CTXSTACK 28
 
 /*
  * KERNEL:
