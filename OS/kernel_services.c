@@ -1,8 +1,8 @@
 /******************************************************************************
- * Authour  :	Ben Haubrich                                                    *
- * File     :	kernel_services.c                                               *
- * Synopsis :	Supported kernel services for users.                            *
- * Date     :	July 18th, 2019                                                 *
+ * Authour  : Ben Haubrich                                                    *
+ * File     : kernel_services.c                                               *
+ * Synopsis : Supported kernel services for users.                            *
+ * Date     : July 18th, 2019                                                 *
  *****************************************************************************/
 #include <proc.h>
 #include <types.h>

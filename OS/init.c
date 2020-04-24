@@ -1,10 +1,10 @@
 /******************************************************************************
- * Authour  :	Ben Haubrich                                                    *
- * File     :	init.c                                                          *
- * Synopsis :	OS entry point. Boot loader loads the address from the first    *
+ * Authour  : Ben Haubrich                                                    *
+ * File     : init.c                                                          *
+ * Synopsis : OS entry point. Boot loader loads the address from the first    *
  *            entry of the vector table, then looks for the entry point in the*
  *            next word                                                       *
- * Date     :	May 6th, 2019                                                   *
+ * Date     : May 6th, 2019                                                   *
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <hw.h>

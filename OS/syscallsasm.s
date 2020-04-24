@@ -1,9 +1,9 @@
 /******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	syscalls.c
- * Synopsis	:	Context switcher just for system calls. Always switches to kernel
-						: context from user context.
- * Date			:	July 18th, 2019
+ * Authour  : Ben Haubrich                                                    *
+ * File     : syscalls.c                                                      *
+ * Synopsis : Context switcher just for system calls. Always switches to kernel
+ *            context from user context.                                      *
+ * Date     : July 18th, 2019                                                 *
  *****************************************************************************/
 	.syntax unified
 	.thumb

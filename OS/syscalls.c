@@ -1,8 +1,8 @@
 /******************************************************************************
- * Authour  :	Ben Haubrich                                                    *
- * File     :	syscalls.c                                                      *
- * Synopsis :	System calls for tm4c_os kernel services                        *
- * Date     :	July 18th, 2019                                                 *
+ * Authour  : Ben Haubrich                                                    *
+ * File     : syscalls.c                                                      *
+ * Synopsis : System calls for tm4c_os kernel services                        *
+ * Date     : July 18th, 2019                                                 *
  *****************************************************************************/
 #include <types.h>
 #include <proc.h>

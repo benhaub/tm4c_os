@@ -1,8 +1,8 @@
 /******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	cstring.h
- * Synopsis	:	String manipulation functions.
- * Date			:	June 21st, 2019
+ * Authour  :	Ben Haubrich                                                    *
+ * File     :	cstring.h                                                       *
+ * Synopsis :	String manipulation functions.                                  *
+ * Date     :	June 21st, 2019                                                 *
  *****************************************************************************/
 #ifndef __CSTRING_H__
 #define __CSTRING_H__

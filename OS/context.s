@@ -1,9 +1,9 @@
-/****************************************************************************
- *Authour :	Ben Haubrich																										*
- *File    :	context.s																												*
- *Synopsis: Context switching and processor privledge control								*
- *Date    : June 25th, 2019																									*
- ****************************************************************************/
+/******************************************************************************
+ *Authour :	Ben Haubrich                                                      *
+ *File    :	context.s                                                         *
+ *Synopsis: Context switching and processor privledge control                 *
+ *Date    : June 25th, 2019                                                   *
+ *****************************************************************************/
 	
   .syntax unified
   .thumb

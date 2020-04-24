@@ -1,9 +1,9 @@
-/**************************************************************************
- *Authour :	Ben Haubrich																									*
- *File    :	handlers.c																										*
- *Synopsis:	fault handlers																								*
- *Date    : May 18th, 2019																								*
- **************************************************************************/
+/******************************************************************************
+ *Authour :	Ben Haubrich                                                      *
+ *File    :	handlers.c                                                        *
+ *Synopsis:	fault handlers                                                    *
+ *Date    : May 18th, 2019                                                    *
+ *****************************************************************************/
 #include <tm4c123gh6pm.h> /* Hardware register macros. */
 #include <types.h> /* For the word data type. */
 #include <kernel_services.h> /* Syscalls for svc_handler. */

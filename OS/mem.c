@@ -1,8 +1,8 @@
 /******************************************************************************
- * Authour  :	Ben Haubrich                                                    *
- * File     :	mem.c                                                           *
- * Synopsis :	Memory management                                               *
- * Date     :	June 13th, 2019                                                 *
+ * Authour  : Ben Haubrich                                                    *
+ * File     : mem.c                                                           *
+ * Synopsis : Memory management                                               *
+ * Date     : June 13th, 2019                                                 *
  *****************************************************************************/
 #include <types.h>
 #include <mem.h>

@@ -1,7 +1,7 @@
 /******************************************************************************
- * Authour  :	Ben Haubrich																										*
+ * Authour  : Ben Haubrich																										*
  * File     : link.ld																													*
- * Synopsis :	linkerscript for tm4c_os																				*
+ * Synopsis : linkerscript for tm4c_os																				*
  * Date     : May 16th, 2019																									*
  *****************************************************************************/
 
