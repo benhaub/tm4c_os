@@ -1,7 +1,7 @@
 ###############################################################################
-#Authour	:	Ben Haubrich                                                      #
-#File			: makefile                                                          #
-#Synopsis	:	makefile for tm4c_os                                              #
+#Authour  : Ben Haubrich                                                      #
+#File     : makefile                                                          #
+#Synopsis : makefile for tm4c_os                                              #
 ###############################################################################
 
 #Search for header files here as well as the current working directory
