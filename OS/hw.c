@@ -1,8 +1,8 @@
 /******************************************************************************
- * Authour  :	Ben Haubrich                                                    *
- * File     :	hw.c                                                            *
- * Synopsis :	Hardware peripheral calls for TM4C123                           *
- * Date     :	May 16th, 2019                                                  *
+ * Authour  : Ben Haubrich                                                    *
+ * File     : hw.c                                                            *
+ * Synopsis : Hardware peripheral calls for TM4C123                           *
+ * Date     : May 16th, 2019                                                  *
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <hw.h>

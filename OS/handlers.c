@@ -1,7 +1,7 @@
 /******************************************************************************
- *Authour :	Ben Haubrich                                                      *
- *File    :	handlers.c                                                        *
- *Synopsis:	fault handlers                                                    *
+ *Authour : Ben Haubrich                                                      *
+ *File    : handlers.c                                                        *
+ *Synopsis: fault handlers                                                    *
  *Date    : May 18th, 2019                                                    *
  *****************************************************************************/
 #include <tm4c123gh6pm.h> /* Hardware register macros. */
