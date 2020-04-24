@@ -31,7 +31,7 @@ swtch: .fnstart
 /*
  * All new processes run initcode first to set up cpu registers to make it
  * look as if the process had been interrupted by an svc with it's registers
- * pushed on the stack. initcode places the value of pc into the link register.
+ * pushed on the stack. initcode places the value of pc into the r5 register.
  * initcode(word sp), where sp is the top of the stack of the new process.
  */
   .global initcode

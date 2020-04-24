@@ -130,7 +130,10 @@ PSV_ISR: .fnstart
  * The reason we don't do a direct branch to the handler is to avoid context
  * switching while in handler mode. The processor's exception mechanism makes
  * switching in handler mode very difficult. The exception mechanism exits
- * handler mode on the bx lr, and stack saving happens in kernel_entry.
+ * handler mode on the bx lr, and stack saving happens in kernel_entry. The
+ * purpose of this code here is too save r0, pc and lr because it will be
+ * changed when we enter the exeption handler c code. kernel_entry will need
+ * these values in order to save the correct context.
  */
 	.align 2
 	.type SYST_ISR, %function
