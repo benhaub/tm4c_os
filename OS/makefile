@@ -14,19 +14,19 @@ CPU=-mcpu=cortex-m4 -march=armv7e-m -mtune=cortex-m4
 FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=hard
 #Flags for C compiler.
 CFLAGS=-mthumb \
-			 -nodefaultlibs \
-				-static \
-				${CPU} \
-				${FPU} \
-				-Iinclude \
-				-MD \
-				-MF ./.deps/$*.d \
-				-ffunction-sections \
-				-fdata-sections \
-				-ffreestanding \
-				-std=c99 \
-				-Wall \
-				-pedantic
+       -nodefaultlibs \
+       -static \
+        ${CPU} \
+        ${FPU} \
+       -Iinclude \
+       -MD \
+       -MF ./.deps/$*.d \
+       -ffunction-sections \
+       -fdata-sections \
+       -ffreestanding \
+       -std=c99 \
+       -Wall \
+       -pedantic
 #-static: Stops ld from looking from .so's. No point in doing that since we are
 #linking .a's only
 #-M produces the .d files, -MF specifies an output directory for them
@@ -36,10 +36,10 @@ CFLAGS=-mthumb \
 
 #Linker options
 LDFLAGS=-Wl,--gc-sections \
-				-Wl,--entry=Reset_EXCP \
-				-Wl,-Tlink.ld \
-				-Wl,-Map=link.map \
-				-Wl,-lgcc
+        -Wl,--entry=Reset_EXCP \
+        -Wl,-Tlink.ld \
+        -Wl,-Map=link.map \
+        -Wl,-lgcc
 
 #Optionally include the symbol table for debugging. The 3 on the end of -g is
 #the level. level 3 debugging symbols include everything up to preprocessors
@@ -48,7 +48,7 @@ LDFLAGS=-Wl,--gc-sections \
 #the same as the way we wrote it. View page 120 of the GNU gcc docs for more
 #info
 ifdef DEBUG
-	CFLAGS+=-g3 -ggdb -O0
+  CFLAGS+=-g3 -ggdb -O0
 endif
 
 #Define objcopy to extract out elf headers from binaries. Bare metal code does
