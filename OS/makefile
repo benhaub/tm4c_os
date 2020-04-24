@@ -31,7 +31,7 @@ CFLAGS=-mthumb \
 #linking .a's only
 #-M produces the .d files, -MF specifies an output directory for them
 #The $* is called an automatic variable. I don't like to use $@ or $< because
-#it makes the makefile to cryptic, but this one is needed. The $* becomes
+#it makes the makefile too cryptic, but this one is needed. The $* becomes
 #whatever the % value expands to.
 
 #Linker options
