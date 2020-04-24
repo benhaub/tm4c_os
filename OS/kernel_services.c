@@ -59,9 +59,7 @@ int sysfork() {
 int syswait(int pid) {
 	struct pcb *waiting = currproc();
 	waiting->state = WAITING;
-	waiting->waitpids[waiting->waitpidsi] = pid;
-/* waitpids index is always one ahead of the pid we're waiting for */
-	waiting->waitpidsi++;
+	waiting->waitpid = pid;
 	return 0;
 }
 
@@ -91,9 +89,7 @@ int sysexit(int exitcode) {
 		pidproc(exitproc->ppid)->numchildren--;
 	}
 	exitproc->ppid = NULLPID;
-	for(i = 0; i < MAX_CHILD; i++) {
-		exitproc->waitpids[i] = NULLPID;
-	}
+  exitproc->waitpid = NULLPID;
 	exitproc->state = UNUSED;
 	exitproc->initflag = 1;
 	strncpy(exitproc->name, "\0", 1);

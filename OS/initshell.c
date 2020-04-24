@@ -83,7 +83,8 @@ void wrflash() {
  */
 int smain(void) __attribute__((section(".text.smain")));
 int smain() {
-	wrflash();
+/* Commented out so i don't burn out this block of flash */
+	//wrflash();
 	forktest();
 	return 0;
 }

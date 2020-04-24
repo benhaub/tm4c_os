@@ -117,7 +117,7 @@ void init_ptable() {
 		ptable[i].state = KERNEL;
 		ptable[i].numchildren = 0;
 		for(j = 0; j < MAX_CHILD; j++) {
-			ptable[i].waitpids[j] = NULLPID;
+			ptable[i].waitpid = NULLPID;
 		}
 	}
 /* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
@@ -126,11 +126,8 @@ void init_ptable() {
 	while(i < MAX_PROC) {
 		ptable[i].state = UNUSED;
 		ptable[i].numchildren = 0;
-		for(j = 0; j < MAX_CHILD; j++) {
-			ptable[i].waitpids[j] = NULLPID;
-		}
+    ptable[i].waitpid = NULLPID;
 		ptable[i].ppid = NULLPID;
-		ptable[i].waitpidsi = 0;
 		ptable[i].initflag = 1;
 		i++;
 	}
@@ -184,9 +181,9 @@ void scheduler() {
  * The waitpids list is out of order. The wrong pids are being set to UNUSED.
  */
 		if(schedproc->state == WAITING && \
-			ptable[schedproc->waitpids[schedproc->waitpidsi-1]].state == UNUSED){
+			ptable[schedproc->waitpid].state == UNUSED) {
 			schedproc->state = RUNNABLE;
-			schedproc->waitpidsi--;
+			schedproc->waitpid = NULLPID;
 		}
 		if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
 			currpid = schedproc->pid;
