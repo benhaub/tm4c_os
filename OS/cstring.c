@@ -52,19 +52,19 @@ return i;
  *   The number of bytes from str to append.
  * returns a pointer to dest.
  */
-//char *strncat(char *dest, char *str, unsigned int len) {
-//  int i = 0;
-//	int j = 0;
-//	while(*dest != 0) {
-//    i++;
-//	}
-//  i++;
-//	while(j < len) {
-//    dest[i] = str[j];
-//		j++;
-//	}
-//	return dest;
-//}
+char *strncat(char *dest, char *str, unsigned int len) {
+  int i = 0;
+	int j = 0;
+	while(*dest != 0) {
+    i++;
+	}
+  i++;
+	while(j < len) {
+    dest[i] = str[j];
+		j++;
+	}
+	return dest;
+}
 
 /*
  * Copy n bytes from memory area src to memory area dst.
@@ -82,6 +82,8 @@ void *memcpy(void *dest, const void *src, unsigned int n) {
 /*
  * Fills the first n bytes of dest with the constant value of src.
  * UNTESTED
+ * TODO:
+ * Test
  */
 void *memset(void *dest, const int src, unsigned int n) {
 	int i = 0;

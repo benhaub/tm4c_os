@@ -1,8 +1,8 @@
 /******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	fs.c
- * Synopsis	:	Implements the filesystem for tm4c_os
- * Date			:	September 11th, 2019
+ * Authour  : Ben Haubrich                                                    *
+ * File     : fs.c                                                            *
+ * Synopsis : Implements the filesystem for tm4c_os                           *
+ * Date     : September 11th, 2019                                            *
  *****************************************************************************/
 #include <hw.h> /* For flash memory operations */
 #include <fs.h>
@@ -25,8 +25,11 @@ struct superblock sb;
 struct dinode create(char *name, struct dinode *cwd) {
 	struct dinode dn;
 	if(cwd != NULL) {
-		//strncat(name, "/", 1);
-		//strncat(cwd->name, name, strlen(name));
+/*TODO:
+ * Make sure this works
+ */
+		strncat(name, "/", 1);
+		strncat(cwd->name, name, strlen(name));
 	}
 	else {
 /* Directory is in root */

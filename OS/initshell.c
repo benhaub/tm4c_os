@@ -1,9 +1,9 @@
 /******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	initshell.c
- * Synopsis	:	Implements the shell for tm4c_os. For now, it's being used to
- *            write functions to test the operating system.
- * Date			:	July 10th, 2019
+ * Authour  : Ben Haubrich                                                    *
+ * File     :	initshell.c                                                     *
+ * Synopsis :	Implements the shell for tm4c_os. For now, it's being used to   *
+ *            write functions to test the operating system.                   *
+ * Date     : July 10th, 2019                                                 *
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <hw.h> /* For led functions */

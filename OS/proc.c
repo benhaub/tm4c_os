@@ -1,8 +1,8 @@
 /******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	proc.h
- * Synopsis	:	Process related structs and functions
- * Date			:	June 5th, 2019
+ * Authour  :	Ben Haubrich                                                    *
+ * File     :	proc.c                                                          *
+ * Synopsis :	Process related structs and functions                           *
+ * Date     :	June 5th, 2019                                                  *
  *****************************************************************************/
 #include <mem.h>
 #include <proc.h>
