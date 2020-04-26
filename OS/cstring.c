@@ -16,7 +16,7 @@
  * 	The maximum number of bytes to copy
  * returns -1 on failure, 0 on success
  */
-int strncpy(char *src, char *dst, unsigned int len) {
+int strncpy(char *dst, char *src, unsigned int len) {
 	int i = 0;
 	while(i < len) {
 		dst[i] = src[i];
@@ -55,17 +55,48 @@ return i;
 char *strncat(char *dest, char *str, unsigned int len) {
   int i = 0;
 	int j = 0;
-	while(*dest != 0) {
+	while(dest[i] != 0) {
     i++;
 	}
-  i++;
 	while(j < len) {
     dest[i] = str[j];
 		j++;
+    i++;
 	}
 	return dest;
 }
 
+/*
+ * compares up to len bytes of str1 to str2 by returning the difference of the
+ * ASCII value of the two strings. A value return that is less than zero or
+ * greater than zero means the strings are not equal, a value returned of zero
+ * means they are equal.
+ * param str1
+ *   The first string to compare
+ * param str2
+ *   The second string to compare
+ * returns less than 0 if str1 is less than str2, 0 if str1 is equal to str2,
+ * greater than 0 if str1
+ */
+int strncmp(char *str1, char *str2, unsigned int len) {
+  int i,j,k;
+  i = j = k = 0;
+/* Add up str1 */
+  while(str1[i] != 0) {
+    j = j + (int)str1[i];
+    i++;
+  }
+  
+  i = 0;
+
+/* Add up str2 */
+  while(str2[i] != 0) {
+    k = k + (int)str2[i];
+    i++;
+  }
+
+  return (j - k);
+}
 /*
  * Copy n bytes from memory area src to memory area dst.
  * return NULL on failure, pointer to dest on success.
@@ -81,14 +112,11 @@ void *memcpy(void *dest, const void *src, unsigned int n) {
 
 /*
  * Fills the first n bytes of dest with the constant value of src.
- * UNTESTED
- * TODO:
- * Test
  */
 void *memset(void *dest, const int src, unsigned int n) {
 	int i = 0;
 	while(i < n) {
-		*((char *)dest + 1) = (char)src;
+		*((char *)dest + i) = (char)src;
 		i++;
 	}
 	return dest;

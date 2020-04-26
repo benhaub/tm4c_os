@@ -10,6 +10,7 @@
 #include <proc.h> /* For NULLPID, exit macros */
 #include <syscalls.h>
 #include <mem.h> /* For flash address macros */
+#include <cstring.h> /* For testing cstring api */
 
 /* The led should be purple when this test is done.
  * First the parent turns on the green led, then forks 4 processes. The
@@ -45,6 +46,10 @@ void forktest() {
 	led_ron();
 	exit(EXIT_SUCCESS);
 }
+/*TODO:
+ * Need a second fork test to test how the OS handles the maximum number of
+ * processes.
+ */
 
 /* 
  * This function tests reading and writing flash by writing the testwrite
@@ -78,13 +83,46 @@ void wrflash() {
 		}
 	}
 }
+
+/*
+ * Tests all the functions in cstring.c
+ */
+int stringtest() {
+  char *str1; char *str2;
+  str1 = "string1";
+  str2 = "string2";
+  char str3[15];
+  struct context ctx;
+  struct context ctx2;
+
+  if(strlen(str1) != 7) {
+    return -1;
+  }
+  if(strlen(str2) != 7) {
+    return -1;
+  }
+  if(strncmp(str1, "string1", strlen(str1)) != 0) {
+    return -1;
+  }
+  strncpy(str3, str1, strlen(str1));
+  strncat(str3, str2, strlen(str2));
+  if(strncmp(str3, "string1string2", strlen("string1string2")) != 0) {
+    return -1;
+  }
+  memset(str3, 0, strlen(str3));
+  memset(&ctx, 0, sizeof(struct context));
+  memcpy(&ctx, &ctx2, sizeof(struct context));
+  return 0;
+}
+
 /*
  * Shell main. The first user program run by the kernel after reset.
  */
 int smain(void) __attribute__((section(".text.smain")));
 int smain() {
 /* Commented out so i don't burn out this block of flash */
-	//wrflash();
+	wrflash();
+  stringtest();
 	forktest();
 	return 0;
 }

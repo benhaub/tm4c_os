@@ -98,37 +98,53 @@ void led_bloff() {
 /*
  * Follows the procedure on Pg. 532, datasheet.
  * Write values in in ram from starting from saddr and ending at eaddr into
- * flash memory that starts at faddr.
+ * flash memory that starts at faddr. You can not write more than 1KB at a time.
  * Returns 0 on success, -1 on error.
  */
 int write_flash(void *saddr, void *eaddr, void *faddr) {
+  if((word)eaddr - (word)saddr > 1*KB) {
+    return -1;
+  }
 /* Align the flash address to the nearest 1KB boundary */
 	FLASH_FMA_R = ((word)faddr & ~(0x7F));
 /* If the write can't be done with one set of buffer registers, then set the */
 /* cflag to re-fill the buffer regs and continue writing. */
 	int cflag = 0;
-/* Transfer value to the write buffer */
+/* current address being written to flash copy */
 	word *curraddr = (word *)saddr;
-	word nextaddr = 0;
-/* The base is where the flash writes begin at. The right shift of 2 */
-/* (division by 4) is so that the pointer arithmetic performed by the */
-/* works properly. */
-	word base = (((word)faddr & 0x7F) >> 2);
+/* The fpage_os is the offset of FLASH_FMA_R where the flash writes begin at.*/
+/* This address must be word aligned. */
+	word fpage_os = (word)faddr & 0xFC;
 /* Since 0's can not be programmed back to a 1. We have to copy and erase */
 /* flash before making the write. */
-/*TODO: Still have to put fcopy back in flash. */
+/*TODO:
+ * What should we do about overrunning stack space? Enforce a minimum stack
+ * size on the user? Move it to a syscall and use the kernel's 4KB stack?
+ */
+	word fcopy[256]; /* 1KB of space */
 	int i;
-	word fcopy[32]; /* 1KB of space */
-	for(i = 0; i < 32; i++) {
+	for(i = 0; i < 256; i++) {
 		fcopy[i] = *((word *)FLASH_FMA_R + i);
 	}
+/* Write the new data into the copy we've obtained. */
+  if(fpage_os != 0) {
+    i = (fpage_os >> 2) - 1;
+  }
+  else {
+    i = 0;
+  }
+/* Write in the new values into the copy we've obtained. */
+  while(curraddr < (word *)eaddr) {
+    fcopy[i] = *curraddr;
+    curraddr += 1;
+  }
   FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
   while(FLASH_FMC_R);
 Write:
-	while(curraddr < (word *)eaddr) {
-		*(&FLASH_FWBN_R + base + nextaddr) = *curraddr;
-		nextaddr += 1;
-		curraddr += 1;
+  i = 0;
+	while((FLASH_FMA_R + i*4) < (FLASH_FMA_R + 1*KB)) {
+		*(&FLASH_FWBN_R + i) = fcopy[i];
+    i++;
 /* Check to see if all the flash buffers have filled. If they have, then we */
 /* need to write and continue filling the buffers after the write has */
 /* completed. */
@@ -154,10 +170,10 @@ Write:
 	else if(FLASH_FCRIS_R & FLASH_FCRIS_VOLTRIS) {
 		return -1;
 	}
-/* Load the buffer registers again if we need to */
+/* Load the buffer registers again if we need to from where we left off*/
 	if(1 == cflag) {
 		cflag = 0;
-		nextaddr = 0;
+    FLASH_FMA_R = FLASH_FMA_R + i*4;
 		goto Write;
 	}
 	return 0;
@@ -175,3 +191,5 @@ void protect_flash(int numpages) {
 	}
 	FLASH_FMPPE0_R &= ~protbits;
 }
+/**************************************UART***********************************/
+/*TODO:*/

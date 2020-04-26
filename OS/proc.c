@@ -68,7 +68,7 @@ struct pcb* reserveproc(char *name) {
 		}
 	}
 	ptable[i].state = RESERVED;
-	strncpy(name, ptable[i].name, strlen(name));
+	strncpy(ptable[i].name, name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
 /* Make sure we have ram space */
@@ -177,9 +177,6 @@ void scheduler() {
 		}
 		struct pcb *schedproc = &ptable[index];
 /* If the process is waiting for another, check to see if it's exited. */
-/*TODO:
- * The waitpids list is out of order. The wrong pids are being set to UNUSED.
- */
 		if(schedproc->state == WAITING && \
 			ptable[schedproc->waitpid].state == UNUSED) {
 			schedproc->state = RUNNABLE;

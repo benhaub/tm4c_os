@@ -25,16 +25,13 @@ struct superblock sb;
 struct dinode create(char *name, struct dinode *cwd) {
 	struct dinode dn;
 	if(cwd != NULL) {
-/*TODO:
- * Make sure this works
- */
 		strncat(name, "/", 1);
 		strncat(cwd->name, name, strlen(name));
 	}
 	else {
 /* Directory is in root */
-		strncpy("/", dn.path, strlen("/"));
-		strncpy(name, dn.name, strlen(name));
+		strncpy(dn.path, "/", strlen("/"));
+		strncpy(dn.name, name, strlen(name));
 		dn.size = sizeof(struct dinode);
 /* Find a block to save to. Free blocks are 1 and non-free are 0 */
 		int i = 0;
