@@ -1,13 +1,14 @@
 /******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	proc.h
- * Synopsis	:	Process related structs and functions
- * Date			:	June 5th, 2019
+ * Authour  : Ben Haubrich                                                    *
+ * File     : proc.c                                                          *
+ * Synopsis : Process related structs and functions                           *
+ * Date     : June 5th, 2019                                                  *
  *****************************************************************************/
 #include <mem.h>
 #include <proc.h>
 #include <cstring.h>
 #include <tm4c123gh6pm.h>
+#include <hw.h> /* For protect_flash() */
 
 /* From context.s */
 extern void swtch(word);
@@ -34,11 +35,11 @@ void user_init() {
 	maxpid = 0;
 	currpid = 0;
 	struct pcb *initshell = reserveproc("initshell");
+	if(NULL == initshell) {
+		return;
+	}
 	initshell->context.pc = (word)smain;
 	scheduler();
-	if(RUNNABLE == currproc()->state) {
-		swtch(currproc()->context.sp);
-	}
 }
 
 /*
@@ -49,6 +50,7 @@ struct pcb* reserveproc(char *name) {
 	if(sizeof(name) > 16 && NULL != name) {
 		return NULL;
 	}
+	int ret;
 /* Find an UNUSED process from the process table. */
 	int i = 0;
 	while(1) {
@@ -66,45 +68,37 @@ struct pcb* reserveproc(char *name) {
 		}
 	}
 	ptable[i].state = RESERVED;
-	strncpy(name, ptable[i].name, strlen(name));
+	strncpy(ptable[i].name, name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
-/* The process still needs to be initialised */
-	ptable[i].initflag = 1;
+/* Make sure we have ram space */
+	if(-1 != (ret = get_stackspace())) {
+		ptable[i].rampg = ret;
+	}
+	else {
+		return NULL;
+	}
 	return (ptable + i);
 }
 
 /*
  * Initialize a RESERVED process so it's ready to be context switched too.
  * This function alters context, so must be run just before the context
- * switchet or if assurance is made that context will not be corruped before
- * it's switched to.
+ * switcher.
  */
-void initproc(struct pcb *reserved) {
+static void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
-/* For every proc in the ptable. It's pid (or index in the ptable) determines*/
-/* where it will reside in flash. The first process will reside in the second*/
-/* block, the second process will reside in the third block. The kernel is */
-/* located in the first block. swtch() will branch to this address, so bit[0]*/
-/* must be 1 because EPSR has the thumb bit set on all armv7-m */
-/* acrchitectures, hence why we add 1 to the address. All branches to */
-/* link register in thumb mode must be to an address whose bit[0] is 1. */
-
 /* The default value of all members in the context of new procs is */
 /* initialized is zero. If they are not zero, it means they have been */
 /* deliberately set to something else (e.g. fork() editing the pc). */
-	if(reserved->context.pc == 0) {
-		reserved->context.pc = ((reserved->pid) * FLASH_PAGE_SIZE) + 1;
-	}
-/* Multiply by twice the stack size since the top of the stack at position */
-/* 1 is 0x20002000, and decreases to 0x20001000. */
 	if(reserved->context.sp == 0) {
-		reserved->context.sp = _SRAM + ((get_stackspace()*STACK_SIZE)+STACK_SIZE);
+		reserved->context.sp = _SRAM + (reserved->rampg*STACK_SIZE);
 	}
 /* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
-/* into lr. */
-	reserved->context.sp = reserved->context.sp - 52;
+/* into lr. The extra 4 is because of the sp increment before storing when */
+/* pushing onto the stack. */
+	reserved->context.sp = reserved->context.sp - (CTXSTACK + 0x4);
 /* Pointer to proc is cast to a word because the compiler didn't seem to */
 /* want to give me the pointer. It always came out to the value of sp in */
 /* context struct. */
@@ -118,15 +112,23 @@ void init_ptable() {
 /* The kernel ends at smain. We'll find out how many pages it used, then */
 /* start after that. */
 	int i;
+	int j;
 	for(i = 0; i < ((word)smain/FLASH_PAGE_SIZE + 1); i++) {
 		ptable[i].state = KERNEL;
 		ptable[i].numchildren = 0;
-		ptable[i].waitpid = NULLPID;
+		for(j = 0; j < MAX_CHILD; j++) {
+			ptable[i].waitpid = NULLPID;
+		}
 	}
+/* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
+/* Commented out until I feel it's ok to do this without permanent writes. */
+	//protect_flash(i);
 	while(i < MAX_PROC) {
 		ptable[i].state = UNUSED;
 		ptable[i].numchildren = 0;
-		ptable[i].waitpid = NULLPID;
+    ptable[i].waitpid = NULLPID;
+		ptable[i].ppid = NULLPID;
+		ptable[i].initflag = 1;
 		i++;
 	}
 }
@@ -173,25 +175,22 @@ void scheduler() {
 		if(index > maxpid || index > MAX_PROC) {
 			index = 0;
 		}
-		struct pcb schedproc = ptable[index];
+		struct pcb *schedproc = &ptable[index];
 /* If the process is waiting for another, check to see if it's exited. */
-		if(schedproc.state == WAITING && ptable[schedproc.waitpid].state == UNUSED){
-			ptable[index].state = RUNNABLE;
+		if(schedproc->state == WAITING && \
+			ptable[schedproc->waitpid].state == UNUSED) {
+			schedproc->state = RUNNABLE;
+			schedproc->waitpid = NULLPID;
 		}
-		if(schedproc.state == RESERVED || schedproc.state == RUNNABLE) {
-			currpid = schedproc.pid;
-/*TODO:
- * Now that the kernel is running in thread mode instead of handler, is it
- * possible to have the scheduler be the only thing that calls swtch now?
- * This would fix the issue of initproc overwriting the RUNNING status with
- * RUNNABLE.
- */
-			schedproc.state = RUNNING;
-			if(1 == schedproc.initflag) {
+		if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
+			currpid = schedproc->pid;
+			if(1 == schedproc->initflag) {
 				initproc(ptable + index);
+				schedproc->initflag = 0;
 			}
 			index++;
-			return;
+			schedproc->state = RUNNING;
+			swtch(schedproc->context.sp);
 		}
 		else {
 			index++;

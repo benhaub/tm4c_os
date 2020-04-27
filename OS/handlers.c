@@ -1,9 +1,9 @@
-/**************************************************************************
- *Authour	:	Ben Haubrich																									*
- *File		:	handlers.c																										*
- *Synopsis:	fault handlers																								*
- *Date		: May 18th, 2019																								*
- **************************************************************************/
+/******************************************************************************
+ *Authour : Ben Haubrich                                                      *
+ *File    : handlers.c                                                        *
+ *Synopsis: fault handlers                                                    *
+ *Date    : May 18th, 2019                                                    *
+ *****************************************************************************/
 #include <tm4c123gh6pm.h> /* Hardware register macros. */
 #include <types.h> /* For the word data type. */
 #include <kernel_services.h> /* Syscalls for svc_handler. */
@@ -11,9 +11,11 @@
 
 /* From vectors.s */
 extern void processor_state(int);
-extern void kernel_entry(void);
+extern void kernel_entry(struct pcb *);
 /* From context.s */
 extern void swtch(word sp);
+/* Function prototypes. */
+void syst_handler(word) __attribute__((noreturn));
 
 /*
  * Puts the return value from system calls into the processes context.
@@ -34,6 +36,7 @@ void hfault_handler() {
 /* Eliminate unsed variable warnings. */
 	faultstat_vect=faultstat_vect;faultstat_forced=faultstat_forced;
 	faultstat_dbg=faultstat_dbg;
+  NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 	while(1);
 }
 /* Memory Management Handler. */
@@ -44,10 +47,15 @@ void mm_handler() {
 void b_handler() {
 	word fault_addr;
 	word bfarv, blsperr, bstke, bustke, impre, precise, ibus;
-/* Get the address of the fault. */
-	fault_addr = NVIC_FAULT_ADDR_R;
 /* Make sure memory contents are valid. */
 	bfarv = (NVIC_FAULT_STAT_R & (1 << 15));
+/* Get the address of the fault has a valid address. */
+  if(bfarv) {
+    fault_addr = NVIC_FAULT_ADDR_R;
+  }
+  else {
+    fault_addr = 0;
+  }
 /* See Pg. 179, datasheet. */
 	blsperr = (NVIC_FAULT_STAT_R & (1 << 13));
 	bstke = (NVIC_FAULT_STAT_R & (1 << 12));
@@ -58,6 +66,8 @@ void b_handler() {
 /* Eliminate unsed variable warnings. */
 	fault_addr=fault_addr;bfarv=bfarv;blsperr=blsperr;bstke=bstke;bustke=bustke;
 	impre=impre;precise=precise;ibus=ibus;
+/* Clear the contents of the fault register */
+  NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 /* View the contents with a debugger. */
 	while(1);
 }
@@ -95,7 +105,7 @@ void svc_handler(int sysnum, word arg1) {
 						break;
 		case 1: ret = syswait(arg1);
 						break;
-		case 2: ret = sysexit();
+		case 2: ret = sysexit(arg1);
 						break;
 		default: while(1); 
 	}
@@ -112,12 +122,15 @@ void psv_handler() {
 }
 /* Systick handler (clock tick interrupt) */
 void syst_handler(word sp) {
-/* Subtract 20 away because we haven't push the stack yet, but we will. */
-	currproc()->context.sp = sp - 20;
-	kernel_entry();
-	currproc()->state = RUNNABLE;
-	scheduler();
-	if(RUNNABLE == currproc()->state) {
-		swtch((word)currproc()->context.sp);
+	struct pcb *systproc = currproc();
+/* Don't change the state to RUNNABLE, just go to the scheduler */
+	if(UNUSED == systproc->state || WAITING == systproc->state) {
+		kernel_entry(systproc);
+		scheduler();
+	}
+	else {
+		kernel_entry(systproc);
+		systproc->state = RUNNABLE;
+		scheduler();
 	}
 }

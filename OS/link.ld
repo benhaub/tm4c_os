@@ -1,17 +1,17 @@
 /******************************************************************************
- * Authour	:	Ben Haubrich																										*
- * File			: link.ld																													*
- * Synopsis	:	linkerscript for tm4c_os																				*
- * Date			: May 16th, 2019																									*
+ * Authour  : Ben Haubrich                                                    *
+ * File     : link.ld                                                         *
+ * Synopsis : linkerscript for tm4c_os                                        *
+ * Date     : May 16th, 2019                                                  *
  *****************************************************************************/
-/* Please see "The GNU linker" documentation for information on linker */
-/* scripts. */
 
 MEMORY
 {
 	FLASH (wx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 /* 256KB FLASH */
 	SRAM	(wx)	: ORIGIN = 0x20000000, LENGTH = 0x00008000 /* 32KB SRAM */
 }
+/* Used by the kernel to calculate it's size in flash memory. */
+smainsize = SIZEOF(.text.smain);
 
 SECTIONS
 {
@@ -22,8 +22,8 @@ SECTIONS
 		*(.text)
 		_etext = .;
 	} >FLASH
-	
-	.text.smain : 
+
+	.text.smain :
 	{
 		_text.smain = .;
 		KEEP(*(.text.smain))

@@ -7,6 +7,8 @@
 #ifndef __HW_H__
 #define __HW_H__
 
+#include <types.h>
+
 /* 16 MHz PIOSC freqency */
 #define CLOCK_FREQ 16000000
 /* 1ms clock tick */
@@ -23,5 +25,10 @@ void led_gron(void);
 void led_groff(void);
 void led_blon(void);
 void led_bloff(void);
+/* Flash Memory calls */
+int write_flash(void *, void *, void *);
+void erase_flash(int);
+void protect_flash(int);
+/* UART calls */
 
 #endif /*__HW_H__*/

@@ -1,8 +1,8 @@
 /******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	syscalls.c
- * Synopsis	:	System calls for tm4c_os kernel services
- * Date			:	July 18th, 2019
+ * Authour  : Ben Haubrich                                                    *
+ * File     : syscalls.c                                                      *
+ * Synopsis : System calls for tm4c_os kernel services                        *
+ * Date     : July 18th, 2019                                                 *
  *****************************************************************************/
 #include <types.h>
 #include <proc.h>
@@ -30,7 +30,10 @@ int wait(int pid) {
 	return ret;
 }
 
-int exit() {
-	return syscall(EXIT, currproc());
+int exit(int exitcode) {
+	syscall1(EXIT, currproc(), &exitcode);
+/* Wait to be scheduled. This is done because the scheduler can't be called */
+/* from handler mode. All sys*() calls run in handler mode. */
+	while(1);
 }
 

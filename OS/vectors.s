@@ -1,9 +1,9 @@
-/**************************************************************************
- *Authour	:	Ben Haubrich																									*
- *File		:	vectors.s																											*
- *Synopsis:	vector table, fault & reset handlers for ARM Cortex M-series	*
- *Date		: May 6th, 2019																									*
- **************************************************************************/
+/******************************************************************************
+ *Authour : Ben Haubrich                                                      *
+ *File    : vectors.s                                                         *
+ *Synopsis: vector table, fault & reset handlers for ARM Cortex M-series      *
+ *Date    : May 6th, 2019                                                     *
+ *****************************************************************************/
 /* Please refer to "Using as - The GNU Assembler" for all syntax. Only the
 /* opcodes (ldr, mov, str) and the operands they accept are ARM specific. */
 /* Some machine configurations provide additional directives such as  */
@@ -36,7 +36,8 @@ STACK_TOP:
 /*
  * The STACK_TOP expression says: Take the address of STACK_TOP, move it by
  * 4KB. Then at the STACK_TOP label above, it says, now give me 4KB of space
- * for this address.
+ * for this address. Note that this is the KERNEL stack point, not a user
+ * stack pointer. It's not the same
  */
 Vectors:
 	.word STACK_TOP + 0x1000 /* Boot loader gets kernel stack pointer from here*/
@@ -65,8 +66,7 @@ Reset_EXCP: .fnstart
 /* allocating ram pages for user programs. See get_stackspace(). */
 /* Where ever the top of stack is determines how much space the kernel is */
 /* using. */
-/* 4KB stack size */
-						mov r0, #0x1000
+						mov r0, #0x1000 /* Stack Size */
 						mov r1, sp
 						sub r1, r1, #0x20000000
 /* Divide this by the current position of the sp to get an integer for */
@@ -99,8 +99,9 @@ MM_FAULT: .fnstart
 	.align 2
 	.type BFAULT, %function
 BFAULT: .fnstart
-					b b_handler
+         b b_handler
 				.fnend
+
 	.align 2
 	.type UFAULT, %function
 UFAULT:	.fnstart
@@ -128,26 +129,38 @@ PSV_ISR: .fnstart
 /*
  * The reason we don't do a direct branch to the handler is to avoid context
  * switching while in handler mode. The processor's exception mechanism makes
- * that very difficult.
+ * switching in handler mode very difficult. The exception mechanism exits
+ * handler mode on the bx lr, and stack saving happens in kernel_entry. The
+ * purpose of this code here is too save r0, pc and lr because it will be
+ * changed when we enter the exeption handler c code. kernel_entry will need
+ * these values in order to save the correct context.
  */
 	.align 2
 	.type SYST_ISR, %function
 SYST_ISR: .fnstart
 /* Get the processes stack pointer and save it */
 					mrs r0, psp
+/* Save the value of the exception stack r0. */
 					mov r4, r0
-/* Save the value of r0 on the exception stack. */
-					ldr r6, [r0]
-/* Save the pc. */
+/* Save the value of the exception stack pc. */
 					ldr r5, [r0, #24]
+/* Save the value of the exception stack lr. */
+					ldr r6, [r0, #20]
+/* Make sure r5 has bit one set for thumb instructions. */
+					ands r8, r5, #0x1
+					bne Thumb
+					add r5, r5, #0x1
+Thumb:
 					ldr r3,=syst_handler
-/* overwrite r0 on the stack for a function call. It will be returned in. */
+/* overwrite r0 on the stack for a function call. It will be returned in */
 /* kernel_entry(). */
 					str r0, [r4]
 /* Place syst_handler on the stacked pc. Exception mechanism retores it to lr*/
 					str r3, [r0, #24]
+/* Save r7 in case syst_handler changes it. */
+					mov r8, r7
 /* Exception return mechanism will return r0-r3 to pre-exception values. */
-/* r4 and r5 remain unscathed. */
+/* r4, r5, and r6 remain unscathed. */
 /* Change thread mode privledge level to privledged. */
 					mrs r3, CONTROL
 					bic r3, r3, #0x1
@@ -156,17 +169,28 @@ SYST_ISR: .fnstart
 					.fnend
 
 /*
- * Entry to the kernel from the systick isr. This function executed from thread
- * mode instead of handler mode, and makes it possible to save stacks and 
- * context switch properly.
+ * Entry to the kernel from the systick isr. It is executed from thread
+ * mode instead, and makes it possible to save stacks and 
+ * context switch properly. It makes sure the process stack is returned to
+ * it's orginal state, and then pushes the context onto the stack and saves
+ * the stack pointer (psp) before switching stacks from psp to msp.
  */
 	.align 2
 	.type kernel_entry, %function
 kernel_entry: .fnstart
+/* Transfer r0 to r9 so that r0 can be returned to it's saved pre-systick */
+/* interrupt value. */
+							mov r9, r0
 /* Return r0 to it's initial value */
-							mov r0, r6
-							push {r0-r3, r12, r5}
-/* Switch stacks to msp */
+							mov r0, r4
+/* Save the lr before moving the saved pc from systick isr into it. */
+							mov r4, r14
+							mov r14, r6
+							push {r0-r3, r5, r8, r12, r14}
+/* Save the stack pointer to context struct */
+							str sp, [r9] 
+/* Switch stacks to msp and restore lr to it's original value */
+							mov r14, r4
 							mrs r3, CONTROL
 							bic r3, r3, #0x2
 							msr CONTROL, r3
@@ -185,5 +209,4 @@ processor_state: .fnstart
 Disable:				 cpsid i
 Return:					 bx lr
 								 .fnend
-/* Pg.111, ALT */
 	.end
