@@ -143,7 +143,7 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
     curraddr += 1;
     i++;
   }
-/* Erase the 1KB block of flash starteing at faddr. */
+/* Erase the 1KB block of flash starting at faddr. */
   FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
   while(FLASH_FMC_R);
   j = 0;
@@ -166,17 +166,21 @@ Write:
 	FLASH_FMC2_R |= FLASH_FMC_WRKEY | FLASH_FMC2_WRBUF;
 /* Wait for WRBUF to clear */
 	while(FLASH_FMC2_R);
-/* Check raw interrupt status for any errors */
+/* Check raw interrupt status for any errors, then clear it. */
 	if(FLASH_FCRIS_R & FLASH_FCRIS_PROGRIS) {
+    FLASH_FCMISC_R |= FLASH_FCMISC_PROGMISC;
 		return -1;
 	}
 	else if(FLASH_FCRIS_R & FLASH_FCRIS_ERRIS) {
+    FLASH_FCMISC_R |= FLASH_FCMISC_ERMISC;
 		return -1;
 	}
 	else if(FLASH_FCRIS_R & FLASH_FCRIS_INVDRIS) {
+    FLASH_FCMISC_R |= FLASH_FCMISC_INVDMISC;
 		return -1;
 	}
 	else if(FLASH_FCRIS_R & FLASH_FCRIS_VOLTRIS) {
+    FLASH_FCMISC_R |= FLASH_FCMISC_VOLTMISC;
 		return -1;
 	}
 /* Load the buffer registers again if we need to from where we left off*/
