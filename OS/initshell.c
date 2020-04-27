@@ -57,12 +57,13 @@ void forktest() {
  * values.
  */
 void wrflash() {
+  int i = 0;
 
 	struct testwrite {
 		int first;
 		int second;
 		int third;
-	}tw;
+	}tw, tw2;
 
 	tw.first = 0xDEADBEEF;
 	tw.second = 0xCAFEBABE;
@@ -73,15 +74,42 @@ void wrflash() {
 
 	write_flash(&tw, &tw + 1, faddr);
 /* Compare the values at each address of flash and ram to see if they match */
-	while((word)faddr <= ((word)faddr + sizeof(tw))) {
-		if(*raddr != *faddr) {
+	while((word)(faddr + i) < (word)faddr + sizeof(tw)) {
+		if(*(raddr + i) != *(faddr + i)) {
 			return;
 		}
 		else {
-			raddr++; 
-			faddr++;
+      i++;
 		}
 	}
+/* Make another write in the middle of the page. Make sure the first write is */
+/* still in flash, and make sure the new write work properly. */
+  tw2.first = 0x11191555;
+  tw2.second = 0x8675309;
+  tw2.third = 0xBADDAD;
+  write_flash(&tw2, &tw2 + 1, faddr + 40);
+  i = 0;
+  while((word)(faddr + i) < (word)faddr + sizeof(tw)) {
+    if(*(raddr + i) != *(faddr + i)) {
+      return;
+    }
+    else {
+      i++;
+    }
+  }
+  raddr = (word *)&tw2;
+  i = 0;
+/*TODO:
+ * Failing this test.
+ */
+  while((word)(faddr + 40 + i) < (word)(faddr + 40)  + sizeof(tw)) {
+    if(*(raddr + i) != *(faddr + 40 + i)) {
+      return;
+    }
+    else {
+      i++;
+    }
+  }
 }
 
 /*

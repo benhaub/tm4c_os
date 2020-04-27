@@ -46,6 +46,10 @@ void start_clocktick() {
 /* Evaluation Kit User's Manual, Pg.9. The Initializaton process is found */
 /* in the datasheet on Pg.656. */
 
+/*
+ * Initialize PortF for led operation. This function must be run before the LEDs
+ * can be used.
+ */
 void led_init() {
 	SYSCTL_RCGCGPIO_R |= (1 << 5); //Enable port f
 	/* Dummy instruction to let the clock settle */
@@ -106,7 +110,7 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
     return -1;
   }
 /* Align the flash address to the nearest 1KB boundary */
-	FLASH_FMA_R = ((word)faddr & ~(0x7F));
+	FLASH_FMA_R = ((word)faddr & ~(0x3FF));
 /* If the write can't be done with one set of buffer registers, then set the */
 /* cflag to re-fill the buffer regs and continue writing. */
 	int cflag = 0;
@@ -122,13 +126,13 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
  * size on the user? Move it to a syscall and use the kernel's 4KB stack?
  */
 	word fcopy[256]; /* 1KB of space */
-	int i;
+	int i, j;
 	for(i = 0; i < 256; i++) {
 		fcopy[i] = *((word *)FLASH_FMA_R + i);
 	}
 /* Write the new data into the copy we've obtained. */
   if(fpage_os != 0) {
-    i = (fpage_os >> 2) - 1;
+    i = (fpage_os >> 2);
   }
   else {
     i = 0;
@@ -137,14 +141,19 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
   while(curraddr < (word *)eaddr) {
     fcopy[i] = *curraddr;
     curraddr += 1;
+    i++;
   }
+/* Erase the 1KB block of flash starteing at faddr. */
   FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
   while(FLASH_FMC_R);
+  j = 0;
+/* Copy the modified fcopy back into the flash write buffers. */
 Write:
   i = 0;
 	while((FLASH_FMA_R + i*4) < (FLASH_FMA_R + 1*KB)) {
-		*(&FLASH_FWBN_R + i) = fcopy[i];
+		*(&FLASH_FWBN_R + i) = fcopy[j];
     i++;
+    j++;
 /* Check to see if all the flash buffers have filled. If they have, then we */
 /* need to write and continue filling the buffers after the write has */
 /* completed. */
@@ -157,7 +166,7 @@ Write:
 	FLASH_FMC2_R |= FLASH_FMC_WRKEY | FLASH_FMC2_WRBUF;
 /* Wait for WRBUF to clear */
 	while(FLASH_FMC2_R);
-/* Check raw interupt status for any errors */
+/* Check raw interrupt status for any errors */
 	if(FLASH_FCRIS_R & FLASH_FCRIS_PROGRIS) {
 		return -1;
 	}
@@ -179,7 +188,20 @@ Write:
 	return 0;
 }
 
-/* Protect flash in 2KB blocks up to the flash address given */
+/*TODO:
+ * Erase a 1KB page of flash.
+ */
+void erase_flash(int page) {
+  return;
+}
+
+/*
+ * Protect flash in 2KB blocks up to the flash address given
+ */
+/*TODO
+ * Description is inaccurate, function is not that useful, and untested. You
+ * should be able to protect invidual pages.
+ */
 void protect_flash(int numpages) {
 	int protbits = 0;
 	int i = 0;
