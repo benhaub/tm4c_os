@@ -1,0 +1,11 @@
+../*.pdf
+*.o
+*.elf
+*.bin
+*.map
+*.txt
+*.cfg
+TODO
+BUGS
+.deps
+*.bash

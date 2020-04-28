@@ -99,9 +99,6 @@ void wrflash() {
   }
   raddr = (word *)&tw2;
   i = 0;
-/*TODO:
- * Failing this test.
- */
   while((word)(faddr + 40 + i) < (word)(faddr + 40)  + sizeof(tw)) {
     if(*(raddr + i) != *(faddr + 40 + i)) {
       return;
