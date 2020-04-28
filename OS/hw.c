@@ -121,10 +121,6 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
 	word fpage_os = (word)faddr & 0xFC;
 /* Since 0's can not be programmed back to a 1. We have to copy and erase */
 /* flash before making the write. */
-/*TODO:
- * What should we do about overrunning stack space? Enforce a minimum stack
- * size on the user? Move it to a syscall and use the kernel's 4KB stack?
- */
 	word fcopy[256]; /* 1KB of space */
 	int i, j;
 	for(i = 0; i < 256; i++) {
@@ -193,9 +189,14 @@ Write:
 }
 
 /*TODO:
- * Erase a 1KB page of flash.
+ * Test
  */
-void erase_flash(int page) {
+void erase_flash(word *pageaddr) {
+/* Align the flash address to the nearest 1KB boundary */
+	FLASH_FMA_R = pageaddr & ~0x3FF;
+/* Erase the 1KB block of flash starting at pageaddr. */
+  FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
+  while(FLASH_FMC_R);
   return;
 }
 
