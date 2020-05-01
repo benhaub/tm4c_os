@@ -187,11 +187,10 @@ Write:
 	}
 	return 0;
 }
-
 /*TODO:
  * Test
  */
-void erase_flash(word *pageaddr) {
+void erase_flash(word pageaddr) {
 /* Align the flash address to the nearest 1KB boundary */
 	FLASH_FMA_R = pageaddr & ~0x3FF;
 /* Erase the 1KB block of flash starting at pageaddr. */
@@ -199,7 +198,6 @@ void erase_flash(word *pageaddr) {
   while(FLASH_FMC_R);
   return;
 }
-
 /*
  * Protect flash in 2KB blocks up to the flash address given
  */

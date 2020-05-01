@@ -27,7 +27,7 @@ void led_blon(void);
 void led_bloff(void);
 /* Flash Memory calls */
 int write_flash(void *, void *, void *);
-void erase_flash(int);
+void erase_flash(word);
 void protect_flash(int);
 /* UART calls */
 
