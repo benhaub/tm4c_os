@@ -7,6 +7,7 @@
 #ifndef __SYSCALLS_H__
 #define __SYSCALLS_H__
 
+int flash(void *, void *, void *);
 int fork(void);
 int wait(int);
 int exit(int);

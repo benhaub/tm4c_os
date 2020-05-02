@@ -10,10 +10,17 @@
 #define FORK 0
 #define WAIT 1
 #define EXIT 2
+#define FLASH 3
 
 /* From syscall.s */
 extern int syscall(int sysnum, struct pcb *);
 extern int syscall1(int sysnum, struct pcb *, void *arg1);
+extern int syscall2(int sysnum, struct pcb *, void *arg1, void *arg2);
+extern int syscall3(int sysnum, struct pcb *, void *arg1, void *arg2, void *arg3);
+
+int flash(void *saddr, void *eaddr, void *faddr) {
+  return syscall3(FLASH, currproc(), saddr, eaddr, faddr);
+}
 
 int fork() {
 	return syscall(FORK, currproc());

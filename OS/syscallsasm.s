@@ -20,22 +20,22 @@ syscall: .fnstart
 /* Put the program counter and all general purpose registers into the */
 /* processes struct context. This is required for fork(). The pc from the */
 /* original system call is in the stacked link register. */
-					ldr r2, [sp, #4]
-					str r2, [r1, #4]
+					  ldr r2, [sp, #4]
+					  str r2, [r1, #4]
 /* Restore stack pointer to where it was before system call. (before the */
 /* push {r7, lr} */
-					add r4, sp, #8
-					str r4, [r1]
+					  add r4, sp, #8
+					  str r4, [r1]
 /* The immediate value for svc is not used. The number used for determining */
 /* The kernel service is passed through as an argument to syscall() (here */
 /* that manifests itself as r0. */
 /* The cortex-m4 exception entry and return model take care of context. */
-					svc #0
+					  svc #0
 /* Move the returned value from the syscall to r0 so that the kernel */
 /* services return the right value */
-					ldr r0, [r1, #12]
-					bx lr
-				.fnend
+					  ldr r0, [r1, #12]
+					  bx lr
+				 .fnend
 
 /*
  * This is the assembly routine for system calls that have one argument.
@@ -45,17 +45,39 @@ syscall: .fnstart
 syscall1: .fnstart
 /* Argument needs to be placed in r1 so svc_handler gets it in arg1. First */
 /* save currproc though. */
-					mov r3, r1
+					  mov r3, r1
 /* Move the syscalls argument over to r1 and overwrite the currproc pointer. */
-					ldr r1, [r2]
+					  ldr r1, [r2]
 /* The immediate value for svc is not used. The number used for determining */
 /* The kernel service is passed through as an argument to syscall() (here */
 /* that manifests itself as r0. */
-					svc #0
+					  svc #0
 /* Move the returned value from the syscall to r0 so that the kernel */
 /* services return the right value */
-					ldr r0, [r3, #12]
-					bx lr
-				.fnend
+					  ldr r0, [r3, #12]
+					  bx lr
+				 .fnend
+
+  .global syscall2
+  .type syscall2, %function
+syscall2: .fnstart
+            mov r4, r1
+/* Shift all the arguments over so it lines up with arguments in the handler */
+            ldr r1, [r2]
+            ldr r2, [r3]
+            svc #0
+            ldr r0, [r4, #12]
+          .fnend
+
+  .global syscall3
+  .type syscall3, %function
+syscall3: .fnstart
+            mov r5, r1
+            ldr r1, [r2]
+            ldr r2, [r3]
+            ldr r3, [r4]
+            svc #0
+            ldr r0, [r5, #12]
+          .fnend
 
 	.end

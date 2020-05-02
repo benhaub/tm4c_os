@@ -102,7 +102,10 @@ void led_bloff() {
 /*
  * Follows the procedure on Pg. 532, datasheet.
  * Write values in in ram from starting from saddr and ending at eaddr into
- * flash memory that starts at faddr. You can not write more than 1KB at a time.
+ * flash memory that starts at faddr. This function allows you to write a
+ * maximum of 1KB per call. For successive block writes, make multiple calls.
+ * Note that this call requires greater than 1KB of stack space. User programs
+ * should not call this function directly; use the system call instead.
  * Returns 0 on success, -1 on error.
  */
 int write_flash(void *saddr, void *eaddr, void *faddr) {

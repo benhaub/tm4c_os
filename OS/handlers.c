@@ -7,7 +7,7 @@
 #include <tm4c123gh6pm.h> /* Hardware register macros. */
 #include <types.h> /* For the word data type. */
 #include <kernel_services.h> /* Syscalls for svc_handler. */
-#include <proc.h> /* For scheduler() */
+#include <proc.h> /* In systick interrupt, For scheduler() */
 
 /* From vectors.s */
 extern void processor_state(int);
@@ -94,7 +94,11 @@ void u_handler() {
 }
 /* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */
 /* up here, and then it's decided how to handle it based on the sysnum. */
-void svc_handler(int sysnum, word arg1) {
+/*TODO:
+ * args should be void *. Change once write_flash and everything else has been
+ * verified to work.
+ */
+void svc_handler(int sysnum, word arg1, word arg2, word arg3) {
 /* Return values from system calls. */
 	word ret;
 /* Disable interrupts to prevent scheduling while performing kernel */
@@ -107,6 +111,8 @@ void svc_handler(int sysnum, word arg1) {
 						break;
 		case 2: ret = sysexit(arg1);
 						break;
+    case 3: ret = sysflash(arg1, arg2, arg3);
+            break;
 		default: while(1); 
 	}
 /* Store return values */

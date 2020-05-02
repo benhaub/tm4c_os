@@ -7,11 +7,16 @@
 #include <proc.h>
 #include <types.h>
 #include <cstring.h>
-#include <mem.h>
+#include <mem.h> /* in sysexit(), for free_stackspace() */
+#include <hw.h> /* for write_flash() */
 
 /* From proc.c */
 extern int maxpid;
 extern struct pcb ptable[];
+
+int sysflash(void *saddr, void *eaddr, void *faddr) {
+  return write_flash(saddr, eaddr, faddr);
+}
 
 /*
  * Creates a new process. The forker forks the forked. Forker returns the pid

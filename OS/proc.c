@@ -110,7 +110,8 @@ static void initproc(struct pcb *reserved) {
 /* Also initialize pcb members. */
 void init_ptable() {
 /* The kernel ends at smain. We'll find out how many pages it used, then */
-/* start after that. */
+/* start after that. each entry of the ptable corresponds the to page it uses */
+/* in flash. */
 	int i;
 	int j;
 	for(i = 0; i < ((word)smain/FLASH_PAGE_SIZE + 1); i++) {
