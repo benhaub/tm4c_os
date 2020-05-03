@@ -69,10 +69,13 @@ void wrflash() {
 	tw.second = 0xCAFEBABE;
 	tw.third = 0xC0FFEE;
 
+/*TODO:
+ * Why is kflashpgs being typecast to a word pointer? Should just be work.
+ */
 	word *faddr = (word *)(KFLASHPGS*FLASH_PAGE_SIZE); /* flash address */
 	word *raddr = (word *)&tw; /* ram address */
 
-	write_flash(&tw, &tw + 1, faddr);
+	flash(&tw, &tw + 1, faddr);
 /* Compare the values at each address of flash and ram to see if they match */
 	while((word)(faddr + i) < (word)faddr + sizeof(tw)) {
 		if(*(raddr + i) != *(faddr + i)) {
@@ -87,7 +90,7 @@ void wrflash() {
   tw2.first = 0x11191555;
   tw2.second = 0x8675309;
   tw2.third = 0xBADDAD;
-  write_flash(&tw2, &tw2 + 1, faddr + 40);
+  flash(&tw2, &tw2 + 1, faddr + 40);
   i = 0;
   while((word)(faddr + i) < (word)faddr + sizeof(tw)) {
     if(*(raddr + i) != *(faddr + i)) {

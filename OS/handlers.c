@@ -94,11 +94,7 @@ void u_handler() {
 }
 /* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */
 /* up here, and then it's decided how to handle it based on the sysnum. */
-/*TODO:
- * args should be void *. Change once write_flash and everything else has been
- * verified to work.
- */
-void svc_handler(int sysnum, word arg1, word arg2, word arg3) {
+void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 /* Return values from system calls. */
 	word ret;
 /* Disable interrupts to prevent scheduling while performing kernel */
@@ -107,9 +103,9 @@ void svc_handler(int sysnum, word arg1, word arg2, word arg3) {
 	switch(sysnum) {
 		case 0: ret = sysfork();
 						break;
-		case 1: ret = syswait(arg1);
+		case 1: ret = syswait(*((word *)arg1));
 						break;
-		case 2: ret = sysexit(arg1);
+		case 2: ret = sysexit(*((word *)arg1));
 						break;
     case 3: ret = sysflash(arg1, arg2, arg3);
             break;
