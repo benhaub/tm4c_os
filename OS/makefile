@@ -30,9 +30,8 @@ CFLAGS=-mthumb \
 #-static: Stops ld from looking from .so's. No point in doing that since we are
 #linking .a's only
 #-M produces the .d files, -MF specifies an output directory for them
-#The $* is called an automatic variable. I don't like to use $@ or $< because
-#it makes the makefile too cryptic, but this one is needed. The $* becomes
-#whatever the % value expands to.
+#The $* is called an automatic variable. The $* becomes whatever the % value
+#expands to.
 
 #Linker options
 LDFLAGS=-Wl,--gc-sections \
