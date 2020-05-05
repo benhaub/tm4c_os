@@ -109,7 +109,6 @@ void led_bloff() {
  * Returns 0 on success, -1 on error.
  */
 int write_flash(void *saddr, void *eaddr, void *faddr) {
-	(word *)(KFLASHPGS*FLASH_PAGE_SIZE); /* flash address */
   if((word)faddr <= 0x1000) {
     while(1);
   }
@@ -194,8 +193,8 @@ Write:
 	}
 	return 0;
 }
-/*TODO:
- * Test
+/*
+ * Erase the 1KB flash page that contains the address pageaddr.
  */
 void erase_flash(word pageaddr) {
 /* Align the flash address to the nearest 1KB boundary */
@@ -223,5 +222,5 @@ void protect_flash(int numpages) {
 	}
 	FLASH_FMPPE0_R &= ~protbits;
 }
-/**************************************UART***********************************/
+/***********************************UART**************************************/
 /*TODO:*/
