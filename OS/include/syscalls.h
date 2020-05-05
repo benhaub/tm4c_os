@@ -10,6 +10,6 @@
 int flash(void *, void *, void *);
 int fork(void);
 int wait(int);
-int exit(int);
+int exit(int) __attribute__((noreturn));
 
 #endif /*__SYSCALLS_H__*/

@@ -15,7 +15,7 @@ extern void kernel_entry(struct pcb *);
 /* From context.s */
 extern void swtch(word sp);
 /* Function prototypes. */
-void syst_handler(word) __attribute__((noreturn));
+void syst_handler(word) __attribute__((noreturn, naked));
 
 /*
  * Puts the return value from system calls into the processes context.
@@ -124,15 +124,14 @@ void psv_handler() {
 }
 /* Systick handler (clock tick interrupt) */
 void syst_handler(word sp) {
-	struct pcb *systproc = currproc();
 /* Don't change the state to RUNNABLE, just go to the scheduler */
-	if(UNUSED == systproc->state || WAITING == systproc->state) {
-		kernel_entry(systproc);
+	if(UNUSED == currproc()->state || WAITING == currproc()->state) {
+		kernel_entry(currproc());
 		scheduler();
 	}
 	else {
-		kernel_entry(systproc);
-		systproc->state = RUNNABLE;
+		kernel_entry(currproc());
+		currproc()->state = RUNNABLE;
 		scheduler();
 	}
 }

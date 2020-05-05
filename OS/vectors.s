@@ -186,7 +186,7 @@ kernel_entry: .fnstart
 /* Save the lr before moving the saved pc from systick isr into it. */
 							mov r4, r14
 							mov r14, r6
-							push {r0-r3, r5, r8, r12, r14}
+							push {r0-r3, r5, r7, r12, r14}
 /* Save the stack pointer to context struct */
 							str sp, [r9] 
 /* Switch stacks to msp and restore lr to it's original value */

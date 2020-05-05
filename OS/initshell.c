@@ -148,9 +148,8 @@ int stringtest() {
  */
 int smain(void) __attribute__((section(".text.smain")));
 int smain() {
-/* Commented out so i don't burn out this block of flash */
 	wrflash();
-  stringtest();
 	forktest();
+  stringtest();
 	return 0;
 }

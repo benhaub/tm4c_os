@@ -14,8 +14,6 @@ CPU=-mcpu=cortex-m4 -march=armv7e-m -mtune=cortex-m4
 FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=hard
 #Flags for C compiler.
 CFLAGS=-mthumb \
-       -nodefaultlibs \
-       -static \
         ${CPU} \
         ${FPU} \
        -Iinclude \
@@ -25,8 +23,10 @@ CFLAGS=-mthumb \
        -fdata-sections \
        -ffreestanding \
        -std=c99 \
-       -Wall \
-       -pedantic
+       -nodefaultlibs \
+       -static \
+       -pedantic \
+       -Wall
 #-static: Stops ld from looking from .so's. No point in doing that since we are
 #linking .a's only
 #-M produces the .d files, -MF specifies an output directory for them
