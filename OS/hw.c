@@ -231,4 +231,18 @@ int protect_flash(int pageno) {
   return 0;
 }
 /***********************************UART**************************************/
-/*TODO:*/
+
+/*
+ * Initialize uart module 1. Follows the initialization procedure on Pg. 902 of
+ * the data sheet. PB0 and PB1 are used for RX and TX respectively. 2mA and
+ * default slew are rate are used. Only PB1 TX is enabled.
+ */
+void init_uart1() {
+/* Enable run mode for uart module 1. */
+  SYSCTL_RCGCUART_R |= (1 << 1);
+/* Enable run mode for GPIO Port B module (GPIOPB). */
+  SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
+  GPIO_PORTB_AFSEL_R |= 0x1; //UART1 alt function.
+  GPIO_PORTB_PCTL_R |= (1 << 4); //Transmit function for PB1.
+/* Initialize GPIOPB. Pg. 656 initialization procedure. */
+  GPIO_PORTB_DEN_R |= 0x1; /* Digital input/output, as opposed to analog. */
