@@ -117,13 +117,13 @@ void init_ptable() {
 	for(i = 0; i < ((word)smain/FLASH_PAGE_SIZE + 1); i++) {
 		ptable[i].state = KERNEL;
 		ptable[i].numchildren = 0;
+/* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
+    //protect_flash(i);
+    FLASH_FMPPE0_R |= 0xffffffff;
 		for(j = 0; j < MAX_CHILD; j++) {
 			ptable[i].waitpid = NULLPID;
 		}
 	}
-/* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
-/* Commented out until I feel it's ok to do this without permanent writes. */
-	//protect_flash(i);
 	while(i < MAX_PROC) {
 		ptable[i].state = UNUSED;
 		ptable[i].numchildren = 0;

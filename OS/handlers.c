@@ -43,7 +43,9 @@ void hfault_handler() {
 void mm_handler() {
 	while(1);
 }
-/* Bus Fault Handler. */
+/* Bus Fault Handler. Code that generates a bus fault usually exhibits */
+/* similar behaviour to code running in Linux that generates a segmentation */
+/* fault (accessing illegal adresses). */
 void b_handler() {
 	word fault_addr;
 	word bfarv, blsperr, bstke, bustke, impre, precise, ibus;

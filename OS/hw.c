@@ -205,22 +205,30 @@ void erase_flash(word pageaddr) {
   return;
 }
 /*
- * Protect flash in 2KB blocks up to the flash address given
+ * Protect the flash page given by pageno from being modified by a flash write.
+ * Page 0 will protect flash memory from 0x0 to 0x7FF. 1 will protect from
+ * 0x800 to 0xFFF, etc.
+ * Returns -1 on failure, 0 on success.
+ * 
+ * This function is making permanent writes somehow.
  */
-/*TODO
- * Description is inaccurate, function is not that useful, and untested. You
- * should be able to protect invidual pages.
- */
-void protect_flash(int numpages) {
-	int protbits = 0;
-	int i = 0;
-	for(i = numpages - 1; i >= 0; i--) {
-		protbits |= (1 << i);
-	}
-	if(0 == protbits) {
-		protbits++;
-	}
-	FLASH_FMPPE0_R &= ~protbits;
+int protect_flash(int pageno) {
+  if(pageno < 0 || pageno > 128) {
+    return -1;
+  }
+  if(pageno < 32) {
+    FLASH_FMPPE0_R &= (1 << pageno);
+  }
+  else if(pageno <  64) {
+    FLASH_FMPPE0_R &= (1 << (pageno % 32));
+  }
+  else if(pageno < 96) {
+    FLASH_FMPPE0_R &=(1 << (pageno % 32));
+  }
+  else {
+    FLASH_FMPPE0_R &= (1 << (pageno % 32));
+  }
+  return 0;
 }
 /***********************************UART**************************************/
 /*TODO:*/
