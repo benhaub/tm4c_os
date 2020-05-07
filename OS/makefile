@@ -11,6 +11,9 @@ VPATH=include
 CC=arm-none-eabi-gcc
 #Architecture specific options for C compiler
 CPU=-mcpu=cortex-m4 -march=armv7e-m -mtune=cortex-m4
+#The FPU is a single precision (sp) with 16 double word registers (d16). The
+#important information here is the sp. C treats all floats (double or not) as
+#doubles. They must be forced to single precision.
 FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=hard
 #Flags for C compiler.
 CFLAGS=-mthumb \
@@ -22,6 +25,7 @@ CFLAGS=-mthumb \
        -ffunction-sections \
        -fdata-sections \
        -ffreestanding \
+			 -fsingle-precision-constant \
        -std=c99 \
        -nodefaultlibs \
        -static \
@@ -37,7 +41,7 @@ CFLAGS=-mthumb \
 LDFLAGS=-Wl,--gc-sections \
         -Wl,--entry=Reset_EXCP \
         -Wl,-Tlink.ld \
-        -Wl,-Map=link.map \
+				-Wl,-Map=link.map \
         -Wl,-lgcc
 
 #Optionally include the symbol table for debugging. The 3 on the end of -g is

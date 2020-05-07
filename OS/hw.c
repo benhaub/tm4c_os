@@ -10,23 +10,15 @@
 #include <types.h>
 
 /*********************************SYSTICK*************************************/
-/* PIOSC clock is default. See Pg. 220 and Pg. 256-257 */
-static void systick_init() {
+/* PIOSC clock is default. See Pg. 219 and Pg. 256-257. RCC is left at */
+/* default, so what the datasheet refers to as the "System Clock" is the same */
+/* as the OSCSRC since the BYPASS is not enabled, nor is SYSDIV. */
+void systick_init() {
 	/* Make sure systick is disabled for initialization */
 	NVIC_ST_CTRL_R = 0;
-	NVIC_ST_RELOAD_R = CLOCK_FREQ;
+	NVIC_ST_RELOAD_R = SYS_CLOCK_FREQ;
 	NVIC_ST_CURRENT_R = 0;
 	NVIC_ST_CTRL_R = 0x1;
-	return;
-}
-/*
- * 1ms delay
- */
-void delay_1ms() {
-	systick_init();
-	NVIC_ST_RELOAD_R = CLOCK_TICK;
-	NVIC_ST_CURRENT_R = 0;
-	while(!(NVIC_ST_CTRL_R & (1 << 16)));
 	return;
 }
 /*
@@ -37,6 +29,15 @@ void start_clocktick() {
 	NVIC_ST_RELOAD_R = CLOCK_TICK;
 	NVIC_ST_CURRENT_R = 0;
 	NVIC_ST_CTRL_R = 0x7;
+	return;
+}
+/*
+ * 1ms delay
+ */
+void delay_1ms() {
+	NVIC_ST_RELOAD_R = CLOCK_TICK;
+	NVIC_ST_CURRENT_R = 0;
+	while(!(NVIC_ST_CTRL_R & (1 << 16)));
 	return;
 }
 
@@ -233,16 +234,64 @@ int protect_flash(int pageno) {
 /***********************************UART**************************************/
 
 /*
- * Initialize uart module 1. Follows the initialization procedure on Pg. 902 of
- * the data sheet. PB0 and PB1 are used for RX and TX respectively. 2mA and
- * default slew are rate are used. Only PB1 TX is enabled.
+ * Initialize uart module 1 to 8N1. Follows the initialization procedure on
+ * Pg. 902 of the data sheet. PB0 and PB1 are used for RX and TX respectively.
+ * 2mA and default slew are rate are used. Only PB1 TX is enabled since this.
+ * uart is used for the kernel and user to print output.
+ * param baud
+ *   The baud rate to be used for the module
  */
-void init_uart1() {
+void uart1_init(unsigned int baud) {
+/* baud rate divisor. */
+  float brd;
+/* integer and float parts of the baud rate divisor. */
+  int ibrd, fbrd;
 /* Enable run mode for uart module 1. */
   SYSCTL_RCGCUART_R |= (1 << 1);
 /* Enable run mode for GPIO Port B module (GPIOPB). */
   SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
-  GPIO_PORTB_AFSEL_R |= 0x1; //UART1 alt function.
+  GPIO_PORTB_AFSEL_R |= (1 << 1); //UART1 alt function for PB1.
   GPIO_PORTB_PCTL_R |= (1 << 4); //Transmit function for PB1.
-/* Initialize GPIOPB. Pg. 656 initialization procedure. */
-  GPIO_PORTB_DEN_R |= 0x1; /* Digital input/output, as opposed to analog. */
+/* Initialize GPIOPB1. Pg. 656 initialization procedure. */
+  GPIO_PORTB_DEN_R |= (1 << 1); //Digital input/output, as opposed to analog.
+  GPIO_PORTB_ODR_R &= ~(1 << 1); //Open drain.
+/* Continue on with UART init by first disabling it during setup. */
+  UART1_CTL_R &= ~0x1;
+/* Use the system clock and generate baud rates. 8 is the divisor */
+/* of the system clock for the UART clock obtained from the value of the HSE */
+/* bit in the UART control register. */
+  brd = SYS_CLOCK_FREQ / (16 * baud);
+  ibrd = brd;
+  fbrd = (brd - ibrd) * 64 + 0.5;
+  UART1_IBRD_R = ibrd;
+  UART1_FBRD_R = fbrd;
+  UART1_LCRH_R |= (3 << 6); //8 bits per frame. Also updates BRD regs.
+  UART1_LCRH_R |= (1 << 4); //FIFO enabled.
+/* This UART does not receive since it's meant for kernel and user output. */
+  UART1_CTL_R &= ~(1 << 8);
+/* Enable the UART for use. */
+  UART1_CTL_R |= 0x1;
+}
+/*
+ * Write a character to the FIFO and initiate a transfer.
+ * param data
+ *   8 bit data to transmit.
+ * returns 0 if the data was written to the FIFO, -1 otherwise. The return
+ * value does NOT indicate a sucessful transmission, only that data was
+ * transferred.
+ */
+int uart1_tchar(char data) {
+/* Make sure the FIFO is not full. */
+  if(UART1_FR_R & (1 << 5)) {
+    return -1;
+  }
+  UART1_DR_R = data;
+/* Wait until the uart is no longer busy transmitting data. */
+  while(UART1_FR_R & (1 << 3));
+/* If the UART is not busy anymore, but the FIFO is still full then it's */
+/* failed to transmit the data. */
+  if(UART1_FR_R & (1 << 7)) {
+    return -1;
+  }
+  return 0;
+}

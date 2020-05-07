@@ -75,6 +75,13 @@ Reset_EXCP: .fnstart
 /* push the value onto the first spot in the stack marked by the symbol */
 /* KRAM_USAGE. */
 						push {r1}
+/* Enable the FPU. Taken from tivaware bootloader code, but also detailed */
+/* on page 74 of the Cortext-M4 TRM. */
+            movw    r0, #0xED88
+            movt    r0, #0xE000
+            ldr     r1, [r0]
+            orr     r1, r1, #0x00F00000
+            str     r1, [r0]
 						b main
 						.fnend
 

@@ -18,6 +18,19 @@
 extern struct pcb ptable[];
 
 int main() {
+  int i;
+  systick_init();
+  led_init();
+  while(1) {
+    for(i = 0; i < 1000; i++) {
+      delay_1ms();
+    }
+    led_roff();
+    for(i = 0; i < 1000; i++) {
+      delay_1ms();
+    }
+    led_ron();
+  }
 /* Enable all the faults and exceptions. Pg. 173, datasheet */
 	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
@@ -26,12 +39,12 @@ int main() {
 /* than system calls. SVC is 1 and systick is 0. */
 	NVIC_SYS_PRI2_R |= (1 << 29);
 	init_ram();
-/* Get the process table ready for scheduling. */
 	init_ptable();
 	init_context();
 	init_fs();
+	//start_clocktick();
+  uart1_init(B115200);
 /* Set up the first user process (the shell) */
-	start_clocktick();
 	user_init();
 	return 0;
 }

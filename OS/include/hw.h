@@ -9,14 +9,17 @@
 
 #include <types.h>
 
-/* 16 MHz PIOSC freqency */
-#define CLOCK_FREQ 16000000
-/* 1ms clock tick */
-#define CLOCK_TICK 16000
+/* 16 MHz PIOSC system freqency */
+#define SYS_CLOCK_FREQ 4000000
+/* 1ms clock tick based off the system clock frequency. */
+#define CLOCK_TICK 4000
+/* Supported baud rates for UART */
+#define B115200 115200u
 
 /* Systick calls */
-void delay_1ms(void);
+void systick_init(void);
 void start_clocktick(void);
+void delay_1ms(void);
 /* LED calls */
 void led_init(void);
 void led_ron(void);
@@ -28,7 +31,9 @@ void led_bloff(void);
 /* Flash Memory calls */
 int write_flash(void *, void *, void *);
 void erase_flash(word);
-int protect_flash(int);
+//int protect_flash(int); Not working.
 /* UART calls */
+void uart1_init(unsigned int);
+int uart1_tchar(char);
 
 #endif /*__HW_H__*/

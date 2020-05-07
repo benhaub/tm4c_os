@@ -147,7 +147,8 @@ int smain(void) __attribute__((section(".text.smain")));
 int smain() {
 /* Commented out to reduce flash write rates while testing. */
 	//wrflash();
-	forktest();
   stringtest();
+  uart1_tchar('A');
+	forktest();
 	return 0;
 }
