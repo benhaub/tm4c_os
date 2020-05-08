@@ -44,16 +44,17 @@ int sysfork() {
 /* Copy the processes memory block that forked to the forked process */
 /* and make sure that we don't copy into the previous ram page */
 /* If this statement is true, it means we've run out of stack space */
-	if(forker->context.sp - 24 < (forker->rampg - 1)*STACK_SIZE) {
+	if(forker->context.sp - CTXSTACK < (forker->rampg - 1)*STACK_SIZE) {
 		return -1;
 	}
+/*TODO: Accurate comment? */
 /* Fork copies 24 bytes of the parents stack to the child. There's no good */
 /* reason for choosing 24. You might be able to get away with less, maybe it */
 /* needs more. I don't know the answer right now. initcode will overwrite */
 /* any values it needs to later on. */
 	memcpy((word *)(forked->rampg*STACK_SIZE),
 					(word *)forker->context.sp, 
-					24);
+					CTXSTACK);
 	forked->ppid = forker->pid;
 /* Forked will return NULLPID to the user process. */
 	forked->context.r0 = NULLPID;

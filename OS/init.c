@@ -18,19 +18,23 @@
 extern struct pcb ptable[];
 
 int main() {
-  int i;
-  systick_init();
-  led_init();
-  while(1) {
-    for(i = 0; i < 1000; i++) {
-      delay_1ms();
-    }
-    led_roff();
-    for(i = 0; i < 1000; i++) {
-      delay_1ms();
-    }
-    led_ron();
-  }
+//  int i;
+/*TODO:
+ * try to get a 16MHz clock signal. Maybe try to init and use the main
+ * oscillator.
+ */
+//  systick_init();
+//  led_init();
+//  while(1) {
+//    for(i = 0; i < 1000; i++) {
+//      delay_1ms();
+//    }
+//    led_roff();
+//    for(i = 0; i < 1000; i++) {
+//      delay_1ms();
+//    }
+//    led_ron();
+//  }
 /* Enable all the faults and exceptions. Pg. 173, datasheet */
 	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
@@ -42,7 +46,7 @@ int main() {
 	init_ptable();
 	init_context();
 	init_fs();
-	//start_clocktick();
+	start_clocktick();
   uart1_init(B115200);
 /* Set up the first user process (the shell) */
 	user_init();

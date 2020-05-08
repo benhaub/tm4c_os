@@ -16,7 +16,7 @@
 void systick_init() {
 	/* Make sure systick is disabled for initialization */
 	NVIC_ST_CTRL_R = 0;
-	NVIC_ST_RELOAD_R = SYS_CLOCK_FREQ;
+	NVIC_ST_RELOAD_R = (SYS_CLOCK_FREQ >> 2);
 	NVIC_ST_CURRENT_R = 0;
 	NVIC_ST_CTRL_R = 0x1;
 	return;
@@ -257,10 +257,10 @@ void uart1_init(unsigned int baud) {
   GPIO_PORTB_ODR_R &= ~(1 << 1); //Open drain.
 /* Continue on with UART init by first disabling it during setup. */
   UART1_CTL_R &= ~0x1;
-/* Use the system clock and generate baud rates. 8 is the divisor */
+/* Use the system clock and generate baud rates. 16 is the divisor */
 /* of the system clock for the UART clock obtained from the value of the HSE */
 /* bit in the UART control register. */
-  brd = SYS_CLOCK_FREQ / (16 * baud);
+  brd = (float)SYS_CLOCK_FREQ / (16 * baud);
   ibrd = brd;
   fbrd = (brd - ibrd) * 64 + 0.5;
   UART1_IBRD_R = ibrd;
@@ -268,7 +268,7 @@ void uart1_init(unsigned int baud) {
   UART1_LCRH_R |= (3 << 6); //8 bits per frame. Also updates BRD regs.
   UART1_LCRH_R |= (1 << 4); //FIFO enabled.
 /* This UART does not receive since it's meant for kernel and user output. */
-  UART1_CTL_R &= ~(1 << 8);
+  UART1_CTL_R &= ~(1 << 9);
 /* Enable the UART for use. */
   UART1_CTL_R |= 0x1;
 }
