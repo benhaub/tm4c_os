@@ -52,7 +52,7 @@ int sysfork() {
 /* reason for choosing 24. You might be able to get away with less, maybe it */
 /* needs more. I don't know the answer right now. initcode will overwrite */
 /* any values it needs to later on. */
-	memcpy((word *)(forked->rampg*STACK_SIZE),
+	memcpy((word *)(forked->rampg * STACK_SIZE) - (CTXSTACK >> 2),
 					(word *)forker->context.sp, 
 					CTXSTACK);
 	forked->ppid = forker->pid;
