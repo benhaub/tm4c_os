@@ -6,13 +6,12 @@
 
 #Search for header files here as well as the current working directory
 VPATH=include
-
 #Define the C compiler
 CC=arm-none-eabi-gcc
 #Architecture specific options for C compiler
 CPU=-mcpu=cortex-m4 -march=armv7e-m -mtune=cortex-m4
-#The FPU is a single precision (sp) with 16 double word registers (d16). The
-#important information here is the sp. C treats all floats (double or not) as
+#The FPU is single precision (sp) with 16 double word registers (d16). The
+#important information here is the sp. C treats all floats as
 #doubles. They must be forced to single precision.
 FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=hard
 #Flags for C compiler.
@@ -45,10 +44,10 @@ LDFLAGS=-Wl,--gc-sections \
         -Wl,-lgcc
 
 #Optionally include the symbol table for debugging. The 3 on the end of -g is
-#the level. level 3 debugging symbols include everything up to preprocessors
+#the level. level 3 debugging symbols include everything up to preprocessor
 #symbols. The -ggdb is the debugging symbol format. This one is specifically
-#for gbd. -O0 eliminates compiler optomizations, so that the codes binary is
-#the same as the way we wrote it. View page 120 of the GNU gcc docs for more
+#for gbd. -O0 eliminates compiler optomizations, so that the compiled code is
+#the same as the text code. View page 120 of the GNU gcc docs for more
 #info
 ifdef DEBUG
   CFLAGS+=-g3 -ggdb -O0
