@@ -14,7 +14,7 @@
 	.section .stack, "wx"
 	.align 4
 STACK_TOP:
-	.skip 0x1000, 0x0
+	.skip 0x800, 0x0
 	
 	.data
 /* Kernel Ram usage. */
@@ -35,12 +35,13 @@ STACK_TOP:
 
 /*
  * The STACK_TOP expression says: Take the address of STACK_TOP, move it by
- * 4KB. Then at the STACK_TOP label above, it says, now give me 4KB of space
- * for this address. Note that this is the KERNEL stack point, not a user
- * stack pointer. It's not the same
+ * STACK_TOP KB. Then at the STACK_TOP label above, it says, now give me .skip
+ * KB of space for this address. Note that this is the KERNEL stack point,
+ * not a user stack pointer. They are unrelated to eachother. The kernel can
+ * havea different sized stack than a user.
  */
 Vectors:
-	.word STACK_TOP + 0x1000 /* Boot loader gets kernel stack pointer from here*/
+	.word STACK_TOP + 0x800 /* Boot loader gets kernel stack pointer from here*/
 	.word Reset_EXCP	/* Reset Exception */
 	.word NMI_ISR			/* Non-maskable interrupt */
 	.word HFAULT			/* Hard Fault */
@@ -65,8 +66,13 @@ Reset_EXCP: .fnstart
 /* Calculate how much ram the kernel is using so we know where to start */
 /* allocating ram pages for user programs. See get_stackspace(). */
 /* Where ever the top of stack is determines how much space the kernel is */
-/* using. */
-						mov r0, #0x1000 /* Stack Size */
+/* using. The end of the kernel is the stack top because of how the linker */
+/* script use SRAM for for the kernel. */
+/*TODO:
+ * Use some bit rounding here to make sure this calculation prevents stack
+ * overlap.
+ */
+						mov r0, #0x400 /* Stack Size */
 						mov r1, sp
 						sub r1, r1, #0x20000000
 /* Divide this by the current position of the sp to get an integer for */

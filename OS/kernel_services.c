@@ -47,14 +47,6 @@ int sysfork() {
 	if(forker->context.sp - CTXSTACK < (forker->rampg - 1)*STACK_SIZE) {
 		return -1;
 	}
-/*TODO: Accurate comment? */
-/* Fork copies 24 bytes of the parents stack to the child. There's no good */
-/* reason for choosing 24. You might be able to get away with less, maybe it */
-/* needs more. I don't know the answer right now. initcode will overwrite */
-/* any values it needs to later on. */
-	memcpy((word *)(forked->rampg * STACK_SIZE) - (CTXSTACK >> 2),
-					(word *)forker->context.sp, 
-					CTXSTACK);
 	forked->ppid = forker->pid;
 /* Forked will return NULLPID to the user process. */
 	forked->context.r0 = NULLPID;
@@ -92,6 +84,7 @@ int sysexit(int exitcode) {
 		}
 	}
 	free_stackspace(exitproc->rampg);
+/*TODO: This should watch out for zombies. */
 	exitproc->numchildren = 0;
 	exitproc->pid = NULLPID;
 /* If this process was the child of another, subtract it's number of children */

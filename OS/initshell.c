@@ -27,9 +27,8 @@ void forktest() {
 	for(i = 0; i < 3; i++) {
 		pids[i] = fork();
 /*TODO:
- * initshell forks the first two process with pids 4 and 5, but the third one
- * with a pid of 4 again has a scuffed i value that is far beyond the range of
- * the pids array and it causes a bus fault.
+ * Need to make sure that forked processes have all the parents stack
+ * information.
  */
 		if(-1 == pids[i]) {
 			exit(EXIT_FAILURE);

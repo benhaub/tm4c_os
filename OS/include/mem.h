@@ -15,7 +15,8 @@ extern void *smainsize;
 extern int smain(void);
 
 /* Process stack size. This is independant of the kernel stack which is */
-/* created in vectors.s at the top of the vector table. */
+/* created in vectors.s at the top of the vector table. If you change this */
+/* value, also change the stack size used in Reset_EXCP. */
 #define STACK_SIZE 0x400 /*1KB Stack */
 /* Do not change the value of flash page size. flash memory protection is */
 /* based off 2KB page sizes. */

@@ -18,9 +18,7 @@ int stackusage[SRAM_PAGES];
 /* is no space. */
 int get_stackspace() {
 /* Each element represents the top of the stack that will be used. 0 will */
-/* use stack space from 0x0 to 0x1000, 1 will use 0x1000 to 0x2000 etc. */
-/* KRAM_USE tells use where to start, since the numbers before that are RAM */
-/* space that use being used by the kernel. */
+/* use from 0 to STACK_SIZE-1, 1 will use STACK_SIZE to 2*STACK_SIZE-1, etc. */
 	int i = 0;
 	while(stackusage[i]) {
 		i++;
@@ -40,10 +38,10 @@ inline void free_stackspace(int i) {
 void init_ram() {
 	int i;
 /* The amount of RAM usage was pushed on the stack during reset. We need to */
-/* round the value up to make sure there's not stack overlap (+ 1). After a */
+/* round the value up to make sure there's not stack overlap (+ 2). After a */
 /* push, the processor increments the stack pointer to the next word. */
 /* KRAM_USE is stored one word back (- 4). */
-	for(i = 0; i < *((word *)(KRAM_USE - 4)) + 1; i++) {
+	for(i = 0; i < *((word *)(KRAM_USE - 4)) + 2; i++) {
 		stackusage[i] = 1;
 	}
 	while(i < SRAM_PAGES) {
