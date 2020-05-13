@@ -23,34 +23,35 @@ int sysflash(void *saddr, void *eaddr, void *faddr) {
 }
 
 /*
- * Creates a new process. The forker forks the forked. Forker returns the pid
- * of the new process, forked returns NULLPID. Returns -1 on failure.
+ * Creates a new process. The parent forks the child. parent returns the pid
+ * of the new process, child returns NULLPID. Returns -1 on failure.
  */
 int sysfork() {
-	struct pcb *forked = reserveproc(NULL);
-	if(NULL == forked) {
+	struct pcb *child = reserveproc(NULL);
+	if(NULL == child) {
 		return -1;
 	}
-	struct pcb *forker = currproc();
-	if(forker->numchildren < MAX_CHILD) {
-		forker->numchildren++;
+	struct pcb *parent = currproc();
+	if(parent->numchildren < MAX_CHILD) {
+		parent->numchildren++;
 	}
 	else {
-		/* This process has already forked the max number of children. */
+		/* This process has already child the max number of children. */
 		return -1;
 	}
-/* Copy context from the process that forked to the forked process. */
-	forked->context.pc = forker->context.pc;
-/* Copy the processes memory block that forked to the forked process */
-/* and make sure that we don't copy into the previous ram page */
-/* If this statement is true, it means we've run out of stack space */
-	if(forker->context.sp - CTXSTACK < (forker->rampg - 1)*STACK_SIZE) {
-		return -1;
-	}
-	forked->ppid = forker->pid;
+/* Copy context from the process that child to the child process. */
+	child->context.pc = parent->context.pc;
+/* Copy the parents stack */
+/* Number of bytes being used in the parent stack */
+  word pstackuse = _SRAM + parent->rampg*STACK_SIZE - parent->context.sp;
+  memcpy((void *)(child->context.sp - pstackuse),
+         (void *)parent->context.sp,
+         pstackuse 
+  );
+	child->ppid = parent->pid;
 /* Forked will return NULLPID to the user process. */
-	forked->context.r0 = NULLPID;
-	return forked->pid;
+	child->context.r0 = NULLPID;
+	return child->pid;
 }
 
 /*

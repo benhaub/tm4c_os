@@ -26,10 +26,6 @@ void forktest() {
 	int pids[3];
 	for(i = 0; i < 3; i++) {
 		pids[i] = fork();
-/*TODO:
- * Need to make sure that forked processes have all the parents stack
- * information.
- */
 		if(-1 == pids[i]) {
 			exit(EXIT_FAILURE);
 		}

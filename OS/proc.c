@@ -71,9 +71,10 @@ struct pcb* reserveproc(char *name) {
 	strncpy(ptable[i].name, name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
-/* Make sure we have ram space */
+/* Make sure we have ram space for the stack */
 	if(-1 != (ret = get_stackspace())) {
 		ptable[i].rampg = ret;
+		ptable[i].context.sp = _SRAM + (ptable[i].rampg*STACK_SIZE);
 	}
 	else {
 		return NULL;
@@ -88,12 +89,6 @@ struct pcb* reserveproc(char *name) {
  */
 static void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
-/* The default value of all members in the context of new procs is */
-/* initialized is zero. If they are not zero, it means they have been */
-/* deliberately set to something else (e.g. fork() editing the pc). */
-	if(reserved->context.sp == 0) {
-		reserved->context.sp = _SRAM + (reserved->rampg*STACK_SIZE);
-	}
 /* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
 /* into lr. The extra 4 is because of the sp increment before storing when */

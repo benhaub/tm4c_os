@@ -26,8 +26,7 @@ syscall: .fnstart
 /* original system call is in the stacked link register. */
 					  ldr r2, [sp, #4]
 					  str r2, [r1, #4]
-/* Restore stack pointer to where it was before system call. (before the */
-/* push {r7, lr} */
+/* Restore stack pointer to where it was before system call. */
 					  add r10, sp, #8
 					  str r10, [r1]
 /* The immediate value for svc is not used. The number used for determining */

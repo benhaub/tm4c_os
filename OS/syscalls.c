@@ -6,6 +6,7 @@
  *****************************************************************************/
 #include <types.h>
 #include <proc.h>
+#include <syscalls.h> //Some functions have attributes
 /* Syscall numbers */
 #define FORK 0
 #define WAIT 1
