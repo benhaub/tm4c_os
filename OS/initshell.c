@@ -148,7 +148,13 @@ int smain() {
 /* Commented out to reduce flash write rates while testing. */
 	//wrflash();
   stringtest();
-  uart1_tchar('A');
+  uart1_tchar('t');
+  uart1_tchar('m');
+  uart1_tchar('4');
+  uart1_tchar('c');
+  uart1_tchar('_');
+  uart1_tchar('o');
+  uart1_tchar('s');
 	forktest();
 	return 0;
 }
