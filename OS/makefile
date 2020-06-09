@@ -34,7 +34,7 @@ CFLAGS=-mthumb \
 #linking .a's only
 #-M produces the .d files, -MF specifies an output directory for them
 #The $* is called an automatic variable. The $* becomes whatever the % value
-#expands to.
+#expands to in the targets below.
 
 #Linker options
 LDFLAGS=-Wl,--gc-sections \

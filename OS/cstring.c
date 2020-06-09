@@ -6,6 +6,9 @@
  *****************************************************************************/
 #include <mem.h>
 #include <types.h>
+#include <hw.h> //For uart1_tchar
+#include <stdarg.h> //stdargs can be used because all it does is substitute
+                    //compiler built-in functions
 /*
  * Copy the string from src into dst.
  * param src:
@@ -120,4 +123,154 @@ void *memset(void *dest, const int src, unsigned int n) {
 		i++;
 	}
 	return dest;
-}	
+}
+
+/*
+ * Reverse the characters of the string s in place. The behaviour of this
+ * function is undefined if the string is not null terminated.
+ */
+void reverse(char *s) {
+  int i, j, stringlen;
+  char b, d;
+  char *c;
+
+  if(!s) {
+    return;
+  }
+
+  c = s;
+/* Move the pointer position to the last character. */
+  while(*c != 0) {
+    c++;
+  }
+/* Subtract the relative addresses */
+  stringlen = (int)(c - s);
+  j = stringlen;
+  i = 0;
+
+  while(i < j) {
+/* Copy the left most character */
+    b = s[i];
+/* Copy the right most character */
+    d = s[j-1];
+/* Put the left most in the right most spot. */
+    s[j-1] = b;
+/* Put the right most in the left most spot */
+    s[i] = d;
+    j--;
+    i++;
+  }
+}
+
+/*
+ * convert the integer n into the character string s.
+ */
+void itoa(int n, char *s) {
+  int i = 0;
+
+  /* Record sign */
+  int sign = n;
+  if(n < 0) {
+    n = -1 * n;
+  }
+
+  /* Generate digits in reverse order */
+  do {
+    /* Get next digit. */
+    s[++i] = n % 10 + 48;
+  } while((n /= 10) > 0);
+
+  if(sign < 0) {
+    s[++i] = '-';
+  }
+  s[++i] = '\0';
+  reverse(s);
+}
+
+/*
+ * Converts the integer h to character string s in hexidecimal format.
+ */
+void htoa(int h, char *s) {
+  int i = 0;
+  unsigned long int tohex;
+/* Remainder of tohex */
+  unsigned long int tohex_r;
+
+  tohex = h;
+
+  while(tohex >= 16) {
+    tohex_r = tohex % 16;
+    tohex = tohex / 16;
+/* Hex digits greater than 9 are reprsented by letters A-F. A-F starts 65, */
+/* but since we are already at least above 10 in decimal, just add 55 to it. */
+    if(tohex_r > 9) {
+      s[i] = tohex_r + 55;
+    }
+    else {
+      s[i] = tohex_r + 48;
+    }
+    i++;
+  }
+/* Print the last digit that was less than 16. */
+  if(tohex > 9) {
+    s[i] = tohex + 55;
+  }
+  else {
+    s[i] = tohex + 48;
+  }
+/* First two values are symbolic for hex notation. */
+  s[++i] = 'x';
+  s[++i] = '0';
+  s[++i] = '\0';
+  reverse(s);
+}
+
+/*TODO:
+ * Having issues grabbing the second argument from va_list and printing extra
+ * characters on htoa.
+ */    
+void printf(const char *s, ...) {
+  int i, j;
+  word hex; /* Holds values for hex numbers */
+  char hex_string[8]; /* Contains the string that we can print. */
+  int integer;
+  char integer_string[10];
+  va_list format_strings;
+  i = j = 0;
+/* Count all the format specifiers. */
+  while(s[i] != '\0') {
+    if(s[i] == '%') {
+      j++;
+    }
+    i++;
+  }
+  va_start(format_strings, j);
+  i = j = 0;
+/* Print one char at a time, inserting the va_args whenever a specifier is */
+/* encountered. */
+  while(s[i] != '\0') {
+    if(s[i] == '%') {
+      switch(s[++i]) {
+        case('x') :
+          hex = va_arg(format_strings, word);
+          htoa(hex, hex_string);
+          while(hex_string[j] != '\0') {
+            uart1_tchar(hex_string[j]);
+            j++;
+          }
+        case('i') :
+          integer = va_arg(format_strings, int);
+          itoa(integer, integer_string);
+          while(integer_string[j] != '\0') {
+            uart1_tchar(integer_string[j]);
+            j++;
+          }
+      }
+    }
+    else {
+      uart1_tchar(s[i]);
+    }
+    i++;
+  }
+  return;
+}

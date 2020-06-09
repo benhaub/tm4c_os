@@ -68,10 +68,6 @@ Reset_EXCP: .fnstart
 /* Where ever the top of stack is determines how much space the kernel is */
 /* using. The end of the kernel is the stack top because of how the linker */
 /* script use SRAM for for the kernel. */
-/*TODO:
- * Use some bit rounding here to make sure this calculation prevents stack
- * overlap.
- */
 						mov r0, #0x400 /* Stack Size */
 						mov r1, sp
 						sub r1, r1, #0x20000000

@@ -137,6 +137,7 @@ int stringtest() {
   memset(str3, 0, strlen(str3));
   memset(&ctx, 0, sizeof(struct context));
   memcpy(&ctx, &ctx2, sizeof(struct context));
+  printf("31 in hex is %h\n\r", 0xFF);
   return 0;
 }
 
@@ -155,6 +156,9 @@ int smain() {
   uart1_tchar('_');
   uart1_tchar('o');
   uart1_tchar('s');
+  uart1_tchar('\n');
+  uart1_tchar('\r');
+  printf("255 in hex is %x and 45 as an integer is %i\n\r", 0xFF, 45);
 	forktest();
 	return 0;
 }

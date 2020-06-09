@@ -15,5 +15,8 @@ void *memcpy(void *, const void *, unsigned int);
 void *memmove(void *, const void *, unsigned int);
 void *memset(void *, const int, unsigned int);
 int memcmp(const void *, const void *, unsigned int);
-
+void reverse(char *);
+void htoa(int, char *s);
+void itoa(int, char *s);
+void printf(const char *, ...);
 #endif /*__CSTRING_H__*/
