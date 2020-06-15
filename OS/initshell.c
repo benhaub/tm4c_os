@@ -137,7 +137,7 @@ int stringtest() {
   memset(str3, 0, strlen(str3));
   memset(&ctx, 0, sizeof(struct context));
   memcpy(&ctx, &ctx2, sizeof(struct context));
-  printf("31 in hex is %h\n\r", 0xFF);
+  printf("255 in hex is %h\n\r", 0xFF);
   return 0;
 }
 
@@ -146,7 +146,7 @@ int stringtest() {
  */
 int smain(void) __attribute__((section(".text.smain")));
 int smain() {
-/* Commented out to reduce flash write rates while testing. */
+/* Commented out to reduce flash writes while testing. */
 	//wrflash();
   stringtest();
   uart1_tchar('t');
@@ -159,6 +159,7 @@ int smain() {
   uart1_tchar('\n');
   uart1_tchar('\r');
   printf("255 in hex is %x and 45 as an integer is %i\n\r", 0xFF, 45);
-	forktest();
+  printf("%x, %i, %x, %i\n\r", 0xCAF, 142, 0xFFFFFFFF, 2147483647);
+  forktest();
 	return 0;
 }

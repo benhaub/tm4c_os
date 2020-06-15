@@ -44,9 +44,10 @@ int sysfork() {
 /* Copy the parents stack */
 /* Number of bytes being used in the parent stack */
   word pstackuse = _SRAM + parent->rampg*STACK_SIZE - parent->context.sp;
-  memcpy((void *)(child->context.sp - pstackuse),
-         (void *)parent->context.sp,
-         pstackuse 
+  memcpy(
+      (void *)(child->context.sp - pstackuse),
+      (void *)(_SRAM + parent->rampg*STACK_SIZE),
+      pstackuse 
   );
 	child->ppid = parent->pid;
 /* Forked will return NULLPID to the user process. */

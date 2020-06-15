@@ -9,6 +9,7 @@
 #include <hw.h> //For uart1_tchar
 #include <stdarg.h> //stdargs can be used because all it does is substitute
                     //compiler built-in functions
+
 /*
  * Copy the string from src into dst.
  * param src:
@@ -134,7 +135,7 @@ void reverse(char *s) {
   char b, d;
   char *c;
 
-  if(!s) {
+  if(!*s) {
     return;
   }
 
@@ -175,15 +176,16 @@ void itoa(int n, char *s) {
   }
 
   /* Generate digits in reverse order */
-  do {
-    /* Get next digit. */
-    s[++i] = n % 10 + 48;
-  } while((n /= 10) > 0);
-
-  if(sign < 0) {
-    s[++i] = '-';
+  while(n > 0) {
+    s[i] = n % 10 + 48;
+    n /= 10;
+    i++;
   }
-  s[++i] = '\0';
+  if(sign < 0) {
+    s[i] = '-';
+    i++;
+  }
+  s[i] = '\0';
   reverse(s);
 }
 
@@ -225,46 +227,51 @@ void htoa(int h, char *s) {
   reverse(s);
 }
 
-/*TODO:
- * Having issues grabbing the second argument from va_list and printing extra
- * characters on htoa.
- */    
 void printf(const char *s, ...) {
   int i, j;
   word hex; /* Holds values for hex numbers */
-  char hex_string[8]; /* Contains the string that we can print. */
   int integer;
-  char integer_string[10];
+/* Strings for holding the string number. Sizes of the arrays are the max */
+/* number of characters needed to represent the largest integer on this */
+/* processor. hex has 2 extra for "0x" at the beginning. */
+  char hex_string[sizeof(word)*2+2];
+  char int_string[sizeof(word)*2+2];
   va_list format_strings;
-  i = j = 0;
-/* Count all the format specifiers. */
-  while(s[i] != '\0') {
-    if(s[i] == '%') {
-      j++;
-    }
-    i++;
-  }
-  va_start(format_strings, j);
-  i = j = 0;
+  i = 0;
+  va_start(format_strings, s);
 /* Print one char at a time, inserting the va_args whenever a specifier is */
 /* encountered. */
   while(s[i] != '\0') {
     if(s[i] == '%') {
+      j = 0;
       switch(s[++i]) {
-        case('x') :
-          hex = va_arg(format_strings, word);
-          htoa(hex, hex_string);
-          while(hex_string[j] != '\0') {
-            uart1_tchar(hex_string[j]);
-            j++;
-          }
-        case('i') :
-          integer = va_arg(format_strings, int);
-          itoa(integer, integer_string);
-          while(integer_string[j] != '\0') {
-            uart1_tchar(integer_string[j]);
-            j++;
-          }
+      case('x') :
+        hex = va_arg(format_strings, word);
+        memset(hex_string, 0, sizeof(word)*2+2);
+        htoa(hex, hex_string);
+        while(hex_string[j] != '\0') {
+          uart1_tchar(hex_string[j]);
+          j++;
+        }
+      break;
+      case('i') :
+        integer = va_arg(format_strings, int);
+        memset(int_string, 0, sizeof(word)*2+2);
+        itoa(integer, int_string);
+        while(int_string[j] != '\0') {
+          uart1_tchar(int_string[j]);
+          j++;
+        }
+      break;
+      case('d') : /* Same thing as %i */
+        integer = va_arg(format_strings, int);
+        memset(int_string, 0, sizeof(word)*2+2);
+        itoa(integer, int_string);
+        while(int_string[j] != '\0') {
+          uart1_tchar(int_string[j]);
+          j++;
+        }
+      break;
       }
     }
     else {
@@ -272,5 +279,6 @@ void printf(const char *s, ...) {
     }
     i++;
   }
+  va_end(format_strings);
   return;
 }
