@@ -22,6 +22,8 @@ int main() {
 	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 18); /* USAGE Enable */
+  uart1_init(B115200);
+  printf("tm4c_os\n\r");
 /* Configure Interrupt priorities. Tick exceptions are higher priority */
 /* than system calls. SVC is 1 and systick is 0. */
 	NVIC_SYS_PRI2_R |= (1 << 29);
@@ -30,7 +32,6 @@ int main() {
 	init_context();
 	init_fs();
 	start_clocktick();
-  uart1_init(B115200);
 /* Set up the first user process (the shell) */
 	user_init();
 	return 0;
