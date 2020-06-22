@@ -11,6 +11,8 @@
 	.syntax unified
 	.thumb
 
+/* If you change the stack size, make sure to adjust the MAX_PROC define in */
+/* mem.h */
 	.section .stack, "wx"
 	.align 4
 STACK_TOP:

@@ -7,8 +7,12 @@
  * Date			:	June 5th, 2019
  *****************************************************************************/
 #include <types.h>
-/* 2KB blocks in 256KB of flash memory, minus the space for kernel */
-#define MAX_PROC 127
+#include <mem.h>
+/* Every process needs a stack, so max processes is how many stacks can fit */
+/* in ram at the same time. It's SRAM_ - 0x1000 because the kernel has a 4KB */
+/* stack. Make sure the kernel stack value here matches the stack size in */
+/* vectors.s */
+#define MAX_PROC ((SRAM_-_SRAM) - 0x800) / STACK_SIZE
 /* A pid that no valid process will ever have. */
 #define NULLPID MAX_PROC + 1
 /* Exit codes */
