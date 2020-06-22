@@ -42,6 +42,9 @@ extern int smain(void);
 /* Number of flash pages used by the kernel */
 #define KFLASHPGS ((KSIZE / FLASH_PAGE_SIZE) + 1)
 
+/* The top of stack for any process given the ram page, x. */
+#define stacktop(x) _SRAM + x*STACK_SIZE - 4
+
 int get_stackspace(void);
 void free_stackspace(int);
 void init_ram(void);

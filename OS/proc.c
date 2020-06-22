@@ -71,10 +71,10 @@ struct pcb* reserveproc(char *name) {
 	strncpy(ptable[i].name, name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
-/* Make sure we have ram space for the stack */
+/* Top of stack for this process. */
 	if(-1 != (ret = get_stackspace())) {
 		ptable[i].rampg = ret;
-		ptable[i].context.sp = _SRAM + (ptable[i].rampg*STACK_SIZE);
+		ptable[i].context.sp = stacktop(ptable[i].rampg);
 	}
 	else {
 		return NULL;

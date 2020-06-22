@@ -43,10 +43,10 @@ int sysfork() {
 	child->context.pc = parent->context.pc;
 /* Copy the parents stack */
 /* Number of bytes being used in the parent stack */
-  word pstackuse = _SRAM + parent->rampg*STACK_SIZE - parent->context.sp;
+  word pstackuse = stacktop(parent->rampg) - parent->context.sp;
   memcpy(
-      (void *)(child->context.sp - pstackuse),
-      (void *)(_SRAM + parent->rampg*STACK_SIZE),
+      (void *)(stacktop(child->rampg) - pstackuse),
+      (void *)(stacktop(parent->rampg) - pstackuse),
       pstackuse 
   );
 	child->ppid = parent->pid;

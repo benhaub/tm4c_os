@@ -17,6 +17,8 @@
  * children all turn off the green led and then exit while the parent waits
  * from them. When all the children have exited, the parent turns on the red
  * led and then exits.
+ * TODO:
+ * Make this test better by increasing the amount of processes that are forked.
  */
 void forktest() {
 	led_init();
@@ -46,10 +48,6 @@ void forktest() {
 	led_ron();
 	exit(EXIT_SUCCESS);
 }
-/*TODO:
- * Need a second fork test to test how the OS handles the maximum number of
- * processes.
- */
 
 /* 
  * This function tests reading and writing flash by writing the testwrite
