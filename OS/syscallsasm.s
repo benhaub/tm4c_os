@@ -12,11 +12,11 @@
  * Almost the same as the context switch. Only difference is that we don't 
  * need to update the stack pointer, and we switch to msp (instead of psp)
  * and to privledge (instead of unprivledged). Privledge levels are handled
- * automatically by the exception entry and return mechanisms. Always be aware
- * of what registers are being used here. This code is interruptable by clock
- * interrupts. The systick isr will change register values of r4, r5, r6,
- * r8, and r9 from what they were here, so don't use those registers for
- * general purpose.
+ * automatically by the exception entry and return mechanisms (which are
+ * triggered by the svc instruction). Always be aware of what registers are
+ * being used here. This code is interruptable by clock interrupts. The systick
+ * isr will change register values of r4, r5, r6, r8, and r9 from what they were
+ * here, so don't use those registers for general purpose.
  */
 	.global syscall
 	.type syscall, %function
@@ -41,7 +41,7 @@ syscall: .fnstart
 				 .fnend
 
 /*
- * This is the assembly routine for system calls that have one argument.
+ * The assembly routine for system calls that have one argument.
  */
 	.global syscall1
 	.type syscall1, %function
@@ -61,6 +61,9 @@ syscall1: .fnstart
 					  bx lr
 				 .fnend
 
+/*
+ * The assembly routine for system calls that have two arguments.
+ */
   .global syscall2
   .type syscall2, %function
 syscall2: .fnstart

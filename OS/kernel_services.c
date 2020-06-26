@@ -37,6 +37,7 @@ int sysfork() {
 	}
 	else {
 		/* This process has already child the max number of children. */
+    printf("fork() failed - Max number of processes reached");
 		return -1;
 	}
 /* Copy context from the process that child to the child process. */
@@ -44,6 +45,15 @@ int sysfork() {
 /* Copy the parents stack */
 /* Number of bytes being used in the parent stack */
   word pstackuse = stacktop(parent->rampg) - parent->context.sp;
+/*TODO:
+ * I think we are battling with initcode here for who gets the final say in
+ * what the stack looks like. Should initcode be doing this job? Surely
+ * popping from the stack is faster, but initcode doesn't know how much to pop
+ * off. Maybe this copy can skip the first CTXSTACK bytes and copy after that.
+ * Remember that the whole process of initcode starts with initproc, and the
+ * initial subtraction off the stack so that it's added back onto when the
+ * stack is popped.
+ */
   memcpy(
       (void *)(stacktop(child->rampg) - pstackuse),
       (void *)(stacktop(parent->rampg) - pstackuse),

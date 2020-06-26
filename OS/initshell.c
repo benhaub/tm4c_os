@@ -13,18 +13,21 @@
 #include <cstring.h> /* For testing cstring api */
 
 /* The led should be purple when this test is done.
- * First the parent turns on the green led, then forks 4 processes. The
+ * First the parent turns on the green led, then forks MAX_PROC processes. The
  * children all turn off the green led and then exit while the parent waits
- * from them. When all the children have exited, the parent turns on the red
+ * for them. When all the children have exited, the parent turns on the red
  * led and then exits.
  * TODO:
- * Make this test better by increasing the amount of processes that are forked.
+ * Test fails when I add in more variables (i.e increase the amount of stack
+ * being used).
+ * Test fails if I try to fork any more than 3 processes.
  */
 void forktest() {
 	led_init();
 	led_gron();
-	/* Temporary test of system calls and fork(). */
 	int i;
+  int numprocs = 3;
+  numprocs=numprocs;
 	int pids[3];
 	for(i = 0; i < 3; i++) {
 		pids[i] = fork();
