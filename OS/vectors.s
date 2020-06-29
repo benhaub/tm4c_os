@@ -181,10 +181,11 @@ Thumb:
 
 /*
  * Entry to the kernel from the systick isr. It is executed from thread
- * mode instead, and makes it possible to save stacks and 
- * context switch properly. It makes sure the process stack is returned to
- * it's orginal state, and then pushes the context onto the stack and saves
- * the stack pointer (psp) before switching stacks from psp to msp.
+ * mode so that it is ossible to save stacks and context switch properly.
+ * It makes sure the process stack is returned to it's orginal state, and then
+ * pushes the context onto the stack and saves the stack pointer (psp) before
+ * switching stacks from psp to msp. The corresponding pop is made from swtch
+ * so make sure that the push here and pop there are consistent.
  */
 	.align 2
 	.type kernel_entry, %function

@@ -39,6 +39,7 @@ void user_init() {
 		return;
 	}
 	initshell->context.pc = (word)smain;
+	//initshell->context.sp = initshell->context.sp - (CTXSTACK);
 	scheduler();
 }
 
@@ -84,16 +85,18 @@ struct pcb* reserveproc(char *name) {
 
 /*
  * Initialize a RESERVED process so it's ready to be context switched too.
- * This function alters context, so must be run just before the context
+ * This function alters context, so must it be run just before the context
  * switcher.
  */
 static void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
 /* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
-/* into lr. The extra 4 is because of the sp increment before storing when */
-/* pushing onto the stack. */
-	reserved->context.sp = reserved->context.sp - (CTXSTACK + 0x4);
+/* into lr. */
+/*TODO:
+ * Got some different behaviour moving this to user_init().
+ */
+	reserved->context.sp = reserved->context.sp - (CTXSTACK);
 /* Pointer to proc is cast to a word because the compiler didn't seem to */
 /* want to give me the pointer. It always came out to the value of sp in */
 /* context struct. */

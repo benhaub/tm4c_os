@@ -45,20 +45,17 @@ int sysfork() {
 /* Copy the parents stack */
 /* Number of bytes being used in the parent stack */
   word pstackuse = stacktop(parent->rampg) - parent->context.sp;
-/*TODO:
- * I think we are battling with initcode here for who gets the final say in
- * what the stack looks like. Should initcode be doing this job? Surely
- * popping from the stack is faster, but initcode doesn't know how much to pop
- * off. Maybe this copy can skip the first CTXSTACK bytes and copy after that.
- * Remember that the whole process of initcode starts with initproc, and the
- * initial subtraction off the stack so that it's added back onto when the
- * stack is popped.
- */
   memcpy(
       (void *)(stacktop(child->rampg) - pstackuse),
       (void *)(stacktop(parent->rampg) - pstackuse),
       pstackuse 
   );
+/* Adjust the stack pointer of the child to the same offset as the parent. */
+/*TODO:
+ * This in conjuction with with moving code from reserveproc() to user_init()
+ * seemed to get the right numbers, but we still couldn't find i in forktest()
+ */
+  child->context.sp -= pstackuse;
 	child->ppid = parent->pid;
 /* Forked will return NULLPID to the user process. */
 	child->context.r0 = NULLPID;

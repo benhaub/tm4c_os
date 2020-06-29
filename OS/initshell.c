@@ -26,8 +26,7 @@ void forktest() {
 	led_init();
 	led_gron();
 	int i;
-  int numprocs = 3;
-  numprocs=numprocs;
+  int n = 0;
 	int pids[3];
 	for(i = 0; i < 3; i++) {
 		pids[i] = fork();

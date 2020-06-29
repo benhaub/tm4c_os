@@ -21,7 +21,7 @@
 /* Maximum number of child processes. */
 #define MAX_CHILD 4
 /* Context switch stack size (in bytes, 4 bytes per word saved) */
-#define CTXSTACK 28
+#define CTXSTACK 32
 
 /*
  * KERNEL:
@@ -55,6 +55,7 @@ struct context {
 	 word lr;
 	 word r0;
 	 word r3;
+   word r7;
 	 word r12;
 };
 

@@ -32,7 +32,8 @@ swtch: .fnstart
  * All new processes run initcode first to set up cpu registers to make it
  * look as if the process had been interrupted by an svc with it's registers
  * pushed on the stack. initcode places the value of pc into the r5 register.
- * initcode(word sp), where sp is the top of the stack of the new process.
+ * initcode(struct pcb *), where the struct pcb pointer is the pointer of the
+ * pcb struct to be context switched to.
  */
   .global initcode
   .type initcode, %function
@@ -46,7 +47,6 @@ initcode: .fnstart
           ldr r2, [r1] //context.r0
 //store context.r0 on the stack in r0's spot
           str r2, [r3]
-//Move stack pointer to r2
           mov r2, r3
 //store context.sp on the stack in r7's spot
           str r2, [r3, #20]
