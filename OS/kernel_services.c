@@ -51,10 +51,6 @@ int sysfork() {
       pstackuse 
   );
 /* Adjust the stack pointer of the child to the same offset as the parent. */
-/*TODO:
- * This in conjuction with with moving code from reserveproc() to user_init()
- * seemed to get the right numbers, but we still couldn't find i in forktest()
- */
   child->context.sp -= pstackuse;
 	child->ppid = parent->pid;
 /* Forked will return NULLPID to the user process. */

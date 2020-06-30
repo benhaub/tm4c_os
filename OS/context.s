@@ -47,8 +47,9 @@ initcode: .fnstart
           ldr r2, [r1] //context.r0
 //store context.r0 on the stack in r0's spot
           str r2, [r3]
-          mov r2, r3
-//store context.sp on the stack in r7's spot
+          add r1, r0, #20
+          ldr r2, [r1] //context.r7
+//store context.r7 on the stack in r7's spot
           str r2, [r3, #20]
           bx lr
           .fnend	

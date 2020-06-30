@@ -26,7 +26,7 @@ int currpid;
 
 /*
  * Initializes the first user process and runs it.
- * param name
+ * @param name
  * 	The name of the new process
  */
 void user_init() {
@@ -39,7 +39,6 @@ void user_init() {
 		return;
 	}
 	initshell->context.pc = (word)smain;
-	//initshell->context.sp = initshell->context.sp - (CTXSTACK);
 	scheduler();
 }
 
@@ -90,12 +89,10 @@ struct pcb* reserveproc(char *name) {
  */
 static void initproc(struct pcb *reserved) {
 	reserved->state = EMBRYO;
+  reserved->context.r7 = reserved->context.sp;
 /* Leave room for the stack frame to pop into when swtch()'ed to. initcode */
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
 /* into lr. */
-/*TODO:
- * Got some different behaviour moving this to user_init().
- */
 	reserved->context.sp = reserved->context.sp - (CTXSTACK);
 /* Pointer to proc is cast to a word because the compiler didn't seem to */
 /* want to give me the pointer. It always came out to the value of sp in */
