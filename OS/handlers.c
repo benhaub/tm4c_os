@@ -88,7 +88,7 @@ void u_handler() {
 /* The processor has attempted to execute an instruction that makes illegal */
 /* use of the epsr register. */
 	invstat = (NVIC_FAULT_STAT_R & (1 << 17));
-/* The processir has attemped  to execute an undefined instruction. */
+/* The processor has attemped to execute an undefined instruction. */
 	undef = (NVIC_FAULT_STAT_R & (1 << 16));
 /* Eliminate unsed variable warnings. */
 	div0=div0;unalign=unalign;nocp=nocp;invpc=invpc;invstat=invstat;undef=undef;
@@ -101,6 +101,10 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 	word ret;
 /* Disable interrupts to prevent scheduling while performing kernel */
 /* services. */
+/*TODO:
+ * Do we need to disable interrupts? Aren't we already in handler mode which
+ * can't be interrupted in the first place?
+ */
 	processor_state(0);
 	switch(sysnum) {
 		case 0: ret = sysfork();

@@ -9,7 +9,7 @@
 #include <types.h>
 #include <mem.h>
 /* Every process needs a stack, so max processes is how many stacks can fit */
-/* in ram at the same time. It's SRAM_ - 0x1000 because the kernel has a 4KB */
+/* in ram at the same time. It's SRAM_ - 0x800 because the kernel has a 2KB */
 /* stack. Make sure the kernel stack value here matches the stack size in */
 /* vectors.s */
 #define MAX_PROC ((SRAM_-_SRAM) - 0x800) / STACK_SIZE
@@ -43,7 +43,7 @@
  * 	The processes is waiting for another process to exit
  */
 enum procstate {KERNEL, UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING,\
-	WAITING};
+	              WAITING, ZOMBIE};
 
 /* Note that any changes to a processes context do not take affect until */
 /* The next time a context switch changes to it. The registers here are */

@@ -89,8 +89,6 @@ int sysexit(int exitcode) {
 		}
 	}
 	free_stackspace(exitproc->rampg);
-/*TODO: This should watch out for zombies. */
-	exitproc->numchildren = 0;
 	exitproc->pid = NULLPID;
 /* If this process was the child of another, subtract it's number of children */
 	if(exitproc->ppid != NULLPID) {
@@ -98,7 +96,17 @@ int sysexit(int exitcode) {
 	}
 	exitproc->ppid = NULLPID;
   exitproc->waitpid = NULLPID;
-	exitproc->state = UNUSED;
+/* TODO:
+ * leave this here for now since it might be good for debugging, but it's the
+ * children that become the zombies, not the parent.
+ */
+  if(0 != exitproc->numchildren) {
+    exitproc->state = ZOMBIE;
+  }
+  else {
+    exitproc->state = UNUSED;
+    exitproc->numchildren = 0;
+  }
 	exitproc->initflag = 1;
 	strncpy(exitproc->name, "\0", 1);
 /* Return the exit code to the parent */

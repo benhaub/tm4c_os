@@ -26,7 +26,7 @@ void systick_init() {
  */
 void start_clocktick() {
 	NVIC_ST_CTRL_R = 0;
-	NVIC_ST_RELOAD_R = CLOCK_TICK;
+	NVIC_ST_RELOAD_R = CLOCK_TICK*100;
 	NVIC_ST_CURRENT_R = 0;
 	NVIC_ST_CTRL_R = 0x7;
 	return;

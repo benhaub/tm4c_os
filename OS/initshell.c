@@ -12,29 +12,33 @@
 #include <mem.h> /* For flash address macros */
 #include <cstring.h> /* For testing cstring api */
 
+/*
+ * Got nothing to do? How about counting to 10 million?
+ */
+void count() {
+  for(int i = 0; i < 10E6; i++);
+  return;
+}
+
 /* The led should be purple when this test is done.
  * First the parent turns on the green led, then forks MAX_PROC processes. The
  * children all turn off the green led and then exit while the parent waits
  * for them. When all the children have exited, the parent turns on the red
  * led and then exits.
- * TODO:
- * Test fails when I add in more variables (i.e increase the amount of stack
- * being used).
- * Test fails if I try to fork any more than 3 processes.
  */
 void forktest() {
 	led_init();
 	led_gron();
 	int i;
-  int n = 0;
-	int pids[3];
-	for(i = 0; i < 3; i++) {
+	int pids[MAX_PROC];
+	for(i = 0; i < MAX_PROC; i++) {
 		pids[i] = fork();
 		if(-1 == pids[i]) {
 			exit(EXIT_FAILURE);
 		}
 		if(NULLPID == pids[i]) {
 			/* Child process */
+      count();
 			led_groff();
 			exit(EXIT_SUCCESS);
 			led_gron();
@@ -44,7 +48,7 @@ void forktest() {
 			led_blon();
 		}
 	}
-	for(i = 0; i < 3; i++) {
+	for(i = 0; i < MAX_PROC; i++) {
 		wait(pids[i]);
 	}
 	led_ron();
