@@ -145,9 +145,6 @@ PSV_ISR: .fnstart
  * purpose of this code here is too save r0, pc and lr because it will be
  * changed when we enter the exeption handler c code. kernel_entry will need
  * these values in order to save the correct context.
- *TODO:
- *The lr doesn't seem to be getting updated properly. Not sure how the OS has
- *been working in the past with a bug as severe as this.
  */
 	.align 2
 	.type SYST_ISR, %function

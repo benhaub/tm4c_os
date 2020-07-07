@@ -131,6 +131,7 @@ void psv_handler() {
 /* Systick handler (clock tick interrupt) */
 void syst_handler(word sp) {
 /* Don't change the state to RUNNABLE, just go to the scheduler */
+  NVIC_ST_CURRENT_R = 0;
 	if(UNUSED == currproc()->state || WAITING == currproc()->state) {
 		kernel_entry(currproc());
 		scheduler();

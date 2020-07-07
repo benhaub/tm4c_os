@@ -45,14 +45,26 @@ void user_init() {
 /*
  * Reserve a process for further initialization and scheduling. Returns the
  * pcb of the reserved process.
+ * TODO:
+ * If reserveproc fails, it must restore the state of the process table.
  */
 struct pcb* reserveproc(char *name) {
+	int ret;
+	int i = 0;
+
 	if(sizeof(name) > 16 && NULL != name) {
+    printf("Buffer overrun for process name\n\r");
 		return NULL;
 	}
-	int ret;
+/* Top of stack for this process. */
+	if(-1 != (ret = get_stackspace())) {
+		ptable[i].rampg = ret;
+		ptable[i].context.sp = stacktop(ptable[i].rampg);
+	}
+	else {
+		return NULL;
+	}
 /* Find an UNUSED process from the process table. */
-	int i = 0;
 	while(1) {
 		if(ptable[i].state == UNUSED) {
 			if(maxpid < i) {
@@ -71,14 +83,6 @@ struct pcb* reserveproc(char *name) {
 	strncpy(ptable[i].name, name, strlen(name));
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
-/* Top of stack for this process. */
-	if(-1 != (ret = get_stackspace())) {
-		ptable[i].rampg = ret;
-		ptable[i].context.sp = stacktop(ptable[i].rampg);
-	}
-	else {
-		return NULL;
-	}
 	return (ptable + i);
 }
 
@@ -108,16 +112,13 @@ void init_ptable() {
 /* start after that. each entry of the ptable corresponds the to page it uses */
 /* in flash. */
 	int i;
-	int j;
 	for(i = 0; i < ((word)smain/FLASH_PAGE_SIZE + 1); i++) {
 		ptable[i].state = KERNEL;
 		ptable[i].numchildren = 0;
 /* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
     //protect_flash(i);
     FLASH_FMPPE0_R |= 0xffffffff;
-		for(j = 0; j < MAX_CHILD; j++) {
-			ptable[i].waitpid = NULLPID;
-		}
+    ptable[i].waitpid = NULLPID;
 	}
 	while(i < MAX_PROC) {
 		ptable[i].state = UNUSED;

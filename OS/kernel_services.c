@@ -32,19 +32,11 @@ int sysfork() {
 		return -1;
 	}
 	struct pcb *parent = currproc();
-	if(parent->numchildren < MAX_CHILD) {
-		parent->numchildren++;
-	}
-	else {
-		/* This process has already child the max number of children. */
-    printf("fork() failed - Max number of processes reached");
-		return -1;
-	}
-/* Copy context from the process that child to the child process. */
+  parent->numchildren++;
 	child->context.pc = parent->context.pc;
-/* Copy the parents stack */
 /* Number of bytes being used in the parent stack */
   word pstackuse = stacktop(parent->rampg) - parent->context.sp;
+/* Copy the parent's stack */
   memcpy(
       (void *)(stacktop(child->rampg) - pstackuse),
       (void *)(stacktop(parent->rampg) - pstackuse),
@@ -96,17 +88,10 @@ int sysexit(int exitcode) {
 	}
 	exitproc->ppid = NULLPID;
   exitproc->waitpid = NULLPID;
-/* TODO:
- * leave this here for now since it might be good for debugging, but it's the
- * children that become the zombies, not the parent.
- */
   if(0 != exitproc->numchildren) {
-    exitproc->state = ZOMBIE;
+    printf("Parent with pid %d exited with children\n\r");
   }
-  else {
-    exitproc->state = UNUSED;
-    exitproc->numchildren = 0;
-  }
+  exitproc->state = UNUSED;
 	exitproc->initflag = 1;
 	strncpy(exitproc->name, "\0", 1);
 /* Return the exit code to the parent */

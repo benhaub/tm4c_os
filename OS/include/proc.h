@@ -18,8 +18,6 @@
 /* Exit codes */
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
-/* Maximum number of child processes. */
-#define MAX_CHILD 4
 /* Context switch stack size (in bytes, 4 bytes per word saved) */
 #define CTXSTACK 32
 
@@ -43,7 +41,7 @@
  * 	The processes is waiting for another process to exit
  */
 enum procstate {KERNEL, UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING,\
-	              WAITING, ZOMBIE};
+	              WAITING};
 
 /* Note that any changes to a processes context do not take affect until */
 /* The next time a context switch changes to it. The registers here are */

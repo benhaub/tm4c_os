@@ -41,7 +41,7 @@ int wait(int pid) {
 int exit(int exitcode) {
 	syscall1(EXIT, currproc(), &exitcode);
 /* Wait to be scheduled. This is done because the scheduler can't be called */
-/* from handler mode. All sys*() calls run in handler mode. */
+/* from unprivledge mode since swtch uses msr instructions. */
 	while(1);
 }
 

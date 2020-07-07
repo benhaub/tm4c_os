@@ -47,7 +47,7 @@ syscall: .fnstart
 	.type syscall1, %function
 syscall1: .fnstart
 /* Argument needs to be placed in r1 so svc_handler gets it in arg1. First */
-/* save currproc though. */
+/* save currproc. */
 					  mov r10, r1
 /* Move the syscalls argument over to r1 and overwrite the currproc pointer. */
 					  mov r1, r2

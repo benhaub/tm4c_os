@@ -16,6 +16,9 @@
  * Got nothing to do? How about counting to 10 million?
  */
 void count() {
+/*TODO
+ * See BUGS
+ */
   for(int i = 0; i < 10E6; i++);
   return;
 }
