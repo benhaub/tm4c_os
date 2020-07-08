@@ -16,9 +16,6 @@
  * Got nothing to do? How about counting to 10 million?
  */
 void count() {
-/*TODO
- * See BUGS
- */
   for(int i = 0; i < 10E6; i++);
   return;
 }
@@ -28,6 +25,10 @@ void count() {
  * children all turn off the green led and then exit while the parent waits
  * for them. When all the children have exited, the parent turns on the red
  * led and then exits.
+ * TODO:
+ * Just made a commit. Took out a few things to fix the pc = 0 context switch
+ * bug, but not when the code is ran no LED's turn on at all. See the commit
+ * for changes and make sure none of them broke the code.
  */
 void forktest() {
 	led_init();

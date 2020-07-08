@@ -6,9 +6,8 @@
  *****************************************************************************/
 #include <types.h>
 #include <mem.h>
+#include <cstring.h>
 
-/* From vectors.s */
-extern int KRAM_USE;
 /* Array to determine what space in ram is being used. */
 /* Kernel stack usage is automatically determined at reset and stored on the */
 /* stack and retrieved with KRAM_USE. */
@@ -23,6 +22,7 @@ int get_stackspace() {
 	while(stackusage[i]) {
 		i++;
 		if(i > SRAM_PAGES) {
+      printf("No available RAM for new stack\n\r");
 			return -1;
 		}
 	}
@@ -43,6 +43,10 @@ void init_ram() {
 /* KRAM_USE is stored one word back (- 4). */
 	for(i = 0; i < *((word *)(KRAM_USE - 4)) + 2; i++) {
 		stackusage[i] = 1;
+/*TODO:
+ * Add assembly here to pop the stack back to the top.
+ */
+    __asm__("");
 	}
 	while(i < SRAM_PAGES) {
 		stackusage[i] = 0;

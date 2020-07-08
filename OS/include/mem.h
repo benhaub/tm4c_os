@@ -1,11 +1,12 @@
+/******************************************************************************
+ * Authour  : Ben Haubrich                                                    *
+ * File     : proc.h                                                          *
+ * Synopsis : Process related structs and functions                           *
+ * Date     : June 5th, 2019                                                  *
+ *****************************************************************************/
 #ifndef __MEM_H__
 #define __MEM_H__
-/******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	proc.h
- * Synopsis	:	Process related structs and functions
- * Date			:	June 5th, 2019
- *****************************************************************************/
+
 #include <types.h>
 #include <proc.h>
 
@@ -13,6 +14,8 @@
 extern void *smainsize;
 /* From initshell. Not called. Only used to calculate ksize. */
 extern int smain(void);
+/* From vectors.s */
+extern const int KRAM_USE;
 
 /* Process stack size. This is independant of the kernel stack which is */
 /* created in vectors.s at the top of the vector table. If you change this */

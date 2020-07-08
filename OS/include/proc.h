@@ -1,18 +1,21 @@
+/******************************************************************************
+ * Authour  : Ben Haubrich                                                    *
+ * File     : proc.h                                                          *
+ * Synopsis : Process related structs and functions                           *
+ * Date     : June 5th, 2019                                                  *
+ *****************************************************************************/
 #ifndef __PROC_H__
 #define __PROC_H__
-/******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	proc.h
- * Synopsis	:	Process related structs and functions
- * Date			:	June 5th, 2019
- *****************************************************************************/
+
 #include <types.h>
 #include <mem.h>
+
 /* Every process needs a stack, so max processes is how many stacks can fit */
-/* in ram at the same time. It's SRAM_ - 0x800 because the kernel has a 2KB */
-/* stack. Make sure the kernel stack value here matches the stack size in */
-/* vectors.s */
-#define MAX_PROC ((SRAM_-_SRAM) - 0x800) / STACK_SIZE
+/* in ram at the same time. The size of the kernel can not be pre-processed */
+/* since it's calculated at startup in RESET_EXCP. The OS will ward you if */
+/* MAX_PROC is defined to be too large by doing a single runtime check in */
+/* user_init. */
+#define MAX_PROC 25
 /* A pid that no valid process will ever have. */
 #define NULLPID MAX_PROC + 1
 /* Exit codes */

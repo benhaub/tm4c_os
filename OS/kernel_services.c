@@ -89,7 +89,7 @@ int sysexit(int exitcode) {
 	exitproc->ppid = NULLPID;
   exitproc->waitpid = NULLPID;
   if(0 != exitproc->numchildren) {
-    printf("Parent with pid %d exited with children\n\r");
+    printf("Parent with pid %d exited with children\n\r", exitproc->numchildren);
   }
   exitproc->state = UNUSED;
 	exitproc->initflag = 1;

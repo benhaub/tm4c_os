@@ -13,8 +13,6 @@
 /* From context.s */
 extern void swtch(word);
 extern void initcode(word);
-/* From initshell.c */
-extern int smain(void);
 
 /* The largest pid currently RUNNING. Keeping track of this speeds up */
 /* scheduling. */
@@ -30,6 +28,13 @@ int currpid;
  * 	The name of the new process
  */
 void user_init() {
+/* See mem.h for an explanation of this calculation. */
+  if(MAX_PROC > SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2)) {
+    printf("MAX_PROC is set to allow more processes than the available RAM "\
+        "can hold. Please use a value no greater than %d\n\r", \
+       SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2));
+    return;
+  }
 /* Set all globals. Compiler doesn't seem to want to cooperate with global */
 /* initializations of variables. */
 	maxpid = 0;
@@ -45,23 +50,15 @@ void user_init() {
 /*
  * Reserve a process for further initialization and scheduling. Returns the
  * pcb of the reserved process.
- * TODO:
- * If reserveproc fails, it must restore the state of the process table.
  */
 struct pcb* reserveproc(char *name) {
-	int ret;
+	int rampg;
 	int i = 0;
+/* Back up the value of maxpid incase this fails. */
+  int maxpid_bu = maxpid;
 
 	if(sizeof(name) > 16 && NULL != name) {
     printf("Buffer overrun for process name\n\r");
-		return NULL;
-	}
-/* Top of stack for this process. */
-	if(-1 != (ret = get_stackspace())) {
-		ptable[i].rampg = ret;
-		ptable[i].context.sp = stacktop(ptable[i].rampg);
-	}
-	else {
 		return NULL;
 	}
 /* Find an UNUSED process from the process table. */
@@ -73,11 +70,24 @@ struct pcb* reserveproc(char *name) {
 			break;
 		}
 		else if(i > MAX_PROC) {
+      maxpid = maxpid_bu;
+      printf("No unused proc's in ptable\n\r");
 			return NULL;
 		}
 		else {
 			i++;
 		}
+	}
+/* Top of stack for this process. */
+	if(-1 != (rampg = get_stackspace())) {
+		ptable[i].rampg = rampg;
+		ptable[i].context.sp = stacktop(rampg);
+	}
+	else {
+    free_stackspace(rampg);
+    ptable[i].context.sp = 0;
+    maxpid = maxpid_bu;
+		return NULL;
 	}
 	ptable[i].state = RESERVED;
 	strncpy(ptable[i].name, name, strlen(name));
