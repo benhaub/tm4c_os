@@ -45,7 +45,7 @@ STACK_TOP:
 Vectors:
 	.word STACK_TOP + 0x800 /* Boot loader gets kernel stack pointer from here*/
 	.word Reset_EXCP	/* Reset Exception */
-	.word NMI_ISR			/* Non-maskable interrupt */
+	.word NMI_EXCP		/* Non-maskable interrupt */
 	.word HFAULT			/* Hard Fault */
 	.word MM_FAULT		/* Memory Management Fault*/
 	.word BFAULT			/* Bus Fault */
@@ -54,11 +54,11 @@ Vectors:
 	.word 0						/* Reserved Space */
 	.word 0						/* Reserved Space */
 	.word 0						/* Reserved Space */
-	.word SVC_ISR			/* Supervisor Call */
-	.word DM_ISR			/* Debug Monitor */
+	.word SVC_EXCP		/* Supervisor Call */
+	.word DM_EXCP			/* Debug Monitor */
 	.word 0						/* Reserved Space */
-	.word PSV_ISR			/* PendSV */
-	.word SYST_ISR		/* SysTick */
+	.word PSV_EXCP		/* PendSV */
+	.word SYST_EXCP		/* SysTick */
 
 	.text
 
@@ -90,8 +90,8 @@ Reset_EXCP: .fnstart
 						.fnend
 
 	.align 2
-	.type NMI_ISR, %function
-NMI_ISR: .fnstart
+	.type NMI_EXCP, %function
+NMI_EXCP: .fnstart
 				 b nmi_handler
 				 .fnend
 
@@ -120,20 +120,20 @@ UFAULT:	.fnstart
 				.fnend
 
 	.align 2
-	.type SVC_ISR, %function
-SVC_ISR: .fnstart
+	.type SVC_EXCP, %function
+SVC_EXCP: .fnstart
 				 b svc_handler
 				 .fnend
 
 	.align 2
-	.type DM_ISR, %function
-DM_ISR: .fnstart
+	.type DM_EXCP, %function
+DM_EXCP: .fnstart
 				b dm_handler
 				.fnend
 
 	.align 2
-	.type PSV_ISR, %function
-PSV_ISR: .fnstart
+	.type PSV_EXCP, %function
+PSV_EXCP: .fnstart
 				 b psv_handler
 				 .fnend
 
@@ -147,8 +147,8 @@ PSV_ISR: .fnstart
  * these values in order to save the correct context.
  */
 	.align 2
-	.type SYST_ISR, %function
-SYST_ISR: .fnstart
+	.type SYST_EXCP, %function
+SYST_EXCP: .fnstart
 /* Get the processes stack pointer and save it */
 					mrs r0, psp
 /* Save the value of the exception stack r0. */
