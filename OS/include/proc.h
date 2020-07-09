@@ -16,6 +16,9 @@
 /* MAX_PROC is defined to be too large by doing a single runtime check in */
 /* user_init. */
 #define MAX_PROC 25
+/* That maximum number of creatable processes, which accounts for the */
+/* the creation of initshell during OS initialization. */
+#define NPROC MAX_PROC - 1
 /* A pid that no valid process will ever have. */
 #define NULLPID MAX_PROC + 1
 /* Exit codes */
@@ -43,8 +46,7 @@
  * WAITING:
  * 	The processes is waiting for another process to exit
  */
-enum procstate {KERNEL, UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING,\
-	              WAITING};
+enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, WAITING};
 
 /* Note that any changes to a processes context do not take affect until */
 /* The next time a context switch changes to it. The registers here are */
@@ -77,7 +79,6 @@ struct pcb {
 void user_init(void);
 struct pcb* reserveproc(char *);
 void init_ptable(void);
-void init_context(void);
 struct pcb *currproc(void);
 struct pcb *pidproc(int);
 void scheduler(void) __attribute__((noreturn));

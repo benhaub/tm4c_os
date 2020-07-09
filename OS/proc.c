@@ -115,35 +115,16 @@ static void initproc(struct pcb *reserved) {
 	reserved->state = RUNNABLE;
 }
 
-/* Set all unused procs to unused state, and kernel proc space to KERNEL. */
-/* Also initialize pcb members. */
+/* Set all unused procs to unused state and initialize pcb members to known */
+/* values. */
 void init_ptable() {
-/* The kernel ends at smain. We'll find out how many pages it used, then */
-/* start after that. each entry of the ptable corresponds the to page it uses */
-/* in flash. */
-	int i;
-	for(i = 0; i < ((word)smain/FLASH_PAGE_SIZE + 1); i++) {
-		ptable[i].state = KERNEL;
-		ptable[i].numchildren = 0;
-/* Write protect flash memory that contains kernel code. Pg. 578, datasheet. */
-    //protect_flash(i);
-    FLASH_FMPPE0_R |= 0xffffffff;
-    ptable[i].waitpid = NULLPID;
-	}
-	while(i < MAX_PROC) {
+	for(int i = 0; i < MAX_PROC; i++) {
 		ptable[i].state = UNUSED;
 		ptable[i].numchildren = 0;
     ptable[i].waitpid = NULLPID;
 		ptable[i].ppid = NULLPID;
+    ptable[i].pid = NULLPID;
 		ptable[i].initflag = 1;
-		i++;
-	}
-}
-
-/* Sets the pc and sp to zero. */
-void init_context() {
-	int i;
-	for(i = 0; i < MAX_PROC; i++) {
 		ptable[i].context.sp = ptable[i].context.pc = 0;
 	}
 }

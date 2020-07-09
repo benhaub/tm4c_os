@@ -20,22 +20,19 @@ void count() {
   return;
 }
 
-/* The led should be purple when this test is done.
- * First the parent turns on the green led, then forks MAX_PROC processes. The
+/* 
+ * The led should be purple when this test is done.
+ * First the parent turns on the green led, then forks NPROC processes. The
  * children all turn off the green led and then exit while the parent waits
  * for them. When all the children have exited, the parent turns on the red
  * led and then exits.
- * TODO:
- * Just made a commit. Took out a few things to fix the pc = 0 context switch
- * bug, but not when the code is ran no LED's turn on at all. See the commit
- * for changes and make sure none of them broke the code.
  */
 void forktest() {
 	led_init();
 	led_gron();
 	int i;
-	int pids[MAX_PROC];
-	for(i = 0; i < MAX_PROC; i++) {
+	int pids[NPROC];
+	for(i = 0; i < NPROC; i++) {
 		pids[i] = fork();
 		if(-1 == pids[i]) {
 			exit(EXIT_FAILURE);
@@ -52,7 +49,7 @@ void forktest() {
 			led_blon();
 		}
 	}
-	for(i = 0; i < MAX_PROC; i++) {
+	for(i = 0; i < NPROC; i++) {
 		wait(pids[i]);
 	}
 	led_ron();

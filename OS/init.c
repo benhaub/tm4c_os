@@ -29,7 +29,6 @@ int main() {
 	NVIC_SYS_PRI2_R |= (1 << 29);
 	init_ram();
 	init_ptable();
-	init_context();
 	init_fs();
 	start_clocktick();
 /* Set up the first user process (the shell) */
