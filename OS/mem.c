@@ -43,10 +43,6 @@ void init_ram() {
 /* KRAM_USE is stored one word back (- 4). */
 	for(i = 0; i < *((word *)(KRAM_USE - 4)) + 2; i++) {
 		stackusage[i] = 1;
-/*TODO:
- * Add assembly here to pop the stack back to the top.
- */
-    __asm__("");
 	}
 	while(i < SRAM_PAGES) {
 		stackusage[i] = 0;

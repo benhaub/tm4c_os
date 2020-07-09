@@ -71,7 +71,7 @@ void b_handler() {
 /* Clear the contents of the fault register */
   NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 /* View the contents with a debugger. */
-	while(1);
+  while(1);
 }
 /* Usage Fault Handler. */
 void u_handler() {
@@ -90,22 +90,15 @@ void u_handler() {
 	invstat = (NVIC_FAULT_STAT_R & (1 << 17));
 /* The processor has attemped to execute an undefined instruction. */
 	undef = (NVIC_FAULT_STAT_R & (1 << 16));
-/* Eliminate unsed variable warnings. */
+/* Eliminate unused variable warnings. */
 	div0=div0;unalign=unalign;nocp=nocp;invpc=invpc;invstat=invstat;undef=undef;
-	while(1);
+  while(1);
 }
 /* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */
 /* up here, and then it's decided how to handle it based on the sysnum. */
 void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 /* Return values from system calls. */
 	word ret;
-/* Disable interrupts to prevent scheduling while performing kernel */
-/* services. */
-/*TODO:
- * Do we need to disable interrupts? Aren't we already in handler mode which
- * can't be interrupted in the first place?
- */
-	processor_state(0);
 	switch(sysnum) {
 		case 0: ret = sysfork();
 						break;
@@ -119,8 +112,6 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 	}
 /* Store return values */
 	syscreturn(ret);
-/* Re-enable interrupts. */
-	processor_state(1);
 }
 void dm_handler() {
 	while(1);

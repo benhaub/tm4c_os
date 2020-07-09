@@ -33,15 +33,11 @@ STACK_TOP:
 
 /* Pg.103, datasheet - Table 2-8 details the vector table. */
 /* In C, this is similar to: */
-/* unsigned int Vectors[16] = {STACK_TOP, Reset_EXCP,...,SYST_ISR}; */
+/* unsigned int Vectors[16] = {STACK_TOP, Reset_EXCP,...,SYST_EXCP}; */
 
-/*
- * The STACK_TOP expression says: Take the address of STACK_TOP, move it by
- * STACK_TOP KB. Then at the STACK_TOP label above, it says, now give me .skip
- * KB of space for this address. Note that this is the KERNEL stack point,
- * not a user stack pointer. They are unrelated to eachother. The kernel can
- * havea different sized stack than a user.
- */
+/* Note that this is the KERNEL stack pointer not a user stack pointer. */
+/* They are unrelated. The kernel can have a different sized stack than a */
+/* user. */
 Vectors:
 	.word STACK_TOP + 0x800 /* Boot loader gets kernel stack pointer from here*/
 	.word Reset_EXCP	/* Reset Exception */
@@ -76,7 +72,7 @@ Reset_EXCP: .fnstart
 /* Divide this by the current position of the sp to get an integer for */
 /* get_stackspace. */
 						udiv r1, r0
-/* push the value onto the first spot in the stack marked by the symbol */
+/* "push" the value onto the first spot in the stack marked by the symbol */
 /* KRAM_USAGE. */
 						push {r1}
 /* Enable the FPU. Taken from tivaware bootloader code, but also detailed */
@@ -110,13 +106,13 @@ MM_FAULT: .fnstart
 	.align 2
 	.type BFAULT, %function
 BFAULT: .fnstart
-         b b_handler
+        b b_handler
 				.fnend
 
 	.align 2
 	.type UFAULT, %function
 UFAULT:	.fnstart
-					b u_handler
+				b u_handler
 				.fnend
 
 	.align 2

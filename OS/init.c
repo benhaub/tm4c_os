@@ -24,9 +24,9 @@ int main() {
 	NVIC_SYS_HND_CTRL_R |= (1 << 18); /* USAGE Enable */
   uart1_init(B115200);
   printf("Initialising tm4c_os\n\r");
-/* Configure Interrupt priorities. Tick exceptions are higher priority */
-/* than system calls. SVC is 1 and systick is 0. */
-	NVIC_SYS_PRI2_R |= (1 << 29);
+/* Configure Interrupt priorities. SVC exceptions are higher priority */
+/* than tick interrupts. SVC is 0 and systick is 1. */
+	NVIC_SYS_PRI3_R |= (1 << 29);
 	init_ram();
 	init_ptable();
 	init_fs();
