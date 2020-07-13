@@ -8,6 +8,7 @@
 #include <types.h> /* For the word data type. */
 #include <kernel_services.h> /* Syscalls for svc_handler. */
 #include <proc.h> /* In systick interrupt, For scheduler() */
+#include <cstring.h> /* For printf() */
 
 /* From vectors.s */
 extern void processor_state(int);
@@ -43,10 +44,15 @@ void hfault_handler() {
 void mm_handler() {
 	while(1);
 }
-/* Bus Fault Handler. Code that generates a bus fault usually exhibits */
-/* similar behaviour to code running in Linux that generates a segmentation */
-/* fault (accessing illegal adresses). */
-void b_handler() {
+/* 
+ * Bus Fault Handler. Code that generates a bus fault usually exhibits
+ * similar behaviour to code running in Linux that generates a segmentation
+ * fault (accessing illegal adresses).
+ * @param stack
+ *   The stack that was being used when the fault was triggered. 1 for psp, 2
+ *   for msp
+ */
+void b_handler(int mode) {
 	word fault_addr;
 	word bfarv, blsperr, bstke, bustke, impre, precise, ibus;
 /* Make sure memory contents are valid. */
@@ -71,6 +77,10 @@ void b_handler() {
 /* Clear the contents of the fault register */
   NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 /* View the contents with a debugger. */
+  printf("Bus Fault\n\r");
+  if(2 == mode) {
+    return;
+  }
   while(1);
 }
 /* Usage Fault Handler. */

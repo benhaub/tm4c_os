@@ -10,6 +10,12 @@
 #include <mem.h> /* in sysexit(), for free_stackspace() */
 #include <hw.h> /* for write_flash() */
 
+/*
+ * IMPORTANT:
+ *   Since all the system calls are executed in handler mode, any fault that
+ *   is triggered here is an escalation to a hard fault.
+ */
+
 /* From proc.c */
 extern int maxpid;
 extern struct pcb ptable[];
@@ -95,5 +101,8 @@ int sysexit(int exitcode) {
 	exitproc->initflag = 1;
 	strncpy(exitproc->name, "\0", 1);
 /* Return the exit code to the parent */
-	return exitcode;
+  if(exitcode != 0) {
+    return 1;
+  }
+  return exitcode;
 }
