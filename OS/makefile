@@ -33,8 +33,8 @@ CFLAGS=-mthumb \
 #-static: Stops ld from looking from .so's. No point in doing that since we are
 #linking .a's only
 #-M produces the .d files, -MF specifies an output directory for them
-#The $* is called an automatic variable. The $* becomes whatever the % value
-#expands to in the targets below.
+#The $* is called an automatic variable. The $* becomes whatever the wildcard
+#value expands to in the targets below in the implicit included rules.
 
 #Linker options
 LDFLAGS=-Wl,--gc-sections \
@@ -68,6 +68,7 @@ S_OBJECTS+=${S_SOURCES:.s=.o}
 
 tm4c_os.bin: dirs tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
+	mv *.elf *.o .bin
 
 tm4c_os.elf: ${C_OBJECTS} ${S_OBJECTS} link.ld
 	${CC} ${CFLAGS} ${LDFLAGS} -otm4c_os.elf ${C_OBJECTS} ${S_OBJECTS}
@@ -82,7 +83,7 @@ syscallsasm.o: syscallsasm.s
 	${CC} ${CFLAGS} -c syscallsasm.s
 
 dirs:
-	mkdir -p .deps
+	mkdir -p .deps .bin
 
 #If a dependancy file is deleted for some reason, make will detect it and
 #rebuild them.
