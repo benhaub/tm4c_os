@@ -49,10 +49,10 @@ void mm_handler() {
  * similar behaviour to code running in Linux that generates a segmentation
  * fault (accessing illegal adresses).
  * @param stack
- *   The stack that was being used when the fault was triggered. 1 for psp, 2
+ *   The stack that was being used when the fault was triggered. 2 for psp, 1
  *   for msp
  */
-void b_handler(int mode) {
+void b_handler(int stack) {
 	word fault_addr;
 	word bfarv, blsperr, bstke, bustke, impre, precise, ibus;
 /* Make sure memory contents are valid. */
@@ -78,13 +78,18 @@ void b_handler(int mode) {
   NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 /* View the contents with a debugger. */
   printf("Bus Fault\n\r");
-  if(2 == mode) {
+  if(2 == stack) {
     return;
   }
   while(1);
 }
-/* Usage Fault Handler. */
-void u_handler() {
+/*
+ * Usage Fault Handler.
+ * @param stack
+ *   The stack that was being used when the fault was triggered. 2 for psp, 1
+ *   for msp
+ */
+void u_handler(int stack) {
 	word div0, unalign, nocp, invpc, invstat, undef;
 /* Divide by zero */
 	div0 = (NVIC_FAULT_STAT_R & (1 << 25));
@@ -101,7 +106,13 @@ void u_handler() {
 /* The processor has attemped to execute an undefined instruction. */
 	undef = (NVIC_FAULT_STAT_R & (1 << 16));
 /* Eliminate unused variable warnings. */
-	div0=div0;unalign=unalign;nocp=nocp;invpc=invpc;invstat=invstat;undef=undef;
+	unalign=unalign;nocp=nocp;invpc=invpc;invstat=invstat;undef=undef;
+  if(0 != div0) {
+    printf("Divide by zero error\n\r");
+  }
+  if(2 == stack) {
+    return;
+  }
   while(1);
 }
 /* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */

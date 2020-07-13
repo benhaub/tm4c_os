@@ -112,12 +112,13 @@ BFAULT: .fnstart
         ldr r0,=exit
         str r0, [r1, #24]
 /* If the bus fault was caused by the kernel, do not exit, just loop in the */
-/* fault handler. */
-        cmps lr, #0xFFFFFFED
-        beq User
+/* fault handler. The value being compared is EXEC_RETURN on pg.111 in the */
+/* datasheet. */
+        cmp lr, #0xFFFFFFED
+        beq BUser
         mov r0, #1
         b b_handler
-User:
+BUser:
         mov r0, #2
         b b_handler
 				.fnend
@@ -125,6 +126,20 @@ User:
 	.align 2
 	.type UFAULT, %function
 UFAULT:	.fnstart
+/* The faulting process will exit when the bus fault handler is done via the */
+/* Exception return mechanism. */
+        mrs r1, psp
+        ldr r0,=exit
+        str r0, [r1, #24]
+/* If the bus fault was caused by the kernel, do not exit, just loop in the */
+/* fault handler. The value being compared is EXEC_RETURN on pg.111 in the */
+/* datasheet. */
+        cmp lr, #0xFFFFFFED
+        beq UUser
+        mov r0, #1
+        b u_handler
+UUser:
+        mov r0, #2
 				b u_handler
 				.fnend
 
