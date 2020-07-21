@@ -22,7 +22,9 @@ void systick_init() {
 	return;
 }
 /*
- * Start a system clock tick with interrupts enabled.
+ * Start a system clock tick with interrupts enabled. Interrupts frequencies
+ * must be such that the OS has time to complete scheduling and context
+ * switching.
  */
 void start_clocktick() {
 	NVIC_ST_CTRL_R = 0;

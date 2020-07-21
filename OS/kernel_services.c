@@ -51,7 +51,7 @@ int sysfork() {
 /* Adjust the stack pointer of the child to the same offset as the parent. */
   child->context.sp -= pstackuse;
 	child->ppid = parent->pid;
-/* Forked will return NULLPID to the user process. */
+/* Child will return NULLPID to the user process. */
 	child->context.r0 = NULLPID;
 	return child->pid;
 }

@@ -65,18 +65,19 @@ Reset_EXCP: .fnstart
 /* allocating ram pages for user programs. See get_stackspace(). */
 /* Where ever the top of stack is determines how much space the kernel is */
 /* using. The end of the kernel is the stack top because of how the linker */
-/* script use SRAM for for the kernel. */
+/* arranges data storage in SRAM. */
 						mov r0, #0x400 /* Stack Size */
 						mov r1, sp
 						sub r1, r1, #0x20000000
 /* Divide this by the current position of the sp to get an integer for */
 /* get_stackspace. */
 						udiv r1, r0
-/* "push" the value onto the first spot in the stack marked by the symbol */
+/* Push the value onto the first spot in the stack marked by the symbol */
 /* KRAM_USAGE. */
 						push {r1}
 /* Enable the FPU. Taken from tivaware bootloader code, but also detailed */
-/* on page 74 of the Cortext-M4 TRM. */
+/* on page 74 of the Cortext-M4 TRM. It is enabling bits within the register */
+/* located at 0xE000ED88. */
             movw    r0, #0xED88
             movt    r0, #0xE000
             ldr     r1, [r0]
@@ -168,7 +169,7 @@ PSV_EXCP: .fnstart
  * handler mode on the bx lr, and stack saving happens in kernel_entry. The
  * purpose of this code here is too save r0, pc and lr because it will be
  * changed when we enter the exeption handler c code. kernel_entry will need
- * these values in order to save the correct context.
+ * these values in order to save the context correclty.
  */
 	.align 2
 	.type SYST_EXCP, %function
@@ -205,11 +206,11 @@ Thumb:
 
 /*
  * Entry to the kernel from the systick isr. It is executed from thread
- * mode so that it is ossible to save stacks and context switch properly.
+ * mode so that it is possible to save stacks and context switch properly.
  * It makes sure the process stack is returned to it's orginal state, and then
  * pushes the context onto the stack and saves the stack pointer (psp) before
  * switching stacks from psp to msp. The corresponding pop is made from swtch
- * so make sure that the push here and pop there are consistent.
+ * so make sure that the push here and pop in swtch() are consistent.
  */
 	.align 2
 	.type kernel_entry, %function
