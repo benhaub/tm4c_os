@@ -35,5 +35,8 @@ void erase_flash(word);
 /* UART calls */
 void uart1_init(unsigned int);
 int uart1_tchar(char);
+/* SSI calls */
+int ssi0_init_master(int, int, int);
+void ssi0_transmit(int);
 
 #endif /*__HW_H__*/

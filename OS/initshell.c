@@ -56,6 +56,16 @@ void forktest() {
 	exit(EXIT_SUCCESS);
 }
 
+/*
+ * Test the SSI interface.
+ */
+void ssi() {
+  ssi0_init_master(0,0x7,2);
+  for(int i = 0; i < 10000; i++) {
+    ssi0_transmit(0xBA);
+  }
+}
+
 /* 
  * This function tests reading and writing flash by writing the testwrite
  * struct into flash memory, and then reading it back and comparing the
@@ -162,6 +172,7 @@ int smain() {
 /* Commented out to reduce flash writes while testing. */
 	//wrflash();
   stringtest();
+  ssi();
   forktest();
 	return 0;
 }

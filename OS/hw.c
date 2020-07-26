@@ -69,6 +69,7 @@ void led_init() {
 	GPIO_PORTF_DEN_R |= (1 << 3);
 	return;
 }
+
 /*
  * Turn the red led on
  */
@@ -76,6 +77,7 @@ void led_ron() {
 	GPIO_PORTF_DATA_R |= (1 << 1);
 	return;
 }
+
 /*
  * Turn off red led
  */
@@ -83,18 +85,22 @@ void led_roff() {
 	GPIO_PORTF_DATA_R &= ~(1 << 1);
 	return;
 }
+
 void led_gron() {
 	GPIO_PORTF_DATA_R |= (1 << 3);
 	return;
 }
+
 void led_groff() {
 	GPIO_PORTF_DATA_R &= ~(1 << 3);
 	return;
 }
+
 void led_blon() {
 	GPIO_PORTF_DATA_R |= (1 << 2);
 	return;
 }
+
 void led_bloff() {
 	GPIO_PORTF_DATA_R &= ~(1 << 2);
 	return;
@@ -196,6 +202,7 @@ Write:
 	}
 	return 0;
 }
+
 /*
  * Erase the 1KB flash page that contains the address pageaddr.
  */
@@ -207,6 +214,7 @@ void erase_flash(word pageaddr) {
   while(FLASH_FMC_R);
   return;
 }
+
 /*
  * Protect the flash page given by pageno from being modified by a flash write.
  * Page 0 will protect flash memory from 0x0 to 0x7FF. 1 will protect from
@@ -252,6 +260,9 @@ void uart1_init(unsigned int baud) {
   SYSCTL_RCGCUART_R |= (1 << 1);
 /* Enable run mode for GPIO Port B module (GPIOPB). */
   SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
+  if(0 != (GPIO_PORTB_AFSEL_R & (1 << 1))) {
+    return;
+  }
   GPIO_PORTB_AFSEL_R |= (1 << 1); //UART1 alt function for PB1.
   GPIO_PORTB_PCTL_R |= (1 << 4); //Transmit function for PB1.
 /* Initialize GPIOPB1. Pg. 656 initialization procedure. */
@@ -274,6 +285,7 @@ void uart1_init(unsigned int baud) {
 /* Enable the UART for use. */
   UART1_CTL_R |= 0x1;
 }
+
 /*
  * Write a character to the FIFO and initiate a transfer.
  * param data
@@ -296,4 +308,99 @@ int uart1_tchar(char data) {
     return -1;
   }
   return 0;
+}
+
+/*************************************SSI*************************************/
+
+/*
+ * Initialise a Synchronous Serial Interface master on GPIO Port A by following
+ * the procedure on Pg. 965 of the datasheet. This procedure will not complete
+ * and return -1 if port control for PA[5:2] has been changed from the POR
+ * default.
+ * @param protocol
+ *   0 for Freescale SPI
+ *   1 for Texas Instruments SSI
+ *   2 for Microwire SSI
+ * @param ds
+ *   The data size for each frame. Anywhere from 0x3 (4-bit data) to 0xF
+ *   (16-bit data) is allowed.
+ * @param drxr
+ *   The drive strength for the pin.
+ *   2 for 2mA
+ *   4 for 4mA
+ *   8 for 8mA
+ */
+int ssi0_init_master(int protocol, int ds, int drxr) {
+/* Activate the SSI peripheral clock. */
+  SYSCTL_RCGCSSI_R |= 0x1;
+/* Enable and provide a clock to GPIO Port A. */
+  SYSCTL_RCGCGPIO_R |= 0x1;
+/* There is no need to explicitely set the alternate function bits since */
+/* Port A's default function is set to the SSI0 signals. Instead we'll */
+/* check to make sure they haven't been changed. */
+  if((0x2 << 8) != (GPIO_PORTA_PCTL_R & 0xF << 8)) {
+    return -1;
+  }
+  else if((0x2 << 12) != (GPIO_PORTA_PCTL_R & 0xF << 12)) {
+    return -1;
+  }
+  else if((0x2 << 16) != (GPIO_PORTA_PCTL_R & 0xF << 16)) {
+    return -1;
+  }
+  else if((0x2 << 20) != (GPIO_PORTA_PCTL_R & 0xF << 20)) {
+    return -1;
+  }
+  GPIO_PORTA_AFSEL_R |= 0x3C;
+  GPIO_PORTA_DEN_R |= 0x3C;
+  switch (drxr) {
+    case 2: GPIO_PORTA_DR2R_R |= 0x3C;
+            break;
+    case 4: GPIO_PORTA_DR4R_R |= 0x3C;
+            break;
+    case 8: GPIO_PORTA_DR8R_R |= 0x3C;
+            break;
+    default: return -1;
+  }
+  //GPIO_PORTA_PUR_R |= (1 << 3);
+  //GPIO_PORTA_ODR_R |= (1 << 3);
+/* Disable SSI0 for initialisation. */
+  SSI0_CR1_R &= ~(1 << 1);
+/* Configure the SSI peripheral as master. */
+  SSI0_CR1_R &= ~(1 << 2);
+/* The clock source is the system clock, which for tm4c_os is the same as */
+/* PIOSC. */
+  SSI0_CC_R &= ~0x1;
+/* Divide the SysClk by 2. The formula is BR=SysClk/(CPSDVSR * (1 + SCR) */
+/* Where BR is the Bit Rate, SysClk is 16MHz. */
+  SSI0_CPSR_R |= 0x2; //DVSR
+  SSI0_CR0_R &= ~(0xFF << 8); //SCR
+/* BR is now 8MHz. Define the protocol. */
+  switch(protocol) {
+    case 0: SSI0_CR0_R &= ~(0x3 << 4); //Freescale SPI
+            SSI0_CR0_R &= ~(1 << 6);
+            SSI0_CR0_R &= ~(1 << 7);
+            break;
+    case 1: SSI0_CR0_R |= (1 << 4); //TI SSI
+            break;
+    case 2: SSI0_CR0_R |= (2 << 4); //Microwire
+            break;
+    default: return -1;
+  }
+  if(ds <= 0xF && ds >= 0x3) {
+      SSI0_CR0_R |= ds;
+  }
+/* Enable SSI0. */
+  SSI0_CR1_R |= (1 << 1);
+  return 0;
+}
+
+/*
+ * Transmit data on SSI0
+ */
+void ssi0_transmit(int data) {
+/* Check Raw Interrupt Status to see if the FIFO is empty. */
+  if((1 << 3) == (SSI0_RIS_R & (1 << 3))) {
+/* Write the data register for transmission. */
+      SSI0_DR_R = data;
+  }
 }
