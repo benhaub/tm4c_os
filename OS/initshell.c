@@ -152,6 +152,11 @@ int stringtest() {
   memset(str3, 0, strlen(str3));
   memset(&ctx, 0, sizeof(struct context));
   memcpy(&ctx, &ctx2, sizeof(struct context));
+  /*TODO:
+   * With the current MPU settings, writing to the uart like this is not allowed
+   * All of the hardware peripheral calls in hw.c need to be turned into system
+   * calls.
+   */
   uart1_tchar('u');
   uart1_tchar('a');
   uart1_tchar('r');

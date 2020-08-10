@@ -12,7 +12,7 @@
 
 /* Every process needs a stack, so max processes is how many stacks can fit */
 /* in ram at the same time. The size of the kernel can not be pre-processed */
-/* since it's calculated at startup in RESET_EXCP. The OS will ward you if */
+/* since it's calculated at startup in RESET_EXCP. The OS will warn you if */
 /* MAX_PROC is defined to be too large by doing a single runtime check in */
 /* user_init. */
 #define MAX_PROC 25

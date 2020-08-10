@@ -21,8 +21,6 @@ extern const int KRAM_USE;
 /* created in vectors.s at the top of the vector table. If you change this */
 /* value, also change the stack size used in Reset_EXCP. */
 #define STACK_SIZE 0x400 /*1KB Stack */
-/* Do not change the value of flash page size. flash memory protection is */
-/* based off 2KB page sizes. */
 #define FLASH_PAGE_SIZE 0x800
 /* Beginning of SRAM */
 #define _SRAM 0x20000000
@@ -51,5 +49,7 @@ extern const int KRAM_USE;
 int get_stackspace(void);
 void free_stackspace(int);
 void init_ram(void);
+void mpu_tm4cOS_init(void);
+void create_user_memory_region(int);
 
 #endif /*__MEM_H__*/

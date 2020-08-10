@@ -28,12 +28,16 @@ int currpid;
  * 	The name of the new process
  */
 void user_init() {
-/* See mem.h for an explanation of this calculation. */
+/* See mem.c for an explanation of this calculation. */
   if(MAX_PROC > SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2)) {
     printf("MAX_PROC is set to allow more processes than the available RAM "\
         "can hold. Please use a value no greater than %d\n\r", \
        SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2));
     return;
+  }
+  else if(MAX_PROC < SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2)) {
+    printf("Currently capping %d/%d available processes\n\r", MAX_PROC, \
+      SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2) - 1);
   }
 /* Set all globals. Compiler doesn't seem to want to cooperate with global */
 /* initializations of variables. */
@@ -153,6 +157,7 @@ struct pcb* pidproc(int pid) {
 void scheduler() {
 /* Current index of the scheduler. */
 	static int index;
+  struct pcb *schedproc;
 /* For initialization. arm-none-eabi-gcc initialises to -1 */
 	if(index < 0) {
 		index = 0;
@@ -163,7 +168,7 @@ void scheduler() {
 		if(index > maxpid || index > MAX_PROC) {
 			index = 0;
 		}
-		struct pcb *schedproc = &ptable[index];
+		schedproc = &ptable[index];
 /* If the process is waiting for another, check to see if it's exited. */
 		if(schedproc->state == WAITING && \
 			ptable[schedproc->waitpid].state == UNUSED) {
@@ -178,6 +183,7 @@ void scheduler() {
 			}
 			index++;
 			schedproc->state = RUNNING;
+      create_user_memory_region(schedproc->rampg);
 			swtch(schedproc->context.sp);
 		}
 		else {

@@ -110,7 +110,7 @@ void led_bloff() {
 
 /*
  * Follows the procedure on Pg. 532, datasheet.
- * Write values in in ram from starting from saddr and ending at eaddr into
+ * Write values in ram from starting from saddr and ending at eaddr into
  * flash memory that starts at faddr. This function allows you to write a
  * maximum of 1KB per call. For successive block writes, make multiple calls.
  * This call requires more than 1KB of stack space. User programs
@@ -216,12 +216,11 @@ void erase_flash(word pageaddr) {
 }
 
 /*
- * Protect the flash page given by pageno from being modified by a flash write.
- * Page 0 will protect flash memory from 0x0 to 0x7FF. 1 will protect from
- * 0x800 to 0xFFF, etc.
- * Returns -1 on failure, 0 on success.
- * 
- * This function is making permanent writes somehow.
+ * Permanently protect the flash page given by pageno from being modified by a
+ * flash write. Page 0 will protect flash memory from 0x0 to 0x7FF. 1 will
+ * protect from 0x800 to 0xFFF, etc.
+ * @return 
+ *   -1 on failure, 0 on success.
  */
 int protect_flash(int pageno) {
   if(pageno < 0 || pageno > 128) {
@@ -248,7 +247,7 @@ int protect_flash(int pageno) {
  * Pg. 902 of the data sheet. PB0 and PB1 are used for RX and TX respectively.
  * 2mA and default slew are rate are used. Only PB1 TX is enabled since this.
  * uart is used for the kernel and user to print output.
- * param baud
+ * @param baud
  *   The baud rate to be used for the module
  */
 void uart1_init(unsigned int baud) {
@@ -288,7 +287,7 @@ void uart1_init(unsigned int baud) {
 
 /*
  * Write a character to the FIFO and initiate a transfer.
- * param data
+ * @param data
  *   8 bit data to transmit.
  * returns 0 if the data was written to the FIFO, -1 otherwise. The return
  * value does NOT indicate a sucessful transmission, only that data was
@@ -361,6 +360,7 @@ int ssi0_init_master(int protocol, int ds, int drxr) {
             break;
     default: return -1;
   }
+  //TODO: What are we doing with these?
   //GPIO_PORTA_PUR_R |= (1 << 3);
   //GPIO_PORTA_ODR_R |= (1 << 3);
 /* Disable SSI0 for initialisation. */

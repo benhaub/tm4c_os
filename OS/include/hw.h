@@ -11,7 +11,7 @@
 
 /* 16 MHz PIOSC system clock freqency. On reset, PIOSC is the system clock */
 #define SYS_CLOCK_FREQ 16000000
-/* Systick uses PIOSC/4. So the clock tick is based of a 4MHz frequency. */
+/* Systick uses PIOSC/4 so the clock tick is based of a 4MHz frequency. */
 #define CLOCK_TICK 4000 //1ms
 /* Supported baud rates for UART */
 #define B115200 115200u

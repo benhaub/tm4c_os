@@ -11,14 +11,13 @@
 #include <mem.h>
 #include <proc.h>
 #include <cstring.h>
-#include <types.h>
 #include <fs.h>
 
 /* From proc.c */
 extern struct pcb ptable[];
 
 int main() {
-/* Enable all the faults and exceptions. Pg. 173, datasheet */
+/* Enable all the faults and exceptions. Pg.173, datasheet */
 	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 18); /* USAGE Enable */
@@ -28,6 +27,7 @@ int main() {
 /* than tick interrupts. SVC is 0 and systick is 1. */
 	NVIC_SYS_PRI3_R |= (1 << 29);
 	init_ram();
+  mpu_tm4cOS_init();
 	init_ptable();
 	init_fs();
 	start_clocktick();
