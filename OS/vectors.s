@@ -144,7 +144,21 @@ UUser:
 	.align 2
 	.type SVC_EXCP, %function
 SVC_EXCP: .fnstart
+/* Use the svc immediate value to determine if this is syscall or a syscalln */
+         mrs r9, psp
+         ldr r9, [r9]
+         cmp r9, #0
+         beq Syscall0
 				 b svc_handler
+Syscall0:
+         str r2, [r1, #4]
+/* Restore stack pointer to where it was before system call. */
+         mrs r9, psp
+/* 116 is the size of the floating point exception frame as well as a stack */
+/* push of 8 bytes from the prologue of the syscalln functions. */
+         add r9, #116
+         str r9, [r1]
+         b svc_handler
 				 .fnend
 
 	.align 2
@@ -167,6 +181,9 @@ PSV_EXCP: .fnstart
  * purpose of this code here is too save r0, pc and lr because it will be
  * changed when we enter the exeption handler c code. kernel_entry will need
  * these values in order to save the context correclty.
+ *TODO:
+ *  Need to look at these functions again and make sure they make sense. Also
+ * figure out how exactly they interfere with syscall code.
  */
 	.align 2
 	.type SYST_EXCP, %function

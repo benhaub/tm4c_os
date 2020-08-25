@@ -28,8 +28,7 @@ void count() {
  * led and then exits.
  */
 void forktest() {
-	led_init();
-	led_gron();
+	led(LED_GREEN, LED_ON);
 	int i;
 	int pids[NPROC];
 	for(i = 0; i < NPROC; i++) {
@@ -40,19 +39,19 @@ void forktest() {
 		if(NULLPID == pids[i]) {
 			/* Child process */
       count();
-			led_groff();
+			led(LED_GREEN, LED_OFF);
 			exit(EXIT_SUCCESS);
-			led_gron();
+			led(LED_GREEN, LED_OFF);
 		}
 		else {
 			/* Parent process. */
-			led_blon();
+			led(LED_BLUE, LED_ON);
 		}
 	}
 	for(i = 0; i < NPROC; i++) {
 		wait(pids[i]);
 	}
-	led_ron();
+	led(LED_RED, LED_ON);
 	exit(EXIT_SUCCESS);
 }
 
@@ -152,18 +151,6 @@ int stringtest() {
   memset(str3, 0, strlen(str3));
   memset(&ctx, 0, sizeof(struct context));
   memcpy(&ctx, &ctx2, sizeof(struct context));
-  /*TODO:
-   * With the current MPU settings, writing to the uart like this is not allowed
-   * All of the hardware peripheral calls in hw.c need to be turned into system
-   * calls.
-   */
-  uart1_tchar('u');
-  uart1_tchar('a');
-  uart1_tchar('r');
-  uart1_tchar('t');
-  uart1_tchar('1');
-  uart1_tchar('\n');
-  uart1_tchar('\r');
   printf("255 in hex is %x and 45 as an integer is %i\n\r", 0xFF, 45);
   printf("%x, %i, %x, %i\n\r", 0xCAF, 142, 0xFFFFFFFF, 2147483647);
   return 0;
@@ -177,7 +164,7 @@ int smain() {
 /* Commented out to reduce flash writes while testing. */
 	//wrflash();
   stringtest();
-  ssi();
+  //ssi();
   forktest();
 	return 0;
 }

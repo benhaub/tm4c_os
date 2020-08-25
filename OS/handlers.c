@@ -4,11 +4,10 @@
  *Synopsis: fault handlers                                                    *
  *Date    : May 18th, 2019                                                    *
  *****************************************************************************/
-#include <tm4c123gh6pm.h> /* Hardware register macros. */
-#include <types.h> /* For the word data type. */
-#include <kernel_services.h> /* Syscalls for svc_handler. */
 #include <proc.h> /* In systick interrupt, For scheduler() */
-#include <cstring.h> /* For printf() */
+#include <types.h>
+#include <tm4c123gh6pm.h> /* Hardware register macros. */
+#include <kernel_services.h> /* for syswrite() */
 
 /* From vectors.s */
 extern void processor_state(int);
@@ -21,7 +20,7 @@ void syst_handler(word) __attribute__((noreturn, naked));
 /*
  * Puts the return value from system calls into the processes context.
  */
-static void syscreturn(word val) {
+static inline void syscreturn(word val) {
 	struct pcb *userproc = currproc();
 	userproc->context.r0 = val;
 }
@@ -77,7 +76,7 @@ void b_handler(int stack) {
 /* Clear the contents of the fault register */
   NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 /* View the contents with a debugger. */
-  printf("Bus Fault\n\r");
+  syswrite("Bus Fault\n\r"); //syswrite is faster than printk.
   if(2 == stack) {
     return;
   }
@@ -108,15 +107,15 @@ void u_handler(int stack) {
 /* Eliminate unused variable warnings. */
 	unalign=unalign;nocp=nocp;invpc=invpc;invstat=invstat;undef=undef;
   if(0 != div0) {
-    printf("Divide by zero error\n\r");
+    syswrite("Divide by zero error\n\r");
   }
   if(2 == stack) {
     return;
   }
   while(1);
 }
-/* Supervisor Call (syscall) Handler. Acts as the OS Dispatcher. All SVC end */
-/* up here, and then it's decided how to handle it based on the sysnum. */
+/* Supervisor Call (syscall) Handler. All SVC end up here, and then it's */
+/* decided how to handle it based on the sysnum. */
 void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 /* Return values from system calls. */
 	word ret;
@@ -128,6 +127,10 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 		case 2: ret = sysexit(*((word *)arg1));
 						break;
     case 3: ret = sysflash(arg1, arg2, arg3);
+            break;
+    case 4: ret = syswrite((char *)arg1);
+            break;
+    case 5: ret = sysled(*((int *)arg1), *((int *)arg2));
             break;
 		default: while(1); 
 	}
@@ -142,8 +145,9 @@ void psv_handler() {
 }
 /* Systick handler (clock tick interrupt) */
 void syst_handler(word sp) {
-/* Don't change the state to RUNNABLE, just go to the scheduler */
+/* Reset the systick counter by making a write to CURRENT. */
   NVIC_ST_CURRENT_R = 0;
+/* Don't change the state to RUNNABLE, just go to the scheduler */
 	if(UNUSED == currproc()->state || WAITING == currproc()->state) {
 		kernel_entry(currproc());
 		scheduler();

@@ -7,16 +7,16 @@
 #ifndef __CSTRING_H__
 #define __CSTRING_H__
 
-int strncpy(char *, char *, unsigned int);
-char *strncat(char *, char*, unsigned int);
+int strncpy(char *, const char *, const unsigned int);
+char *strncat(const char *, const char*, const unsigned int);
 unsigned int strlen(char *);
-int strncmp(char *, char *, unsigned int);
-void *memcpy(void *, const void *, unsigned int);
-void *memmove(void *, const void *, unsigned int);
+int strncmp(char *, const char *, const unsigned int);
+void *memcpy(void *, const void *, const unsigned int);
+void *memmove(void *, const void *, const unsigned int);
 void *memset(void *, const int, unsigned int);
 int memcmp(const void *, const void *, unsigned int);
 void reverse(char *);
-void htoa(int, char *s);
 void itoa(int, char *s);
-void printf(const char *, ...);
+void htoa(const int, char *s);
+void printf(char *, ...);
 #endif /*__CSTRING_H__*/

@@ -6,9 +6,9 @@
  *****************************************************************************/
 #include <mem.h>
 #include <types.h>
-#include <hw.h> //For uart1_tchar
 #include <stdarg.h> //stdargs can be used because all it does is substitute
                     //compiler built-in functions
+#include <syscalls.h>
 
 /*
  * Copy the string from src into dst.
@@ -20,7 +20,7 @@
  * 	The maximum number of bytes to copy
  * returns -1 on failure, 0 on success
  */
-int strncpy(char *dst, char *src, unsigned int len) {
+int strncpy(char *dst, const char *src, const unsigned int len) {
 	int i = 0;
 	while(i < len) {
 		dst[i] = src[i];
@@ -36,7 +36,7 @@ int strncpy(char *dst, char *src, unsigned int len) {
  * 	The string you want the length of
  * returns the number of bytes in the string or -1 on failure
  */
-unsigned int strlen(char *string) {
+unsigned int strlen(const char *string) {
 	int i = 0;
 	while(0 != *(string + i)) {
 		i++;
@@ -56,7 +56,7 @@ return i;
  *   The number of bytes from str to append.
  * returns a pointer to dest.
  */
-char *strncat(char *dest, char *str, unsigned int len) {
+char *strncat(char *dest, const char *str, const unsigned int len) {
   int i = 0;
 	int j = 0;
 	while(dest[i] != 0) {
@@ -82,11 +82,11 @@ char *strncat(char *dest, char *str, unsigned int len) {
  * returns less than 0 if str1 is less than str2, 0 if str1 is equal to str2,
  * greater than 0 if str1
  */
-int strncmp(char *str1, char *str2, unsigned int len) {
+int strncmp(const char *str1, const char *str2, const unsigned int len) {
   int i,j,k;
   i = j = k = 0;
 /* Add up str1 */
-  while(str1[i] != 0) {
+  while(str1[i] != 0 && i < len) {
     j = j + (int)str1[i];
     i++;
   }
@@ -94,7 +94,7 @@ int strncmp(char *str1, char *str2, unsigned int len) {
   i = 0;
 
 /* Add up str2 */
-  while(str2[i] != 0) {
+  while(str2[i] != 0 && i < len) {
     k = k + (int)str2[i];
     i++;
   }
@@ -105,7 +105,7 @@ int strncmp(char *str1, char *str2, unsigned int len) {
  * Copy n bytes from memory area src to memory area dst.
  * return NULL on failure, pointer to dest on success.
  */
-void *memcpy(void *dest, const void *src, unsigned int n) {
+void *memcpy(void *dest, const void *src, const unsigned int n) {
 	int i = 0;
 	while(i < n) {
 		*((char *)dest + i) = *((char *)src + i);
@@ -117,7 +117,7 @@ void *memcpy(void *dest, const void *src, unsigned int n) {
 /*
  * Fills the first n bytes of dest with the constant value of src.
  */
-void *memset(void *dest, const int src, unsigned int n) {
+void *memset(void *dest, const int src, const unsigned int n) {
 	int i = 0;
 	while(i < n) {
 		*((char *)dest + i) = (char)src;
@@ -192,7 +192,7 @@ void itoa(int n, char *s) {
 /*
  * Converts the integer h to character string s in hexidecimal format.
  */
-void htoa(int h, char *s) {
+void htoa(const int h, char *s) {
   int i = 0;
   unsigned long int tohex;
 /* Remainder of tohex */
@@ -227,58 +227,89 @@ void htoa(int h, char *s) {
   reverse(s);
 }
 
-void printf(const char *s, ...) {
-  int i, j;
+void printf(char *s, ...) {
   word hex; /* Holds values for hex numbers */
   int integer;
+  int bytes_remaining = 64; /* Bytes left in the buffer */
+  int i = 0;
+  int len; /* for holding return value from strlen() */
+/* Build strings 64 bytes at a time before sending to the uart to reduce the */
+/* amount of system calls to write(). */
+  char buf[64] = {'\0'};
+/* For concatenating single chars of s */
+  char s_char;
 /* Strings for holding the string number. Sizes of the arrays are the max */
 /* number of characters needed to represent the largest integer on this */
 /* processor. hex has 2 extra for "0x" at the beginning. */
   char hex_string[sizeof(word)*2+2];
   char int_string[sizeof(word)*2+2];
   va_list format_strings;
-  i = 0;
   va_start(format_strings, s);
 /* Print one char at a time, inserting the va_args whenever a specifier is */
 /* encountered. */
   while(s[i] != '\0') {
     if(s[i] == '%') {
-      j = 0;
       switch(s[++i]) {
       case('x') :
         hex = va_arg(format_strings, word);
         memset(hex_string, 0, sizeof(word)*2+2);
         htoa(hex, hex_string);
-        while(hex_string[j] != '\0') {
-          uart1_tchar(hex_string[j]);
-          j++;
+        len = strlen(hex_string);
+        if(bytes_remaining - len > 0) {
+          strncat(buf, hex_string, len);
+          bytes_remaining -= len;
+        }
+        else {
+          write(buf);
+          bytes_remaining = 64;
+          buf[0] = '\0';
         }
       break;
       case('i') :
         integer = va_arg(format_strings, int);
         memset(int_string, 0, sizeof(word)*2+2);
         itoa(integer, int_string);
-        while(int_string[j] != '\0') {
-          uart1_tchar(int_string[j]);
-          j++;
+        len = strlen(int_string);
+        if(bytes_remaining - len > 0) {
+          strncat(buf, int_string, len);
+          bytes_remaining -= len;
+        }
+        else {
+          write(buf);
+          bytes_remaining = 64;
+          buf[0] = '\0';
         }
       break;
       case('d') : /* Same thing as %i */
         integer = va_arg(format_strings, int);
         memset(int_string, 0, sizeof(word)*2+2);
         itoa(integer, int_string);
-        while(int_string[j] != '\0') {
-          uart1_tchar(int_string[j]);
-          j++;
+        len = strlen(int_string);
+        if(bytes_remaining - len > 0) {
+          strncat(buf, int_string, len);
+          bytes_remaining -= len;
+        }
+        else {
+          write(buf);
+          bytes_remaining = 64;
+          buf[0] = '\0';
         }
       break;
       }
     }
+    else if(bytes_remaining > 0) {
+      s_char = s[i];
+      strncat(buf, &s_char, 1);
+      bytes_remaining--;
+    }
     else {
-      uart1_tchar(s[i]);
+      write(buf);
+      bytes_remaining = 64;
+      buf[0] = '\0';
     }
     i++;
-  }
+  }/* Delimits while(s[i] != '\0')*/
   va_end(format_strings);
+  write(buf);
   return;
 }

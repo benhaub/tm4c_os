@@ -113,8 +113,7 @@ void led_bloff() {
  * Write values in ram from starting from saddr and ending at eaddr into
  * flash memory that starts at faddr. This function allows you to write a
  * maximum of 1KB per call. For successive block writes, make multiple calls.
- * This call requires more than 1KB of stack space. User programs
- * should not call this function directly; use the system call instead.
+ * This call requires more than 1KB of stack space.
  * Returns 0 on success, -1 on error.
  */
 int write_flash(void *saddr, void *eaddr, void *faddr) {
@@ -269,6 +268,8 @@ void uart1_init(unsigned int baud) {
   GPIO_PORTB_ODR_R &= ~(1 << 1); //Open drain.
 /* Continue on with UART init by first disabling it during setup. */
   UART1_CTL_R &= ~0x1;
+/* Set the End Of Transmission bit */
+  UART1_CTL_R |= (1 << 4);
 /* Use the system clock and generate baud rates. 16 is the divisor */
 /* of the system clock for the UART clock obtained from the value of the HSE */
 /* bit in the UART control register. */
@@ -303,7 +304,11 @@ int uart1_tchar(char data) {
   while(UART1_FR_R & (1 << 3));
 /* If the UART is not busy anymore, but the FIFO is still full then it's */
 /* failed to transmit the data. */
-  if(UART1_FR_R & (1 << 7)) {
+  if((UART1_FR_R & (1 << 7)) == 0) {
+    return -1;
+  }
+/* Make sure all the data has left the uart's serializer */
+  if(!(UART1_RIS_R & (1 << 5))) {
     return -1;
   }
   return 0;

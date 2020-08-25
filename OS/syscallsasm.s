@@ -11,28 +11,35 @@
 /*
  * Almost the same as the context switch. Only difference is that we don't 
  * need to update the stack pointer, and we switch to msp (instead of psp)
- * and to privledge (instead of unprivledged). Privledge levels are handled
+ * and to privledged (instead of unprivledged). Privledge levels are handled
  * automatically by the exception entry and return mechanisms (which are
- * triggered by the svc instruction). Always be aware of what registers are
- * being used here. This code is interruptable by clock interrupts. The systick
- * isr will change register values of r4, r5, r6, r8, and r9 from what they were
- * here, so don't use those registers for general purpose.
+ * triggered by the svc instruction). This code is interruptable by clock
+ * interrupts. The systick isr will change register values of r4, r5, r6, r8,
+ * and r9 from what they were here, so don't use those registers for general
+ * purpose.
+ */
+
+/*
+ * syscall is unique from other syscalls in that it is the syscall routine that
+ * services calls to fork. It is the only syscall asm routine that makes writes
+ * into the ptable for storing the program counter and stack pointer. This must
+ * be done by privledged software since the MPU restricts user process writes to
+ * only the memory region in which their stack resides. Consequently, some of
+ * this routine is serviced in the svc_handler instead of here (instructions
+ * that make writes to the ptable).
  */
 	.global syscall
 	.type syscall, %function
 syscall: .fnstart
 /* Put the program counter and all general purpose registers into the */
 /* processes struct context. This is required for fork(). The pc from the */
-/* original system call is in the stacked link register. */
+/* original system call is in the stacked link register. The corresponding */
+/* str is done in the svc handler. */
 					  ldr r2, [sp, #4]
-					  str r2, [r1, #4]
-/* Restore stack pointer to where it was before system call. */
-					  add r10, sp, #8
-					  str r10, [r1]
-/* The immediate value for svc is not used. The number used for determining */
-/* The kernel service is passed through as an argument to syscall() (here */
-/* that manifests itself as r0. */
-/* The cortex-m4 exception entry and return model take care of context. */
+/* The immediate value for svc is not used except for this assembly routine. */
+/* The number used for determining the kernel service is passed through as an */
+/* argument to syscalln() (here that manifests itself as r0). The cortex-m4 */
+/* exception entry and return model take care of context. */
 					  svc #0
 /* Move the returned value from the syscall to r0 so that the kernel */
 /* services return the right value */
@@ -51,10 +58,11 @@ syscall1: .fnstart
 					  mov r10, r1
 /* Move the syscalls argument over to r1 and overwrite the currproc pointer. */
 					  mov r1, r2
-/* The immediate value for svc is not used. The number used for determining */
-/* The kernel service is passed through as an argument to syscall() (here */
-/* that manifests itself as r0. */
-					  svc #0
+/* The immediate value for svc is not used, however, make sure that a non-zero
+/* value is used since syscall needs the immediate value on svc instructions. */
+/* The number used for determining the kernel service is passed through as an */
+/* argument to syscall() (here that manifests itself as r0). */
+					  svc #1
 /* Move the returned value from the syscall to r0 so that the kernel */
 /* services return the right value */
 					  ldr r0, [r10, #12]
@@ -71,7 +79,8 @@ syscall2: .fnstart
 /* Shift all the arguments over so it lines up with arguments in the handler */
             mov r1, r2
             mov r2, r3
-            svc #0
+/* The svc immediate value for any routine except syscall must be non-zero. */
+            svc #2
             ldr r0, [r10, #12]
 					  bx lr
           .fnend
@@ -84,7 +93,7 @@ syscall3: .fnstart
             mov r2, r3
 /* Arguments after the 4th are pushed onto the stack. */
             pop {r3}
-            svc #0
+            svc #3
             ldr r0, [r10, #12]
 					  bx lr
           .fnend

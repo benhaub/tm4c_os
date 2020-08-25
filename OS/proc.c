@@ -8,7 +8,7 @@
 #include <proc.h>
 #include <cstring.h>
 #include <tm4c123gh6pm.h>
-#include <hw.h> /* For protect_flash() */
+#include <kernel_services.h>
 
 /* From context.s */
 extern void swtch(word);
@@ -30,13 +30,13 @@ int currpid;
 void user_init() {
 /* See mem.c for an explanation of this calculation. */
   if(MAX_PROC > SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2)) {
-    printf("MAX_PROC is set to allow more processes than the available RAM "\
+    printk("MAX_PROC is set to allow more processes than the available RAM "\
         "can hold. Please use a value no greater than %d\n\r", \
        SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2));
     return;
   }
   else if(MAX_PROC < SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2)) {
-    printf("Currently capping %d/%d available processes\n\r", MAX_PROC, \
+    printk("Currently capping %d/%d available processes\n\r", MAX_PROC, \
       SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2) - 1);
   }
 /* Set all globals. Compiler doesn't seem to want to cooperate with global */
@@ -62,7 +62,7 @@ struct pcb* reserveproc(char *name) {
   int maxpid_bu = maxpid;
 
 	if(sizeof(name) > 16 && NULL != name) {
-    printf("Buffer overrun for process name\n\r");
+    printk("Buffer overrun for process name\n\r");
 		return NULL;
 	}
 /* Find an UNUSED process from the process table. */
@@ -75,7 +75,7 @@ struct pcb* reserveproc(char *name) {
 		}
 		else if(i > MAX_PROC) {
       maxpid = maxpid_bu;
-      printf("No unused proc's in ptable\n\r");
+      printk("No unused proc's in ptable\n\r");
 			return NULL;
 		}
 		else {
@@ -183,7 +183,7 @@ void scheduler() {
 			}
 			index++;
 			schedproc->state = RUNNING;
-      create_user_memory_region(schedproc->rampg);
+      //create_user_memory_region(schedproc->rampg);
 			swtch(schedproc->context.sp);
 		}
 		else {

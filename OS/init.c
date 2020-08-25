@@ -12,6 +12,7 @@
 #include <proc.h>
 #include <cstring.h>
 #include <fs.h>
+#include <kernel_services.h>
 
 /* From proc.c */
 extern struct pcb ptable[];
@@ -22,12 +23,14 @@ int main() {
 	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 18); /* USAGE Enable */
   uart1_init(B115200);
-  printf("Initialising tm4c_os\n\r");
+  /* We already in the kernel so we can use the kernel services directly. */
+  syswrite("Initialising tm4c_os\n\r");
 /* Configure Interrupt priorities. SVC exceptions are higher priority */
 /* than tick interrupts. SVC is 0 and systick is 1. */
 	NVIC_SYS_PRI3_R |= (1 << 29);
 	init_ram();
   mpu_tm4cOS_init();
+	led_init();
 	init_ptable();
 	init_fs();
 	start_clocktick();

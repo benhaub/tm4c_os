@@ -11,5 +11,8 @@ int sysflash(void *, void *, void *);
 int sysfork(void);
 int syswait(int);
 int sysexit(int);
+int syswrite(const char *);
+void printk(const char *, ...);
+int sysled(int, int);
 
 #endif /*__KERNELSERVICES_H__*/

@@ -12,6 +12,8 @@
 #define WAIT 1
 #define EXIT 2
 #define FLASH 3
+#define WRITE 4
+#define LED 5
 
 /* From syscall.s */
 extern int syscall(int sysnum, struct pcb *);
@@ -31,6 +33,9 @@ int wait(int pid) {
 	int ret;
 	struct pcb *waitproc = currproc();
 	ret = syscall1(WAIT, waitproc, &pid);
+/*TODO:
+ * Comment is not longer true. Can this be done more efficiently?
+ */
 /* Wait for state to change. This is done here because privledged code */
 /* disables interrupts, so the tick interrupt gets masked out. Interrupts are */
 /* allowed here. */
@@ -40,8 +45,18 @@ int wait(int pid) {
 
 int exit(int exitcode) {
 	syscall1(EXIT, currproc(), &exitcode);
+/*TODO:
+ * Comment is not longer true. Can this be done more efficiently?
+ */
 /* Wait to be scheduled. This is done because the scheduler can't be called */
 /* from unprivledge mode since swtch uses msr instructions. */
 	while(1);
 }
 
+int write(char *msg) {
+  return syscall1(WRITE, currproc(), msg);
+}
+
+int led(int colour, int state) {
+  return syscall2(LED, currproc(), &colour, &state);
+}

@@ -5,7 +5,7 @@
  * Date     : June 13th, 2019                                                 *
  *****************************************************************************/
 #include <mem.h>
-#include <cstring.h>
+#include <kernel_services.h>
 #include <tm4c123gh6pm.h>
 
 /* Array to determine what space in ram is being used. */
@@ -24,7 +24,7 @@ int get_stackspace() {
 	while(stackusage[i]) {
 		i++;
 		if(i > SRAM_PAGES) {
-      printf("No available RAM for new stack\n\r");
+      syswrite("No available RAM for new stack\n\r");
 			return -1;
 		}
 	}
@@ -67,7 +67,8 @@ void mpu_tm4cOS_init() {
     }
   }
   stacksize_pow2 = i;
-  NVIC_MPU_NUMBER_R |= 0x5;
+  NVIC_MPU_NUMBER_R &= ~0x7;
+  NVIC_MPU_NUMBER_R |= 0x6;
   /* The region occupies the entire memory map */
   NVIC_MPU_ATTR_R |= (0x1F << 1);
   /* Privledged is RW, unprivledged is RO. Pg.129, datasheet. */
@@ -83,14 +84,15 @@ void mpu_tm4cOS_init() {
  * write only to it's stack. Reads are allowed anywhere in flash or RAM except
  * for the memory region of RAM association with the kernel.
  * The rest of the memory space is writable by privledged software
- * (the kernel) only. The region in number 6 which overlaps the region in
- * number 5 will have all of it's attributes applied to that region since
+ * (the kernel) only. The region in number 7 which overlaps the region in
+ * number 6 will have all of it's attributes applied to that region since
  * it's number is higher.
- * @param tos
- *   The top of stack associated with the user process
+ * @param rampg
+ *   The rampg that the process is using.
  */
 void create_user_memory_region(int rampg) {
-  NVIC_MPU_NUMBER_R |= 0x6;
+  NVIC_MPU_NUMBER_R &= ~0x7;
+  NVIC_MPU_NUMBER_R |= 0x7;
   NVIC_MPU_BASE_R |= stacktop(rampg) - STACK_SIZE + 4;
   NVIC_MPU_ATTR_R |= ((stacksize_pow2-1) << 1); //Pg.192, datasheet.
   NVIC_MPU_ATTR_R |= (0x3 << 24); //Full access to this memory region.

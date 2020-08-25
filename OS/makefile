@@ -93,7 +93,7 @@ dirs:
 include $(wildcard ./.deps/*.d)
 
 flash:
-	lm4flash -S 0x00000000 tm4c_os.bin
+	lm4flash -s 0E22CCB1 -S 0x00000000 tm4c_os.bin
 
 clean:
 	rm -rf *.o ./.deps tm4c_os.map tm4c_os.elf tm4c_os.bin
