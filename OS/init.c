@@ -25,12 +25,13 @@ int main() {
   uart1_init(B115200);
   /* We already in the kernel so we can use the kernel services directly. */
   syswrite("Initialising tm4c_os\n\r");
+	led_init();
+  ssi0_init_master(0,0x7,2);
 /* Configure Interrupt priorities. SVC exceptions are higher priority */
 /* than tick interrupts. SVC is 0 and systick is 1. */
 	NVIC_SYS_PRI3_R |= (1 << 29);
 	init_ram();
   mpu_tm4cOS_init();
-	led_init();
 	init_ptable();
 	init_fs();
 	start_clocktick();

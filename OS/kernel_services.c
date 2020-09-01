@@ -107,7 +107,9 @@ int sysexit(int exitcode) {
   }
   exitproc->state = UNUSED;
 	exitproc->initflag = 1;
-	strncpy(exitproc->name, "\0", 1);
+  if(NULL != exitproc->name) {
+    strncpy(exitproc->name, "\0", 1);
+  }
 /* Return the exit code to the parent */
   if(exitcode != 0) {
     return 1;

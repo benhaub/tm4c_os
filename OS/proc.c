@@ -183,7 +183,7 @@ void scheduler() {
 			}
 			index++;
 			schedproc->state = RUNNING;
-      //create_user_memory_region(schedproc->rampg);
+      create_user_memory_region(schedproc->rampg);
 			swtch(schedproc->context.sp);
 		}
 		else {

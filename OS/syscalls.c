@@ -33,23 +33,17 @@ int wait(int pid) {
 	int ret;
 	struct pcb *waitproc = currproc();
 	ret = syscall1(WAIT, waitproc, &pid);
-/*TODO:
- * Comment is not longer true. Can this be done more efficiently?
- */
-/* Wait for state to change. This is done here because privledged code */
-/* disables interrupts, so the tick interrupt gets masked out. Interrupts are */
-/* allowed here. */
+/* Wait for state to change. This is done here because svc's are higher */
+/* priority than systick exceptions so the tick interrupt gets masked out. */
+/* Interrupts are allowed here. */
 	while(WAITING == waitproc->state);
 	return ret;
 }
 
 int exit(int exitcode) {
 	syscall1(EXIT, currproc(), &exitcode);
-/*TODO:
- * Comment is not longer true. Can this be done more efficiently?
- */
-/* Wait to be scheduled. This is done because the scheduler can't be called */
-/* from unprivledge mode since swtch uses msr instructions. */
+/* Wait to be scheduled. This is done because all syscalls must return from */
+/* the svc handler in order to leave handler mode. */
 	while(1);
 }
 

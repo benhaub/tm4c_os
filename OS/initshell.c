@@ -40,6 +40,9 @@ void forktest() {
 			/* Child process */
       count();
 			led(LED_GREEN, LED_OFF);
+/*TODO:
+ * pid 22 is bus faulting during the call to exit.
+ */
 			exit(EXIT_SUCCESS);
 			led(LED_GREEN, LED_OFF);
 		}
@@ -52,19 +55,7 @@ void forktest() {
 		wait(pids[i]);
 	}
 	led(LED_RED, LED_ON);
-	exit(EXIT_SUCCESS);
 }
-
-/*
- * Test the SSI interface.
- */
-void ssi() {
-  ssi0_init_master(0,0x7,2);
-  for(int i = 0; i < 10000; i++) {
-    ssi0_transmit(0xBA);
-  }
-}
-
 /* 
  * This function tests reading and writing flash by writing the testwrite
  * struct into flash memory, and then reading it back and comparing the
@@ -157,6 +148,18 @@ int stringtest() {
 }
 
 /*
+ * Test The OSs ability to detect stack overflow. The process should exit
+ * before it's able to turn on the green LED.
+ */
+void stack_overflow() {
+/* Allocate an array that is greater than STACK_SIZE */
+  int big_array[40]; //1.25KB
+  for(int i = 0; i < 40; i++) {
+    big_array[i] = 0;
+  }
+  led(LED_GREEN, LED_ON);
+}
+/*
  * Shell main. The first user program run by the kernel after reset.
  */
 int smain(void) __attribute__((section(".text.smain")));
@@ -164,7 +167,7 @@ int smain() {
 /* Commented out to reduce flash writes while testing. */
 	//wrflash();
   stringtest();
-  //ssi();
   forktest();
+  //stack_overflow();
 	return 0;
 }

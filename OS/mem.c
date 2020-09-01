@@ -45,6 +45,10 @@ void init_ram() {
 /* round the value up to make sure there's not stack overlap (+ 2). After a */
 /* push, the processor increments the stack pointer to the next word. */
 /* KRAM_USE is stored one word back (- 4). */
+/*TODO:
+ * Any loops involving the number of SRAM pages need to be made <= since 32*1024
+ * gets us to the top of the last stack (0x8000).
+ */
 	for(i = 0; i < *((word *)(KRAM_USE - 4)) + 2; i++) {
 		stackusage[i] = 1;
 	}
@@ -93,8 +97,11 @@ void mpu_tm4cOS_init() {
 void create_user_memory_region(int rampg) {
   NVIC_MPU_NUMBER_R &= ~0x7;
   NVIC_MPU_NUMBER_R |= 0x7;
+  NVIC_MPU_BASE_R &= ~0xFFFFFFE0;
   NVIC_MPU_BASE_R |= stacktop(rampg) - STACK_SIZE + 4;
+  NVIC_MPU_ATTR_R &= ~(0x1F << 1);
   NVIC_MPU_ATTR_R |= ((stacksize_pow2-1) << 1); //Pg.192, datasheet.
+  NVIC_MPU_ATTR_R &= ~(0x3 << 24);
   NVIC_MPU_ATTR_R |= (0x3 << 24); //Full access to this memory region.
   NVIC_MPU_ATTR_R |= 0x1; //Enable this memory region.
 }

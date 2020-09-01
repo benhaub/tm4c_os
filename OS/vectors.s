@@ -110,7 +110,7 @@ BFAULT: .fnstart
 /* The faulting process will exit() when the bus fault handler is done via the*/
 /* Exception return mechanism. */
         mrs r1, psp
-        ldr r0,=exit
+        ldr r0,=sysexit
         str r0, [r1, #24]
 /* If the bus fault was caused by the kernel, do not exit, just loop in the */
 /* fault handler. The value being compared is EXEC_RETURN on pg.111 in the */
@@ -130,7 +130,7 @@ UFAULT:	.fnstart
 /* The faulting process will exit() when the bus fault handler is done via the*/
 /* Exception return mechanism. */
         mrs r1, psp
-        ldr r0,=exit
+        ldr r0,=sysexit
         str r0, [r1, #24]
         cmp lr, #0xFFFFFFED
         beq UUser
@@ -181,9 +181,6 @@ PSV_EXCP: .fnstart
  * purpose of this code here is too save r0, pc and lr because it will be
  * changed when we enter the exeption handler c code. kernel_entry will need
  * these values in order to save the context correclty.
- *TODO:
- *  Need to look at these functions again and make sure they make sense. Also
- * figure out how exactly they interfere with syscall code.
  */
 	.align 2
 	.type SYST_EXCP, %function

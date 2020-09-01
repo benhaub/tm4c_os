@@ -13,10 +13,12 @@
  * need to update the stack pointer, and we switch to msp (instead of psp)
  * and to privledged (instead of unprivledged). Privledge levels are handled
  * automatically by the exception entry and return mechanisms (which are
- * triggered by the svc instruction). This code is interruptable by clock
- * interrupts. The systick isr will change register values of r4, r5, r6, r8,
- * and r9 from what they were here, so don't use those registers for general
- * purpose.
+ * triggered by the svc instruction).
+ *
+ * This code is interruptable by clock interrupts. The systick isr will change
+ * register values of r4, r8 and r9. These registers are modified by the systick
+ * exception handler and are not pushed onto the stack so they will be lost when
+ * the code returns here.
  */
 
 /*
