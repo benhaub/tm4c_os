@@ -139,7 +139,8 @@ struct pcb* currproc() {
 }
 
 /*
- * Return the process belonging to pid, or NULL if it couldn't be found.
+ * Return the process belonging to pid, or NULL if it couldn't be found. One
+ * example of a pid that can't be found is the pid of a process that has exited.
  */
 struct pcb* pidproc(int pid) {
 	int i;
@@ -156,12 +157,9 @@ struct pcb* pidproc(int pid) {
  */
 void scheduler() {
 /* Current index of the scheduler. */
-	static int index;
+	static unsigned int index = 0;
   struct pcb *schedproc;
-/* For initialization. arm-none-eabi-gcc initialises to -1 */
-	if(index < 0) {
-		index = 0;
-	}
+
 	while(1) {
 /* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
 /* processes passed that index. */

@@ -40,9 +40,6 @@ void forktest() {
 			/* Child process */
       count();
 			led(LED_GREEN, LED_OFF);
-/*TODO:
- * pid 22 is bus faulting during the call to exit.
- */
 			exit(EXIT_SUCCESS);
 			led(LED_GREEN, LED_OFF);
 		}
