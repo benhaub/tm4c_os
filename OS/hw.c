@@ -21,7 +21,7 @@ void systick_init() {
 	NVIC_ST_CTRL_R = 0x1;
 	return;
 }
-/*
+/**
  * Start a system clock tick with interrupts enabled. Interrupts frequencies
  * must be such that the OS has time to complete scheduling and context
  * switching.
@@ -33,7 +33,7 @@ void start_clocktick() {
 	NVIC_ST_CTRL_R = 0x7;
 	return;
 }
-/*
+/**
  * 1ms delay
  */
 void delay_1ms() {
@@ -49,7 +49,7 @@ void delay_1ms() {
 /* Evaluation Kit User's Manual, Pg.9. The Initializaton process is found */
 /* in the datasheet on Pg.656. */
 
-/*
+/**
  * Initialize PortF for led operation. This function must be run before the LEDs
  * can be used.
  */
@@ -70,7 +70,7 @@ void led_init() {
 	return;
 }
 
-/*
+/**
  * Turn the red led on
  */
 void led_ron() {
@@ -78,7 +78,7 @@ void led_ron() {
 	return;
 }
 
-/*
+/**
  * Turn off red led
  */
 void led_roff() {
@@ -108,7 +108,7 @@ void led_bloff() {
 
 /******************************Flash Memory***********************************/
 
-/*
+/**
  * Follows the procedure on Pg. 532, datasheet.
  * Write values in ram from starting from saddr and ending at eaddr into
  * flash memory that starts at faddr. This function allows you to write a
@@ -202,7 +202,7 @@ Write:
 	return 0;
 }
 
-/*
+/**
  * Erase the 1KB flash page that contains the address pageaddr.
  */
 void erase_flash(word pageaddr) {
@@ -214,7 +214,7 @@ void erase_flash(word pageaddr) {
   return;
 }
 
-/*
+/**
  * Permanently protect the flash page given by pageno from being modified by a
  * flash write. Page 0 will protect flash memory from 0x0 to 0x7FF. 1 will
  * protect from 0x800 to 0xFFF, etc.
@@ -241,7 +241,7 @@ int protect_flash(int pageno) {
 }
 /***********************************UART**************************************/
 
-/*
+/**
  * Initialize uart module 1 to 8N1. Follows the initialization procedure on
  * Pg. 902 of the data sheet. PB0 and PB1 are used for RX and TX respectively.
  * 2mA and default slew are rate are used. Only PB1 TX is enabled since this.
@@ -286,13 +286,14 @@ void uart1_init(unsigned int baud) {
   UART1_CTL_R |= 0x1;
 }
 
-/*
+/**
  * Write a character to the FIFO and initiate a transfer.
  * @param data
  *   8 bit data to transmit.
- * returns 0 if the data was written to the FIFO, -1 otherwise. The return
- * value does NOT indicate a sucessful transmission, only that data was
- * transferred.
+ * @return
+ *   0 if the data was written to the FIFO, -1 otherwise. The return
+ *   value does NOT indicate a sucessful transmission, only that data was
+ *   transferred.
  */
 int uart1_tchar(char data) {
 /* Make sure the FIFO is not full. */
@@ -316,7 +317,7 @@ int uart1_tchar(char data) {
 
 /*************************************SSI*************************************/
 
-/*
+/**
  * Initialise a Synchronous Serial Interface master on GPIO Port A by following
  * the procedure on Pg. 965 of the datasheet. This procedure will not complete
  * and return -1 if port control for PA[5:2] has been changed from the POR
@@ -399,7 +400,7 @@ int ssi0_init_master(int protocol, int ds, int drxr) {
   return 0;
 }
 
-/*
+/**
  * Transmit data on SSI0
  */
 void ssi0_transmit(int data) {

@@ -22,7 +22,7 @@
 extern int maxpid;
 extern struct pcb ptable[];
 
-/*
+/**
  * Write memory that starts at saddr and ends at eaddr to flash address faddr.
  * returns 0 on success, -1 otherwise.
  */
@@ -30,7 +30,7 @@ int sysflash(void *saddr, void *eaddr, void *faddr) {
   return write_flash(saddr, eaddr, faddr);
 }
 
-/*
+/**
  * Creates a new process. The parent forks the child. parent returns the pid
  * of the new process, child returns NULLPID. Returns -1 on failure.
  */
@@ -64,7 +64,7 @@ int sysfork() {
 	return child->pid;
 }
 
-/*
+/**
  * The calling process waits for the process belonging to pid to exit (become
  * un-used). The scheduler handles the stopping and starting of waiting
  * processes.
@@ -76,7 +76,7 @@ int syswait(int pid) {
 	return 0;
 }
 
-/*
+/**
  * Clears out the pcb of the process and notifies it's parent of the exit.
  */
 int sysexit(int exitcode) {
@@ -117,7 +117,7 @@ int sysexit(int exitcode) {
   return exitcode;
 }
 
-/*
+/**
  * Print some characters using the uart.
  * @param msg
  *   The characters to print.
@@ -137,7 +137,7 @@ int syswrite(const char *msg) {
   return 0;
 }
 
-/*
+/**
  * Exactly the same as printf except that a call is made directly to syswrite.
  */
 void printk(const char *s, ...) {
@@ -227,7 +227,7 @@ void printk(const char *s, ...) {
   return;
 }
 
-/*
+/**
  * Set led to the given state with the given colour.
  * @param colour
  *   The colour to turn the led to

@@ -17,7 +17,7 @@ extern void swtch(word sp);
 /* Function prototypes. */
 void syst_handler(word) __attribute__((noreturn, naked));
 
-/*
+/**
  * Puts the return value from system calls into the processes context.
  */
 static inline void syscreturn(word val) {
@@ -39,11 +39,13 @@ void hfault_handler() {
   NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 	while(1);
 }
-/* Memory Management Handler. */
+/**
+ * Memory Management Handler.
+ */
 void mm_handler() {
 	while(1);
 }
-/* 
+/** 
  * Bus Fault Handler. Code that generates a bus fault usually exhibits
  * similar behaviour to code running in Linux that generates a segmentation
  * fault (accessing illegal adresses).
@@ -82,7 +84,7 @@ void b_handler(int stack) {
   }
   while(1);
 }
-/*
+/**
  * Usage Fault Handler.
  * @param stack
  *   The stack that was being used when the fault was triggered. 2 for psp, 1
@@ -114,10 +116,12 @@ void u_handler(int stack) {
   }
   while(1);
 }
-/* Supervisor Call (syscall) Handler. All SVC end up here, and then it's */
-/* decided how to handle it based on the sysnum. */
-void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
-/* Return values from system calls. */
+/**
+ * Supervisor Call (syscall) Handler. All SVC end up here, and then it's
+ * decided how to handle it based on the sysnum.
+ * void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
+ * Return values from system calls.
+ */
 	word ret;
 	switch(sysnum) {
 		case 0: ret = sysfork();
@@ -143,7 +147,9 @@ void dm_handler() {
 void psv_handler() {
 	while(1);
 }
-/* Systick handler (clock tick interrupt) */
+/**
+ * Systick handler (clock tick interrupt)
+ */
 void syst_handler(word sp) {
 /* Reset the systick counter by making a write to CURRENT. */
   NVIC_ST_CURRENT_R = 0;

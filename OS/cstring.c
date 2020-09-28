@@ -10,15 +10,16 @@
                     //compiler built-in functions
 #include <syscalls.h>
 
-/*
+/**
  * Copy the string from src into dst.
- * param src:
- * 	The source string to be copied
- * param dst:
- * 	The destination string to be copied to
- * param len:
- * 	The maximum number of bytes to copy
- * returns -1 on failure, 0 on success
+ * @param src:
+ *   The source string to be copied
+ * @param dst:
+ *   The destination string to be copied to
+ * @param len:
+ *   The maximum number of bytes to copy
+ * @return
+ *   -1 on failure, 0 on success
  */
 int strncpy(char *dst, const char *src, const unsigned int len) {
 	int i = 0;
@@ -30,11 +31,12 @@ int strncpy(char *dst, const char *src, const unsigned int len) {
 	return 0;
 }
 
-/*
+/**
  * Get the length of string.
- * param string:
- * 	The string you want the length of
- * returns the number of bytes in the string or -1 on failure
+ * @param string
+ *   The string you want the length of
+ * @return
+ *   The number of bytes in the string or -1 on failure
  */
 unsigned int strlen(const char *string) {
 	int i = 0;
@@ -44,17 +46,18 @@ unsigned int strlen(const char *string) {
 return i;
 }
 
-/*
+/**
  * concatenate dest with with len bytes of str. dest will be null terminated
  * when the function returns. dest must be null terminated when the function
  * is called.
- * param dest
+ * @param dest
  *   The destination string
- * param str
+ * @param str
  *   The string to be appended onto dest
- * param n
+ * @param n
  *   The number of bytes from str to append.
- * returns a pointer to dest.
+ * @return
+ *   A pointer to dest.
  */
 char *strncat(char *dest, const char *str, const unsigned int len) {
   int i = 0;
@@ -70,17 +73,18 @@ char *strncat(char *dest, const char *str, const unsigned int len) {
 	return dest;
 }
 
-/*
+/**
  * compares up to len bytes of str1 to str2 by returning the difference of the
  * ASCII value of the two strings. A value return that is less than zero or
  * greater than zero means the strings are not equal, a value returned of zero
  * means they are equal.
- * param str1
+ * @param str1
  *   The first string to compare
- * param str2
+ * @param str2
  *   The second string to compare
- * returns less than 0 if str1 is less than str2, 0 if str1 is equal to str2,
- * greater than 0 if str1
+ * @return
+ *   less than 0 if str1 is less than str2, 0 if str1 is equal to str2,
+ *   greater than 0 if str1
  */
 int strncmp(const char *str1, const char *str2, const unsigned int len) {
   int i,j,k;
@@ -101,9 +105,10 @@ int strncmp(const char *str1, const char *str2, const unsigned int len) {
 
   return (j - k);
 }
-/*
+/**
  * Copy n bytes from memory area src to memory area dst.
- * return NULL on failure, pointer to dest on success.
+ * @return
+ *   NULL on failure, pointer to dest on success.
  */
 void *memcpy(void *dest, const void *src, const unsigned int n) {
 	int i = 0;
@@ -114,7 +119,7 @@ void *memcpy(void *dest, const void *src, const unsigned int n) {
 	return dest;
 }
 
-/*
+/**
  * Fills the first n bytes of dest with the constant value of src.
  */
 void *memset(void *dest, const int src, const unsigned int n) {
@@ -126,7 +131,7 @@ void *memset(void *dest, const int src, const unsigned int n) {
 	return dest;
 }
 
-/*
+/**
  * Reverse the characters of the string s in place. The behaviour of this
  * function is undefined if the string is not null terminated.
  */
@@ -163,7 +168,7 @@ void reverse(char *s) {
   }
 }
 
-/*
+/**
  * convert the integer n into the character string s.
  */
 void itoa(int n, char *s) {
@@ -189,7 +194,7 @@ void itoa(int n, char *s) {
   reverse(s);
 }
 
-/*
+/**
  * Converts the integer h to character string s in hexidecimal format.
  */
 void htoa(const int h, char *s) {

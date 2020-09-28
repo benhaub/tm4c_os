@@ -35,9 +35,11 @@ STACK_TOP:
 /* In C, this is similar to: */
 /* unsigned int Vectors[16] = {STACK_TOP, Reset_EXCP,...,SYST_EXCP}; */
 
-/* Note that this is the KERNEL stack pointer not a user stack pointer. */
-/* They are unrelated. The kernel can have a different sized stack than a */
-/* user. */
+/**
+ * Note that this is the KERNEL stack pointer not a user stack pointer.
+ * They are unrelated. The kernel can have a different sized stack than a
+ * user.
+ */
 Vectors:
 	.word STACK_TOP + 0x800 /* Boot loader gets kernel stack pointer from here*/
 	.word Reset_EXCP	/* Reset Exception */
@@ -173,7 +175,7 @@ PSV_EXCP: .fnstart
 				 b psv_handler
 				 .fnend
 
-/*
+/**
  * The reason we don't do a direct branch to the handler is to avoid context
  * switching while in handler mode. The processor's exception mechanism makes
  * switching in handler mode very difficult. The exception mechanism exits
@@ -215,7 +217,7 @@ Thumb:
 					bx lr
 					.fnend
 
-/*
+/**
  * Entry to the kernel from the systick isr. It is executed from thread
  * mode so that it is possible to save stacks and context switch properly.
  * It makes sure the process stack is returned to it's orginal state, and then
@@ -245,8 +247,10 @@ kernel_entry: .fnstart
 							bx lr
 							.fnend
 
-/* Change the processor state to either enable or disable interrupts. */
-/* use 1 as a parameter to enable, 0 to disable. */
+/**
+ * Change the processor state to either enable or disable interrupts.
+ * use 1 as a parameter to enable, 0 to disable.
+ */
 	.align 2
 	.type processor_state, %function
 processor_state: .fnstart

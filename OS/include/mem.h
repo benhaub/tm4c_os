@@ -17,9 +17,11 @@ extern int smain(void);
 /* From vectors.s */
 extern const int KRAM_USE;
 
-/* Process stack size. This is independant of the kernel stack which is */
-/* created in vectors.s at the top of the vector table. If you change this */
-/* value, also change the stack size used in Reset_EXCP. */
+/**
+ * Process stack size. This is independant of the kernel stack which is
+ * created in vectors.s at the top of the vector table. If you change this
+ * value, also change the stack size used in Reset_EXCP.
+ */
 #define STACK_SIZE 0x400 /*1KB Stack */
 #define FLASH_PAGE_SIZE 0x800
 /* Beginning of SRAM */

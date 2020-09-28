@@ -48,10 +48,12 @@
  */
 enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, WAITING};
 
-/* Note that any changes to a processes context do not take affect until */
-/* The next time a context switch changes to it. The registers here are */
-/* based off of the ones saved the cortex M4 exception return stack */
-/* r7 always needs the current stack pointer, and is taken care of in swtch */
+/**
+ * Note that any changes to a processes context do not take affect until
+ * The next time a context switch changes to it. The registers here are
+ * based off of the ones saved the cortex M4 exception return stack
+ * r7 always needs the current stack pointer, and is taken care of in swtch
+ */
 struct context {
 	 word sp;
 	 word pc;

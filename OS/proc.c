@@ -52,7 +52,7 @@ void user_init() {
 	scheduler();
 }
 
-/*
+/**
  * Reserve a process for further initialization and scheduling. Returns the
  * pcb of the reserved process.
  */
@@ -101,7 +101,7 @@ struct pcb* reserveproc(char *name) {
 	return (ptable + i);
 }
 
-/*
+/**
  * Initialize a RESERVED process so it's ready to be context switched too.
  * This function alters context, so must it be run just before the context
  * switcher.
@@ -120,8 +120,11 @@ static void initproc(struct pcb *reserved) {
 	reserved->state = RUNNABLE;
 }
 
-/* Set all unused procs to unused state and initialize pcb members to known */
-/* values. */
+/**
+ * @post
+ *   Set all unused procs to unused state and initialize pcb members to known
+ *   values.
+ */
 void init_ptable() {
 	for(int i = 0; i < MAX_PROC; i++) {
 		ptable[i].state = UNUSED;
@@ -134,12 +137,15 @@ void init_ptable() {
 	}
 }
 
-/* Return the process that is currently RUNNING. */
+/**
+ * @return
+ *   the process that is currently RUNNING.
+ */
 struct pcb* currproc() {
 	return (ptable + currpid);
 }
 
-/*
+/**
  * Return the process belonging to pid, or NULL if it couldn't be found. One
  * example of a pid that can't be found is the pid of a process that has exited.
  */
@@ -153,7 +159,7 @@ struct pcb* pidproc(int pid) {
 	return NULL;
 }
 
-/*
+/**
  * Round Robin scheduler. Triggered by tick interrupt every 1ms
  */
 void scheduler() {

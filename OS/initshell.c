@@ -20,7 +20,7 @@ void count() {
   return;
 }
 
-/* 
+/**
  * The led should be purple when this test is done.
  * First the parent turns on the green led, then forks NPROC processes. The
  * children all turn off the green led and then exit while the parent waits
@@ -53,7 +53,8 @@ void forktest() {
 	}
 	led(LED_RED, LED_ON);
 }
-/* 
+
+/**
  * This function tests reading and writing flash by writing the testwrite
  * struct into flash memory, and then reading it back and comparing the
  * values.
@@ -111,7 +112,7 @@ void wrflash() {
   }
 }
 
-/*
+/**
  * Tests all the functions in cstring.c
  */
 int stringtest() {
@@ -144,7 +145,7 @@ int stringtest() {
   return 0;
 }
 
-/*
+/**
  * Test The OSs ability to detect stack overflow. The process should exit
  * before it's able to turn on the green LED.
  */
@@ -156,7 +157,7 @@ void stack_overflow() {
   }
   led(LED_GREEN, LED_ON);
 }
-/*
+/**
  * Shell main. The first user program run by the kernel after reset.
  */
 int smain(void) __attribute__((section(".text.smain")));

@@ -8,7 +8,7 @@
 	.syntax unified
 	.thumb
 
-/*
+/**
  * Almost the same as the context switch. Only difference is that we don't 
  * need to update the stack pointer, and we switch to msp (instead of psp)
  * and to privledged (instead of unprivledged). Privledge levels are handled
@@ -21,7 +21,7 @@
  * the code returns here.
  */
 
-/*
+/**
  * syscall is unique from other syscalls in that it is the syscall routine that
  * services calls to fork. It is the only syscall asm routine that makes writes
  * into the ptable for storing the program counter and stack pointer. This must
@@ -49,7 +49,7 @@ syscall: .fnstart
 					  bx lr
 				 .fnend
 
-/*
+/**
  * The assembly routine for system calls that have one argument.
  */
 	.global syscall1
@@ -71,7 +71,7 @@ syscall1: .fnstart
 					  bx lr
 				 .fnend
 
-/*
+/**
  * The assembly routine for system calls that have two arguments.
  */
   .global syscall2
