@@ -11,7 +11,6 @@
 #include <mem.h>
 #include <proc.h>
 #include <cstring.h>
-#include <fs.h>
 #include <kernel_services.h>
 
 /* From proc.c */
@@ -33,7 +32,6 @@ int main() {
 	init_ram();
   mpu_tm4cOS_init();
 	init_ptable();
-	init_fs();
 	start_clocktick();
 /* Set up the first user process (the shell) */
 	user_init();
