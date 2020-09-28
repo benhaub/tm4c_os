@@ -5,7 +5,7 @@
  * Date     : July 18th, 2019                                                 *
  *****************************************************************************/
 #include <hw.h>
-#include <mem.h> /* in sysexit(), for free_stackspace() */
+#include <mem.h> /* in sysexit(), for free_stackpage() */
 #include <proc.h>
 #include <types.h>
 #include <stdarg.h>
@@ -94,7 +94,7 @@ int sysexit(int exitcode) {
 			}
 		}
 	}
-	free_stackspace(exitproc->rampg);
+	free_stackpage(exitproc->rampg);
 	exitproc->pid = NULLPID;
 /* If this process was the child of another, subtract it's number of children */
 	if(exitproc->ppid != NULLPID) {

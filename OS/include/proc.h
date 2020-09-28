@@ -27,7 +27,7 @@
 /* Context switch stack size (in bytes, 4 bytes per word saved) */
 #define CTXSTACK 32
 
-/*
+/**
  * KERNEL:
  * 	The space for this process is being used by the kernel and is unavailable
  * 	for use.

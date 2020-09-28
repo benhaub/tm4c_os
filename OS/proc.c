@@ -22,13 +22,14 @@ struct pcb ptable[MAX_PROC];
 /* Pid of the current process. */
 int currpid;
 
-/*
+/**
  * Initializes the first user process and runs it.
  * @param name
- * 	The name of the new process
+ *   The name of the new process
+ * @sa mem.c
+ *   for an explantion of calculations made
  */
 void user_init() {
-/* See mem.c for an explanation of this calculation. */
   if(MAX_PROC > SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2)) {
     printk("MAX_PROC is set to allow more processes than the available RAM "\
         "can hold. Please use a value no greater than %d\n\r", \
@@ -83,12 +84,12 @@ struct pcb* reserveproc(char *name) {
 		}
 	}
 /* Top of stack for this process. */
-	if(-1 != (rampg = get_stackspace())) {
+	if(-1 != (rampg = get_stackpage())) {
 		ptable[i].rampg = rampg;
 		ptable[i].context.sp = stacktop(rampg);
 	}
 	else {
-    free_stackspace(rampg);
+    free_stackpage(rampg);
     ptable[i].context.sp = 0;
     maxpid = maxpid_bu;
 		return NULL;

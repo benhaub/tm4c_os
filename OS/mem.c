@@ -15,11 +15,14 @@ int stackusage[SRAM_PAGES];
 /* Used for the MPU. Holds the exponent of the stack size with base 2. */
 int stacksize_pow2;
 
-/* Return the index of the ram space that is not being used, or -1 if there */
-/* is no space. */
-int get_stackspace() {
-/* Each element represents the top of the stack that will be used. 0 will */
-/* use from 0 to STACK_SIZE-1, 1 will use STACK_SIZE to 2*STACK_SIZE-1, etc. */
+/**
+ * Each element represents the bottom of the stack that will be used. 0 will
+ * use from 0 to STACK_SIZE-1, 1 will use STACK_SIZE to 2*STACK_SIZE-1, etc.
+ * @return
+ *  Return the index of the ram page that is not being used, or -1 if there
+ *  is no page.
+ */
+int get_stackpage() {
 	int i = 0;
 	while(stackusage[i]) {
 		i++;
@@ -32,12 +35,13 @@ int get_stackspace() {
 	return i;
 }
 
-inline void free_stackspace(int i) {
+inline void free_stackpage(int i) {
  	stackusage[i] = 0;
 }
 
-/*
- * Sets all ram to be unused.
+/**
+ * @brief
+ *   Sets all ram to be unused.
  */
 void init_ram() {
 	int i;
@@ -45,10 +49,6 @@ void init_ram() {
 /* round the value up to make sure there's not stack overlap (+ 2). After a */
 /* push, the processor increments the stack pointer to the next word. */
 /* KRAM_USE is stored one word back (- 4). */
-/*TODO:
- * Any loops involving the number of SRAM pages need to be made <= since 32*1024
- * gets us to the top of the last stack (0x8000).
- */
 	for(i = 0; i < *((word *)(KRAM_USE - 4)) + 2; i++) {
 		stackusage[i] = 1;
 	}
@@ -58,7 +58,7 @@ void init_ram() {
 	}
 }
 
-/*
+/**
  * Initialize the MPU specifically for tm4cOS. During OS initialization, any
  * memory access from non-privledged software will cause a memory fault.
  */
@@ -83,7 +83,7 @@ void mpu_tm4cOS_init() {
   NVIC_MPU_CTRL_R |= 0x1;
 }
 
-/*
+/**
  * Create a region of memory for a user process to operate in. The process may
  * write only to it's stack. Reads are allowed anywhere in flash or RAM except
  * for the memory region of RAM association with the kernel.

@@ -46,8 +46,8 @@ extern const int KRAM_USE;
 /* The top of stack for any process given the ram page, x. */
 #define stacktop(x) _SRAM + x*STACK_SIZE - 4
 
-int get_stackspace(void);
-void free_stackspace(int);
+int get_stackpage(void);
+void free_stackpage(int);
 void init_ram(void);
 void mpu_tm4cOS_init(void);
 void create_user_memory_region(int);
