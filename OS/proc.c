@@ -20,7 +20,7 @@ int maxpid;
 /* Array of processes for the scheduler. */
 struct pcb ptable[MAX_PROC];
 /* Pid of the current process. */
-int currpid;
+static unsigned int currpid;
 
 /**
  * Initializes the first user process and runs it.
@@ -30,15 +30,15 @@ int currpid;
  *   for an explantion of calculations made
  */
 void user_init() {
-  if(MAX_PROC > SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2)) {
+  if(MAX_PROC > SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 1)) {
     printk("MAX_PROC is set to allow more processes than the available RAM "\
         "can hold. Please use a value no greater than %d\n\r", \
-       SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2));
+       SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 1));
     return;
   }
-  else if(MAX_PROC < SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2)) {
+  else if(MAX_PROC < SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 1)) {
     printk("Currently capping %d/%d available processes\n\r", MAX_PROC, \
-      SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 2) - 1);
+      SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 1) - 1);
   }
 /* Set all globals. Compiler doesn't seem to want to cooperate with global */
 /* initializations of variables. */
@@ -62,6 +62,7 @@ struct pcb* reserveproc(char *name) {
 /* Back up the value of maxpid incase this fails. */
   int maxpid_bu = maxpid;
 
+  //TODO: Should be strlen but it seems to bus fault.
 	if(sizeof(name) > 16 && NULL != name) {
     printk("Buffer overrun for process name\n\r");
 		return NULL;
@@ -141,7 +142,7 @@ void init_ptable() {
  * @return
  *   the process that is currently RUNNING.
  */
-struct pcb* currproc() {
+inline struct pcb* currproc() {
 	return (ptable + currpid);
 }
 

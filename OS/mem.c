@@ -17,7 +17,7 @@ int stacksize_pow2;
 
 /**
  * Each element represents the bottom of the stack that will be used. 0 will
- * use from 0 to STACK_SIZE-1, 1 will use STACK_SIZE to 2*STACK_SIZE-1, etc.
+ * use from 0 to STACK_SIZE-4, 1 will use STACK_SIZE to 2*STACK_SIZE-4, etc.
  * @return
  *  Return the index of the ram page that is not being used, or -1 if there
  *  is no page.
@@ -46,10 +46,11 @@ inline void free_stackpage(int i) {
 void init_ram() {
 	int i;
 /* The amount of RAM usage was pushed on the stack during reset. We need to */
-/* round the value up to make sure there's not stack overlap (+ 2). After a */
+/* round the value up to make sure there's not stack overlap (+ 1). After a */
 /* push, the processor increments the stack pointer to the next word. */
-/* KRAM_USE is stored one word back (- 4). */
-	for(i = 0; i < *((word *)(KRAM_USE - 4)) + 2; i++) {
+/* KRAM_USE is stored one word back (- 4). If you edit this calculation, also*/
+/* make the same changes to user_init() in proc.c. */
+	for(i = 0; i < *((word *)(KRAM_USE - 4)) + 1; i++) {
 		stackusage[i] = 1;
 	}
 	while(i < SRAM_PAGES) {

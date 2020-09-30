@@ -46,7 +46,9 @@ extern const int KRAM_USE;
 #define KFLASHPGS ((KSIZE / FLASH_PAGE_SIZE) + 1)
 
 /* The top of stack for any process given the ram page, x. */
-#define stacktop(x) _SRAM + x*STACK_SIZE - 4
+#define stacktop(x) (x ? _SRAM + x*STACK_SIZE + STACK_SIZE - 4 : _SRAM + STACK_SIZE - 4)
+/* The bottom of stack for any process given the ram page, x. */
+#define stackbottom(x) (x ? _SRAM + x*STACK_SIZE : 0)
 
 int get_stackpage(void);
 void free_stackpage(int);

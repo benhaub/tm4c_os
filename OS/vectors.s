@@ -103,6 +103,15 @@ HFAULT: .fnstart
 	.align 2
 	.type MM_FAULT, %function
 MM_FAULT: .fnstart
+/* The faulting process will exit() when the bus fault handler is done via the*/
+/* Exception return mechanism. It is not possible for the kernel to cause an */
+/* mm fault because it has access to the entire memory map. */
+          mrs r0, psp
+/* Return the stack to it's pre-exception position, representing it's value */
+/* that it had while the process was still running. */
+          add r0, #108
+          ldr r1,=sysexit
+          str r1, [r0, #24]
 					b mm_handler
 					.fnend
 
@@ -156,7 +165,7 @@ Syscall0:
          str r2, [r1, #4]
 /* Restore stack pointer to where it was before system call. */
          mrs r9, psp
-/* 116 is the size of the floating point exception frame as well as a stack */
+/* 108 is the size of the floating point exception frame as well as a stack */
 /* push of 8 bytes from the prologue of the syscalln functions. */
          add r9, #116
          str r9, [r1]

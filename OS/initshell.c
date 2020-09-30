@@ -12,6 +12,8 @@
 #include <mem.h> /* For flash address macros */
 #include <cstring.h> /* For testing cstring api */
 
+int smain(void) __attribute__((section(".text.smain")));
+
 /*
  * Got nothing to do? How about counting to 10 million?
  */
@@ -41,7 +43,7 @@ void forktest() {
       count();
 			led(LED_GREEN, LED_OFF);
 			exit(EXIT_SUCCESS);
-			led(LED_GREEN, LED_OFF);
+			led(LED_GREEN, LED_ON);
 		}
 		else {
 			/* Parent process. */
@@ -79,6 +81,7 @@ void wrflash() {
 /* Compare the values at each address of flash and ram to see if they match */
 	while((word)(faddr + i) < (word)faddr + sizeof(tw)) {
 		if(*(raddr + i) != *(faddr + i)) {
+      printf("Flash write failed\n\r");
 			return;
 		}
 		else {
@@ -86,7 +89,7 @@ void wrflash() {
 		}
 	}
 /* Make another write in the middle of the page. Make sure the first write is */
-/* still in flash, and make sure the new write work properly. */
+/* still in flash, and make sure the new write worked properly. */
   tw2.first = 0x11191555;
   tw2.second = 0x8675309;
   tw2.third = 0xBADDAD;
@@ -94,6 +97,7 @@ void wrflash() {
   i = 0;
   while((word)(faddr + i) < (word)faddr + sizeof(tw)) {
     if(*(raddr + i) != *(faddr + i)) {
+      printf("Flash write failed\n\r");
       return;
     }
     else {
@@ -104,6 +108,7 @@ void wrflash() {
   i = 0;
   while((word)(faddr + 40 + i) < (word)(faddr + 40)  + sizeof(tw)) {
     if(*(raddr + i) != *(faddr + 40 + i)) {
+      printf("Flash write failed\n\r");
       return;
     }
     else {
@@ -151,21 +156,24 @@ int stringtest() {
  */
 void stack_overflow() {
 /* Allocate an array that is greater than STACK_SIZE */
-  int big_array[40]; //1.25KB
-  for(int i = 0; i < 40; i++) {
-    big_array[i] = 0;
+  int big_array[384]; //1.5KB
+/* Fork a process so that initshell doesn't take the hit. */
+  int pid = fork();
+  if(0 != pid) {
+    for(int i = 0; i < 40; i++) {
+      big_array[i] = 0;
+    }
+    led(LED_GREEN, LED_ON);
   }
-  led(LED_GREEN, LED_ON);
 }
 /**
  * Shell main. The first user program run by the kernel after reset.
  */
-int smain(void) __attribute__((section(".text.smain")));
 int smain() {
 /* Commented out to reduce flash writes while testing. */
 	//wrflash();
   stringtest();
   forktest();
-  //stack_overflow();
+  stack_overflow();
 	return 0;
 }

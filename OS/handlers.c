@@ -25,9 +25,16 @@ static inline void syscreturn(word val) {
 	userproc->context.r0 = val;
 }
 
+/**
+ * Non-maskable Interrupt Handler
+ */
 void nmi_handler() {
 	while(1);
 }
+
+/**
+ * Hard Fault Handler
+ */
 void hfault_handler() {
 	int faultstat_vect, faultstat_forced, faultstat_dbg;
 	faultstat_vect  = (NVIC_HFAULT_STAT_R & 1 << 1);
@@ -39,21 +46,35 @@ void hfault_handler() {
   NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 	while(1);
 }
+
 /**
- * Memory Management Handler.
+ * @brief
+ *   Memory Management Handler.
+ *
+ * When a process attempts to access memory that doesn't belong to it, a memory
+ * management fault occurs. This is likely to happen because of stack overflow
+ * or de-referencing NULL.
+ * @param psp
+ *   The process stack pointer
  */
-void mm_handler() {
-	while(1);
+void mm_handler(word psp) {
+  if(psp > stacktop(currproc()->rampg) ||
+     psp < stackbottom(currproc()->rampg)) {
+    syswrite("Stack overflow\n\r");
+  }
 }
+
 /** 
- * Bus Fault Handler. Code that generates a bus fault usually exhibits
- * similar behaviour to code running in Linux that generates a segmentation
- * fault (accessing illegal adresses).
+ * @brief
+ *   Bus Fault Handler.
+ *   
+ * In the case of a bus fault, the memory address being accessed is one that
+ * does not exist on the tm4c memory map.
  * @param stack
  *   The stack that was being used when the fault was triggered. 2 for psp, 1
  *   for msp
  */
-void b_handler(int stack) {
+void b_handler(word stack) {
 	word fault_addr;
 	word bfarv, blsperr, bstke, bustke, impre, precise, ibus;
 /* Make sure memory contents are valid. */
@@ -78,19 +99,20 @@ void b_handler(int stack) {
 /* Clear the contents of the fault register */
   NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
 /* View the contents with a debugger. */
-  syswrite("Bus Fault\n\r"); //syswrite is faster than printk.
+  syswrite("Bus Fault\n\r"); //syswrite is faster than printk
   if(2 == stack) {
     return;
   }
   while(1);
 }
+
 /**
  * Usage Fault Handler.
  * @param stack
  *   The stack that was being used when the fault was triggered. 2 for psp, 1
  *   for msp
  */
-void u_handler(int stack) {
+void u_handler(word stack) {
 	word div0, unalign, nocp, invpc, invstat, undef;
 /* Divide by zero */
 	div0 = (NVIC_FAULT_STAT_R & (1 << 25));
@@ -116,13 +138,15 @@ void u_handler(int stack) {
   }
   while(1);
 }
+
 /**
  * Supervisor Call (syscall) Handler. All SVC end up here, and then it's
  * decided how to handle it based on the sysnum.
- * void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
- * Return values from system calls.
  */
+void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
+  /* Return values from system calls. */
 	word ret;
+
 	switch(sysnum) {
 		case 0: ret = sysfork();
 						break;
@@ -141,12 +165,15 @@ void u_handler(int stack) {
 /* Store return values */
 	syscreturn(ret);
 }
+
 void dm_handler() {
 	while(1);
 }
+
 void psv_handler() {
 	while(1);
 }
+
 /**
  * Systick handler (clock tick interrupt)
  */
