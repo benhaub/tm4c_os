@@ -56,12 +56,37 @@ void hfault_handler() {
  * or de-referencing NULL.
  * @param psp
  *   The process stack pointer
+ * @see Pg. 181, datasheet
  */
 void mm_handler(word psp) {
+  int mmarv, mlsperr, mstke, mustke, derr, ierr;
+  word fault_addr;
+ 
+  mmarv = (NVIC_FAULT_STAT_R & 1 << 7);
+  mlsperr = (NVIC_FAULT_STAT_R & 1 << 5);
+  mstke = (NVIC_FAULT_STAT_R & 1 << 4);
+  mustke = (NVIC_FAULT_STAT_R & 1 << 3);
+  derr = (NVIC_FAULT_STAT_R & 1 << 1);
+  ierr = (NVIC_FAULT_STAT_R & 1);
+
+  if (mmarv) {
+    fault_addr = NVIC_MM_ADDR_R;
+  }
+  else {
+    fault_addr = 0;
+  }
+
   if(psp > stacktop(currproc()->rampg) ||
      psp < stackbottom(currproc()->rampg)) {
     syswrite("Stack overflow\n\r");
+/* Return and kill the offending process. */
+    return;
   }
+  else {
+    while(1);
+  }
+  mmarv=mmarv;mlsperr=mlsperr;mstke=mstke;mustke=mustke;derr=derr;ierr=ierr;
+  fault_addr=fault_addr;
 }
 
 /** 
