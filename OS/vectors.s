@@ -13,12 +13,13 @@
 
 /* If you change the stack size, make sure to adjust the MAX_PROC define in */
 /* mem.h */
-	.section .stack, "wx"
-	.align 4
+	.section .stack, #progbits
+	.align 2
 STACK_TOP:
 	.skip 0x800, 0x0
-	
-	.data
+
+/* Constants */	
+	.text
 /* Kernel Ram usage. */
 	.global KRAM_USE
 	.set KRAM_USE, Vectors
@@ -60,7 +61,7 @@ Vectors:
 
 	.text
 
-	.align 2
+	//.align 2
 	.type Reset_EXCP, %function
 Reset_EXCP: .fnstart
 /* Calculate how much ram the kernel is using so we know where to start */
@@ -88,19 +89,19 @@ Reset_EXCP: .fnstart
 						b main
 						.fnend
 
-	.align 2
+	//.align 2
 	.type NMI_EXCP, %function
 NMI_EXCP: .fnstart
 				 b nmi_handler
 				 .fnend
 
-	.align 2
+	//.align 2
 	.type HFAULT, %function
 HFAULT: .fnstart
 				b hfault_handler
 				.fnend
 
-	.align 2
+	//.align 2
 	.type MM_FAULT, %function
 MM_FAULT: .fnstart
 /* The faulting process will exit() when the bus fault handler is done via the*/
@@ -115,7 +116,7 @@ MM_FAULT: .fnstart
 					b mm_handler
 					.fnend
 
-	.align 2
+	//.align 2
 	.type BFAULT, %function
 BFAULT: .fnstart
 /* The faulting process will exit() when the bus fault handler is done via the*/
@@ -135,7 +136,7 @@ BUser:
         b b_handler
 				.fnend
 
-	.align 2
+	//.align 2
 	.type UFAULT, %function
 UFAULT:	.fnstart
 /* The faulting process will exit() when the bus fault handler is done via the*/
@@ -152,7 +153,7 @@ UUser:
 				b u_handler
 				.fnend
 
-	.align 2
+	//.align 2
 	.type SVC_EXCP, %function
 SVC_EXCP: .fnstart
 /* Use the svc immediate value to determine if this is syscall or a syscalln */
@@ -172,13 +173,13 @@ Syscall0:
          b svc_handler
 				 .fnend
 
-	.align 2
+	//.align 2
 	.type DM_EXCP, %function
 DM_EXCP: .fnstart
 				b dm_handler
 				.fnend
 
-	.align 2
+	//.align 2
 	.type PSV_EXCP, %function
 PSV_EXCP: .fnstart
 				 b psv_handler
@@ -193,7 +194,7 @@ PSV_EXCP: .fnstart
  * changed when we enter the exeption handler c code. kernel_entry will need
  * these values in order to save the context correclty.
  */
-	.align 2
+	//.align 2
 	.type SYST_EXCP, %function
 SYST_EXCP: .fnstart
 /* Get the processes stack pointer and save it */
@@ -234,7 +235,7 @@ Thumb:
  * switching stacks from psp to msp. The corresponding pop is made from swtch
  * so make sure that the push here and pop in swtch() are consistent.
  */
-	.align 2
+	//.align 2
 	.type kernel_entry, %function
 kernel_entry: .fnstart
 /* Transfer r0 to r9 so that r0 can be returned to it's saved pre-systick */
@@ -260,7 +261,7 @@ kernel_entry: .fnstart
  * Change the processor state to either enable or disable interrupts.
  * use 1 as a parameter to enable, 0 to disable.
  */
-	.align 2
+	//.align 2
 	.type processor_state, %function
 processor_state: .fnstart
 								 cmp r0, #0

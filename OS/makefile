@@ -68,7 +68,7 @@ S_OBJECTS+=${S_SOURCES:.s=.o}
 
 tm4c_os.bin: dirs tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
-	mv *.elf *.o .bin
+	mv *.elf *.o *.bin .binary
 
 tm4c_os.elf: ${C_OBJECTS} ${S_OBJECTS} link.ld
 	${CC} ${CFLAGS} ${LDFLAGS} -otm4c_os.elf ${C_OBJECTS} ${S_OBJECTS}
@@ -83,7 +83,7 @@ syscallsasm.o: syscallsasm.s
 	${CC} ${CFLAGS} -c syscallsasm.s
 
 dirs:
-	mkdir -p .deps .bin
+	mkdir -p .deps .binary
 
 #If a dependancy file is deleted for some reason, make will detect it and
 #rebuild them.
@@ -96,4 +96,4 @@ flash:
 	lm4flash -s 0E22CCB1 -S 0x00000000 tm4c_os.bin
 
 clean:
-	rm -rf *.o ./.deps tm4c_os.map tm4c_os.elf tm4c_os.bin
+	rm -rf *.o ./.deps tm4c_os.map tm4c_os.elf tm4c_os.bin ./.binary
