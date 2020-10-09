@@ -8,6 +8,7 @@
 #include <types.h>
 #include <tm4c123gh6pm.h> /* Hardware register macros. */
 #include <kernel_services.h> /* for syswrite() */
+#include <syscalls.h> /* For syscall numbers */
 
 /* From vectors.s */
 extern void processor_state(int);
@@ -173,17 +174,15 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 	word ret;
 
 	switch(sysnum) {
-		case 0: ret = sysfork();
+		case FORK: ret = sysfork();
 						break;
-		case 1: ret = syswait(*((word *)arg1));
+		case WAIT: ret = syswait(*((word *)arg1));
 						break;
-		case 2: ret = sysexit(*((word *)arg1));
+		case EXIT: ret = sysexit(*((word *)arg1));
 						break;
-    case 3: ret = sysflash(arg1, arg2, arg3);
+    case WRITE: ret = syswrite((char *)arg1);
             break;
-    case 4: ret = syswrite((char *)arg1);
-            break;
-    case 5: ret = sysled(*((int *)arg1), *((int *)arg2));
+    case LED: ret = sysled(*((int *)arg1), *((int *)arg2));
             break;
 		default: while(1); 
 	}

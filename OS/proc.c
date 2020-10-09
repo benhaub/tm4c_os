@@ -62,8 +62,7 @@ struct pcb* reserveproc(char *name) {
 /* Back up the value of maxpid incase this fails. */
   int maxpid_bu = maxpid;
 
-  //TODO: Should be strlen but it seems to bus fault.
-	if(sizeof(name) > 16 && NULL != name) {
+	if(NULL != name && strlen(name) > 16) {
     printk("Buffer overrun for process name\n\r");
 		return NULL;
 	}

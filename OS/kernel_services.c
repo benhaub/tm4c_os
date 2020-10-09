@@ -23,14 +23,6 @@ extern int maxpid;
 extern struct pcb ptable[];
 
 /**
- * Write memory that starts at saddr and ends at eaddr to flash address faddr.
- * returns 0 on success, -1 otherwise.
- */
-int sysflash(void *saddr, void *eaddr, void *faddr) {
-  return write_flash(saddr, eaddr, faddr);
-}
-
-/**
  * Creates a new process. The parent forks the child. parent returns the pid
  * of the new process, child returns NULLPID. Returns -1 on failure.
  */

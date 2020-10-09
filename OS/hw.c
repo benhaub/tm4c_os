@@ -50,7 +50,7 @@ void delay_1ms() {
 /* in the datasheet on Pg.656. */
 
 /**
- * Initialize PortF for led operation. This function must be run before the LEDs
+ * Initialize PortF for LED operation. This function must be run before the LEDs
  * can be used.
  */
 void led_init() {
@@ -248,8 +248,10 @@ int protect_flash(int pageno) {
  * uart is used for the kernel and user to print output.
  * @param baud
  *   The baud rate to be used for the module
+ * @return
+ *   0 on success, -1 on failure.
  */
-void uart1_init(unsigned int baud) {
+int uart1_init(unsigned int baud) {
 /* baud rate divisor. */
   float brd;
 /* integer and float parts of the baud rate divisor. */
@@ -259,7 +261,7 @@ void uart1_init(unsigned int baud) {
 /* Enable run mode for GPIO Port B module (GPIOPB). */
   SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
   if(0 != (GPIO_PORTB_AFSEL_R & (1 << 1))) {
-    return;
+    return -1;
   }
   GPIO_PORTB_AFSEL_R |= (1 << 1); //UART1 alt function for PB1.
   GPIO_PORTB_PCTL_R |= (1 << 4); //Transmit function for PB1.
@@ -284,6 +286,7 @@ void uart1_init(unsigned int baud) {
   UART1_CTL_R &= ~(1 << 9);
 /* Enable the UART for use. */
   UART1_CTL_R |= 0x1;
+  return 0;
 }
 
 /**
@@ -334,8 +337,21 @@ int uart1_tchar(char data) {
  *   2 for 2mA
  *   4 for 4mA
  *   8 for 8mA
+ * @param ff
+ *   Frame format for the SPI lines
+ *   0 to hold the clock low during idle.
+ *     Data is caputred on the rising edge of the clock
+ *   1 same as 0, but data is captured on the falling edge of the clock.
+ *   2 to hold the clock high during idle. Data is caputured on the falling
+ *     edge of the clock
+ *   3 same as 2, but data is captured on the rising edge.
+ * @note
+ *   PA2 - clock
+ *   PA3 - frame signal
+ *   PA4 - receive (MOSI. Driven by master, received by slave)
+ *   PA5 - transmit (MISO. Driven by slave, received by master)
  */
-int ssi0_init_master(int protocol, int ds, int drxr) {
+int ssi0_init_master(int protocol, int ds, int drxr, int ff) {
 /* Activate the SSI peripheral clock. */
   SYSCTL_RCGCSSI_R |= 0x1;
 /* Enable and provide a clock to GPIO Port A. */
@@ -366,9 +382,6 @@ int ssi0_init_master(int protocol, int ds, int drxr) {
             break;
     default: return -1;
   }
-  //TODO: What are we doing with these?
-  //GPIO_PORTA_PUR_R |= (1 << 3);
-  //GPIO_PORTA_ODR_R |= (1 << 3);
 /* Disable SSI0 for initialisation. */
   SSI0_CR1_R &= ~(1 << 1);
 /* Configure the SSI peripheral as master. */
@@ -392,16 +405,38 @@ int ssi0_init_master(int protocol, int ds, int drxr) {
             break;
     default: return -1;
   }
+/*Frame select */
+  switch(ff) {
+    case 0: SSI0_CR0_R &= ~(1 << 7);
+            SSI0_CR0_R &= ~(1 << 6);
+            break;
+    case 1: SSI0_CR0_R |= (1 << 7);
+            SSI0_CR0_R &= ~(1 << 6);
+            break;
+    case 2: SSI0_CR0_R &= ~(1 << 7);
+            SSI0_CR0_R |= (1 << 6);
+            GPIO_PORTA_PUR_R |= (1 << 2);
+            GPIO_PORTA_ODR_R |= (1 << 2);
+            break;
+    case 3: SSI0_CR0_R |= (1 << 7);
+            SSI0_CR0_R |= (1 << 6);
+            GPIO_PORTA_PUR_R |= (1 << 2);
+            GPIO_PORTA_ODR_R |= (1 << 2);
+            break;
+    default: return -1;
+  }
+/*Data size */
   if(ds <= 0xF && ds >= 0x3) {
       SSI0_CR0_R |= ds;
   }
 /* Enable SSI0. */
   SSI0_CR1_R |= (1 << 1);
+/* No DMA for now... */
   return 0;
 }
 
 /**
- * Transmit data on SSI0
+ * Non-blocking SSI data transmission SSI0.
  */
 void ssi0_transmit(int data) {
 /* Check Raw Interrupt Status to see if the FIFO is empty. */

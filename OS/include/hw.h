@@ -33,10 +33,10 @@ int write_flash(void *, void *, void *);
 void erase_flash(word);
 //int protect_flash(int); Not working.
 /* UART calls */
-void uart1_init(unsigned int);
+int uart1_init(unsigned int);
 int uart1_tchar(char);
 /* SSI calls */
-int ssi0_init_master(int, int, int);
+int ssi0_init_master(int, int, int, int);
 void ssi0_transmit(int);
 
 #endif /*__HW_H__*/

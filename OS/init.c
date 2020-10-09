@@ -21,11 +21,15 @@ int main() {
 	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 18); /* USAGE Enable */
-  uart1_init(B115200);
+  if(-1 == uart1_init(B115200)) {
+    syswrite("Failed to start UART\n\nr");
+  }
   /* We already in the kernel so we can use the kernel services directly. */
   syswrite("Initialising tm4c_os\n\r");
 	led_init();
-  ssi0_init_master(0,0x7,2);
+  if(-1 == ssi0_init_master(0,0x7,2, 0)) {
+    syswrite("Failed to start SSI0\n\r");
+  }
 /* Configure Interrupt priorities. SVC exceptions are higher priority */
 /* than tick interrupts. SVC is 0 and systick is 1. */
 	NVIC_SYS_PRI3_R |= (1 << 29);

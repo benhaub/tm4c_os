@@ -8,14 +8,6 @@
 #include <proc.h> //For pcb struct and proc states
 #include <syscalls.h> //Some functions have attributes
 
-/* Syscall numbers */
-#define FORK 0
-#define WAIT 1
-#define EXIT 2
-#define FLASH 3
-#define WRITE 4
-#define LED 5
-
 /* From syscall.s */
 extern int syscall(int sysnum, struct pcb *);
 extern int syscall1(int sysnum, struct pcb *, void *arg1);
@@ -23,10 +15,6 @@ extern int syscall2(int sysnum, struct pcb *, void *arg1, void *arg2);
 extern int syscall3(int sysnum, struct pcb *, void *arg1, void *arg2, void *arg3);
 
 /* See kernel_services.c for the implementation of each syscall. */
-
-int flash(void *saddr, void *eaddr, void *faddr) {
-  return syscall3(FLASH, currproc(), saddr, eaddr, faddr);
-}
 
 int fork() {
 	return syscall(FORK, currproc());

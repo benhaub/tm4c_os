@@ -57,67 +57,6 @@ void forktest() {
 }
 
 /**
- * This function tests reading and writing flash by writing the testwrite
- * struct into flash memory, and then reading it back and comparing the
- * values.
- */
-void wrflash() {
-  int i = 0;
-
-	struct testwrite {
-		int first;
-		int second;
-		int third;
-	}tw, tw2;
-
-	tw.first = 0xDEADBEEF;
-	tw.second = 0xCAFEBABE;
-	tw.third = 0xC0FFEE;
-
-	word *faddr = (word *)(KFLASHPGS*FLASH_PAGE_SIZE); /* flash address */
-	word *raddr = (word *)&tw; /* ram address */
-
-	flash(&tw, &tw + 1, faddr);
-/* Compare the values at each address of flash and ram to see if they match */
-	while((word)(faddr + i) < (word)faddr + sizeof(tw)) {
-		if(*(raddr + i) != *(faddr + i)) {
-      printf("Flash write failed\n\r");
-			return;
-		}
-		else {
-      i++;
-		}
-	}
-/* Make another write in the middle of the page. Make sure the first write is */
-/* still in flash, and make sure the new write worked properly. */
-  tw2.first = 0x11191555;
-  tw2.second = 0x8675309;
-  tw2.third = 0xBADDAD;
-  flash(&tw2, &tw2 + 1, faddr + 40);
-  i = 0;
-  while((word)(faddr + i) < (word)faddr + sizeof(tw)) {
-    if(*(raddr + i) != *(faddr + i)) {
-      printf("Flash write failed\n\r");
-      return;
-    }
-    else {
-      i++;
-    }
-  }
-  raddr = (word *)&tw2;
-  i = 0;
-  while((word)(faddr + 40 + i) < (word)(faddr + 40)  + sizeof(tw)) {
-    if(*(raddr + i) != *(faddr + 40 + i)) {
-      printf("Flash write failed\n\r");
-      return;
-    }
-    else {
-      i++;
-    }
-  }
-}
-
-/**
  * Tests all the functions in cstring.c
  */
 int stringtest() {
@@ -170,8 +109,6 @@ void stack_overflow() {
  * Shell main. The first user program run by the kernel after reset.
  */
 int smain() {
-/* Commented out to reduce flash writes while testing. */
-	//wrflash();
   stringtest();
   forktest();
   stack_overflow();
