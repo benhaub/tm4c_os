@@ -35,7 +35,7 @@ int sysfork() {
   parent->numchildren++;
 	child->context.pc = parent->context.pc;
 /* Number of bytes being used in the parent stack */
-  word pstackuse = stacktop(parent->rampg) - parent->context.sp;
+  uint32_t pstackuse = stacktop(parent->rampg) - parent->context.sp;
 /* If the kernel forked this process, then the stack usage may be larger than */
 /* the process stack size since the kernel stack is separate from the user */
 /* stack. We need to limit the amount of stack copied to 1KB. */
@@ -133,7 +133,7 @@ int syswrite(const char *msg) {
  * Exactly the same as printf except that a call is made directly to syswrite.
  */
 void printk(const char *s, ...) {
-  word hex; /* Holds values for hex numbers */
+  uint32_t hex; /* Holds values for hex numbers */
   int integer;
   int bytes_remaining = 64; /* Bytes left in the buffer */
   int i = 0;
@@ -146,8 +146,8 @@ void printk(const char *s, ...) {
 /* Strings for holding the string number. Sizes of the arrays are the max */
 /* number of characters needed to represent the largest integer on this */
 /* processor. hex has 2 extra for "0x" at the beginning. */
-  char hex_string[sizeof(word)*2+2];
-  char int_string[sizeof(word)*2+2];
+  char hex_string[sizeof(uint32_t)*2+2];
+  char int_string[sizeof(uint32_t)*2+2];
   va_list format_strings;
   va_start(format_strings, s);
 /* Print one char at a time, inserting the va_args whenever a specifier is */
@@ -156,8 +156,8 @@ void printk(const char *s, ...) {
     if(s[i] == '%') {
       switch(s[++i]) {
       case('x') :
-        hex = va_arg(format_strings, word);
-        memset(hex_string, 0, sizeof(word)*2+2);
+        hex = va_arg(format_strings, uint32_t);
+        memset(hex_string, 0, sizeof(uint32_t)*2+2);
         htoa(hex, hex_string);
         len = strlen(hex_string);
         if(bytes_remaining - len > 0) {
@@ -172,7 +172,7 @@ void printk(const char *s, ...) {
       break;
       case('i') :
         integer = va_arg(format_strings, int);
-        memset(int_string, 0, sizeof(word)*2+2);
+        memset(int_string, 0, sizeof(uint32_t)*2+2);
         itoa(integer, int_string);
         len = strlen(int_string);
         if(bytes_remaining - len > 0) {
@@ -187,7 +187,7 @@ void printk(const char *s, ...) {
       break;
       case('d') : /* Same thing as %i */
         integer = va_arg(format_strings, int);
-        memset(int_string, 0, sizeof(word)*2+2);
+        memset(int_string, 0, sizeof(uint32_t)*2+2);
         itoa(integer, int_string);
         len = strlen(int_string);
         if(bytes_remaining - len > 0) {

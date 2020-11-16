@@ -11,8 +11,8 @@
 #include <kernel_services.h>
 
 /* From context.s */
-extern void swtch(word);
-extern void initcode(word);
+extern void swtch(uint32_t);
+extern void initcode(uint32_t);
 
 /* The largest pid currently RUNNING. Keeping track of this speeds up */
 /* scheduling. */
@@ -30,15 +30,15 @@ static unsigned int currpid;
  *   for an explantion of calculations made
  */
 void user_init() {
-  if(MAX_PROC > SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 1)) {
+  if(MAX_PROC > SRAM_PAGES - (*((uint32_t *)(KRAM_USE - 4)) + 1)) {
     printk("MAX_PROC is set to allow more processes than the available RAM "\
         "can hold. Please use a value no greater than %d\n\r", \
-       SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 1));
+       SRAM_PAGES - (*((uint32_t *)(KRAM_USE - 4)) + 1));
     return;
   }
-  else if(MAX_PROC < SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 1)) {
+  else if(MAX_PROC < SRAM_PAGES - (*((uint32_t *)(KRAM_USE - 4)) + 1)) {
     printk("Currently capping %d/%d available processes\n\r", MAX_PROC, \
-      SRAM_PAGES - (*((word *)(KRAM_USE - 4)) + 1) - 1);
+      SRAM_PAGES - (*((uint32_t *)(KRAM_USE - 4)) + 1) - 1);
   }
 /* Set all globals. Compiler doesn't seem to want to cooperate with global */
 /* initializations of variables. */
@@ -48,7 +48,7 @@ void user_init() {
 	if(NULL == initshell) {
 		return;
 	}
-	initshell->context.pc = (word)smain;
+	initshell->context.pc = (uint32_t)smain;
 	scheduler();
 }
 
@@ -113,10 +113,10 @@ static void initproc(struct pcb *reserved) {
 /* will put the the sp at the top of the stack, then swtch() will put the sp */
 /* into lr. */
 	reserved->context.sp = reserved->context.sp - (CTXSTACK);
-/* Pointer to proc is cast to a word because the compiler didn't seem to */
+/* Pointer to proc is cast to a uint32_t because the compiler didn't seem to */
 /* want to give me the pointer. It always came out to the value of sp in */
 /* context struct. */
-	initcode((word)reserved);
+	initcode((uint32_t)reserved);
 	reserved->state = RUNNABLE;
 }
 

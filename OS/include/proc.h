@@ -24,7 +24,7 @@
 /* Exit codes */
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
-/* Context switch stack size (in bytes, 4 bytes per word saved) */
+/* Context switch stack size (in bytes, 4 bytes per uint32_t saved) */
 #define CTXSTACK 32
 
 /**
@@ -55,13 +55,13 @@ enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, WAITING};
  * r7 always needs the current stack pointer, and is taken care of in swtch
  */
 struct context {
-	 word sp;
-	 word pc;
-	 word lr;
-	 word r0;
-	 word r3;
-   word r7;
-	 word r12;
+	 uint32_t sp;
+	 uint32_t pc;
+	 uint32_t lr;
+	 uint32_t r0;
+	 uint32_t r3;
+   uint32_t r7;
+	 uint32_t r12;
 };
 
 /* Process control block. */

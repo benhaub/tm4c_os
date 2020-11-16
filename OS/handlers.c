@@ -14,14 +14,14 @@
 extern void processor_state(int);
 extern void kernel_entry(struct pcb *);
 /* From context.s */
-extern void swtch(word sp);
+extern void swtch(uint32_t sp);
 /* Function prototypes. */
-void syst_handler(word) __attribute__((noreturn, naked));
+void syst_handler(uint32_t) __attribute__((noreturn, naked));
 
 /**
  * Puts the return value from system calls into the processes context.
  */
-static inline void syscreturn(word val) {
+static inline void syscreturn(uint32_t val) {
 	struct pcb *userproc = currproc();
 	userproc->context.r0 = val;
 }
@@ -59,9 +59,9 @@ void hfault_handler() {
  *   The process stack pointer
  * @see Pg. 181, datasheet
  */
-void mm_handler(word psp) {
+void mm_handler(uint32_t psp) {
   int mmarv, mlsperr, mstke, mustke, derr, ierr;
-  word fault_addr;
+  uint32_t fault_addr;
  
   mmarv = (NVIC_FAULT_STAT_R & 1 << 7);
   mlsperr = (NVIC_FAULT_STAT_R & 1 << 5);
@@ -100,9 +100,9 @@ void mm_handler(word psp) {
  *   The stack that was being used when the fault was triggered. 2 for psp, 1
  *   for msp
  */
-void b_handler(word stack) {
-	word fault_addr;
-	word bfarv, blsperr, bstke, bustke, impre, precise, ibus;
+void b_handler(uint32_t stack) {
+	uint32_t fault_addr;
+	uint32_t bfarv, blsperr, bstke, bustke, impre, precise, ibus;
 /* Make sure memory contents are valid. */
 	bfarv = (NVIC_FAULT_STAT_R & (1 << 15));
 /* Get the address of the fault has a valid address. */
@@ -138,8 +138,8 @@ void b_handler(word stack) {
  *   The stack that was being used when the fault was triggered. 2 for psp, 1
  *   for msp
  */
-void u_handler(word stack) {
-	word div0, unalign, nocp, invpc, invstat, undef;
+void u_handler(uint32_t stack) {
+	uint32_t div0, unalign, nocp, invpc, invstat, undef;
 /* Divide by zero */
 	div0 = (NVIC_FAULT_STAT_R & (1 << 25));
 /* Unaligned memory access */
@@ -171,14 +171,14 @@ void u_handler(word stack) {
  */
 void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
   /* Return values from system calls. */
-	word ret;
+	uint32_t ret;
 
 	switch(sysnum) {
 		case FORK: ret = sysfork();
 						break;
-		case WAIT: ret = syswait(*((word *)arg1));
+		case WAIT: ret = syswait(*((uint32_t *)arg1));
 						break;
-		case EXIT: ret = sysexit(*((word *)arg1));
+		case EXIT: ret = sysexit(*((uint32_t *)arg1));
 						break;
     case WRITE: ret = syswrite((char *)arg1);
             break;
@@ -201,7 +201,7 @@ void psv_handler() {
 /**
  * Systick handler (clock tick interrupt)
  */
-void syst_handler(word sp) {
+void syst_handler(uint32_t sp) {
 /* Reset the systick counter by making a write to CURRENT. */
   NVIC_ST_CURRENT_R = 0;
 /* Don't change the state to RUNNABLE, just go to the scheduler */

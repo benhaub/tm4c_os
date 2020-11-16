@@ -9,18 +9,207 @@
 #include <mem.h>
 #include <types.h>
 
+/******************************SYSTEM CONTROL*********************************/
+
+/**
+ * @brief determine_frequency
+ *   Determines the frequency which will be generated given the following params
+ *   Frequency is return in units of Hz.
+ * @param cs_config
+ *   Must be set according to @sa clocksource_config_t
+ * @return
+ *   0 on failure due to invalid clock settings, or the non-zero frequency on
+ *   success.
+ */
+static float determine_frequency(struct clocksource_config_t cs_config) {
+  switch(cs_config.oscsrc) {
+    case 0:
+      if(cs_config.sysdiv > 2) {
+        if(cs_config.use_pll) {
+          return 200.0f*1E6 / cs_config.sysdiv;
+        }
+        else {
+          return (float)MAIN_OSC_FREQ / cs_config.sysdiv;
+        }
+      }
+      else if(cs_config.sysdiv2 > 4) {
+        if(cs_config.use_pll) {
+          if(cs_config.div400) {
+            return 400.0f*1E6 / ((cs_config.sysdiv2 << 1) | cs_config.sysdiv2lsb);
+          }
+          else {
+            return 200.0f*1E6 / cs_config.sysdiv2;
+          }
+        }
+        else {
+          return MAIN_OSC_FREQ / cs_config.sysdiv2;
+        }
+      }
+      else {
+        return (float)MAIN_OSC_FREQ;
+      }
+    case 1:
+      if(cs_config.sysdiv > 2) {
+        if(cs_config.use_pll) {
+          return 200.0f*1E6 / cs_config.sysdiv;
+        }
+        else {
+          return 16.0f*1E6 / cs_config.sysdiv;
+        }
+      }
+      else if(cs_config.sysdiv2 > 4) {
+        if(cs_config.use_pll) {
+          if(cs_config.div400) {
+            return 400.0f*1E6 / ((cs_config.sysdiv2 << 1) | cs_config.sysdiv2lsb);
+          }
+          else {
+            return 200.0f*1E6 / cs_config.sysdiv2;
+          }
+        }
+        else {
+          return 16.0f*1E6 / cs_config.sysdiv2;
+        }
+      }
+      else {
+        return 16.0f*1E6;
+      }
+    case 2:
+      if(cs_config.sysdiv > 2) {
+        return 16.0f*1E6 / cs_config.sysdiv;
+      }
+      else if(cs_config.sysdiv2 > 4) {
+        return 16.0f*1E6 / cs_config.sysdiv2;
+      }
+      else {
+        return 0;
+      }
+    case 3:
+      if(cs_config.sysdiv > 2) {
+        return 0.03f*1E6 / cs_config.sysdiv;
+      }
+      else if(cs_config.sysdiv2 > 4) {
+        return 0.03f*1E6 / cs_config.sysdiv2;
+      }
+      else {
+        return 0.03f*1E6;
+      }
+    case 4:
+      if(cs_config.sysdiv > 2) {
+        return 0.032768f*1E6 / cs_config.sysdiv;
+      }
+      else if(cs_config.sysdiv2 > 4) {
+        return 0.032768f*1E6/ cs_config.sysdiv2;
+      }
+      else {
+        return 0.032768f*1E6;
+      }
+    default:
+      return 0;
+  }
+}
+/**
+ * @brief
+ *   Set the clock source to be used as SysClk.
+ * @param cs_config
+ *   @see clocksource_config_t
+ * @param SysClk
+ *   The frequency in Hz that the clock has been set to is stored on return.
+ * @return 0 on success, -1 otherwise. As an added check, you may also verify
+ * that the frequency you expected is the same one returned by this function.
+ */
+int set_clocksource(struct clocksource_config_t cs_config, float *SysClk) {
+/* Zero out the RCC and RCC2 registers. */
+  if(cs_config.sysdiv > 2 && cs_config.sysdiv2 > 4) {
+    /* Clocks can not be set using both sysdiv and sysdiv2 */
+    return -1;
+  }
+  //else if(EEPROM_EEDONE_R & 0x1) {
+    //You can't adjust clocks while an EEPROM operation is in progress.
+    //return -1;
+  //}
+  if(SysClk != NULL) {
+    *SysClk = determine_frequency(cs_config);
+  }
+  //Set the RCC registers back to default values.
+  SYSCTL_RCC_R = (0x78e3ad1);
+  SYSCTL_RCC2_R = (0x7c06810);
+  switch(cs_config.oscsrc) {
+    case 0:
+      SYSCTL_RCC_R &= 0x1; //Enable the main oscillator
+/* Set the clocksource in RCC2 if sysdiv2 is being used, otherwise set it in */
+/* RCC. */
+      cs_config.sysdiv2 < 5 ? SYSCTL_RCC_R &= ~(3 << 4) :
+        (SYSCTL_RCC2_R &= ~(3 << 4));
+      cs_config.use_pll ? SYSCTL_RCC_R &= ~(1 << 11) :
+        (SYSCTL_RCC_R |= (1 << 11));
+      break;
+    case 1:
+      cs_config.sysdiv2 < 5 ? SYSCTL_RCC_R |= (1 << 4) :
+        (SYSCTL_RCC2_R |= (1 << 4));
+      cs_config.use_pll ? SYSCTL_RCC_R &= ~(1 << 11) :
+        (SYSCTL_RCC_R |= (1 << 11));
+      break;
+/* PLL can only be used for PIOSC and MOSC. */
+    case 2:
+      cs_config.sysdiv2 < 5 ? SYSCTL_RCC_R |= (2 << 4) :
+        (SYSCTL_RCC2_R |= (2 << 4));
+      SYSCTL_RCC_R |= (1 << 11); //oscsrc does not pass through PLL
+      break;
+    case 3:
+      cs_config.sysdiv2 < 5 ? SYSCTL_RCC_R |= (3 << 4) :
+        (SYSCTL_RCC2_R |= (3 << 4));
+      SYSCTL_RCC_R |= (1 << 11);
+      break;
+/* This oscsrc is only available on RCC2. */
+    case 4:
+      SYSCTL_RCC2_R |= (7 << 4);
+      SYSCTL_RCC_R |= (1 << 11);
+      break;
+    default: /* Invalid oscillator source */
+            return -1;
+  }
+  if(cs_config.sysdiv >2 && cs_config.sysdiv <=16 && 0 == cs_config.div400) {
+    SYSCTL_RCC2_R &= ~(1 << 31); //Do not use RCC2
+    SYSCTL_RCC_R |= (1 << 22); //Set USESYSDIV
+    SYSCTL_RCC_R |= (cs_config.sysdiv << 23);
+  }
+/* These parameters require the use of RCC2. */
+  else if(cs_config.sysdiv2 > 4 && cs_config.sysdiv2 <= 128) {
+    SYSCTL_RCC2_R |= (1 << 31); //RCC2 overrides RCC
+    SYSCTL_RCC_R |= (1 << 22); //Set USESYSDIV
+    SYSCTL_RCC2_R |= (cs_config.sysdiv2 << 23); //SYSDIV2
+    cs_config.use_pll ? SYSCTL_RCC2_R &= ~(1<<11) : (SYSCTL_RCC2_R |= (1<<11));
+    cs_config.div400 ? SYSCTL_RCC2_R |= (1<<30) : (SYSCTL_RCC2_R &= ~(1<<30));
+  }
+/* The oscsrc is undivided. */
+  else if(cs_config.sysdiv2 < 5 && cs_config.sysdiv < 3) {
+    SYSCTL_RCC_R &= ~(1 << 22);
+    if(cs_config.use_pll) {
+      SYSCTL_RCC_R |= ((SYSCTL_DC1_R & (0xf << 12)) << 23); //Use MINSYSDIV
+    }
+  }
+  else {
+    /* Invalid system clock divider settings */
+    /* Please check sysdiv, sysdiv2, and sysdiv400 */
+    return -1;
+  }
+  return 0;
+}
+
 /*********************************SYSTICK*************************************/
+
 /* PIOSC clock is default. See Pg. 219 and Pg. 256-257. RCC is left at */
 /* default, so what the datasheet refers to as the "System Clock" is the same */
 /* as the OSCSRC since the BYPASS is not enabled, nor is SYSDIV. */
 void systick_init() {
 	/* Make sure systick is disabled for initialization */
 	NVIC_ST_CTRL_R = 0;
-	NVIC_ST_RELOAD_R = (SYS_CLOCK_FREQ >> 2);
+	NVIC_ST_RELOAD_R = (SysClkFrequency / 2);
 	NVIC_ST_CURRENT_R = 0;
 	NVIC_ST_CTRL_R = 0x1;
 	return;
 }
+
 /**
  * Start a system clock tick with interrupts enabled. Interrupts frequencies
  * must be such that the OS has time to complete scheduling and context
@@ -33,6 +222,7 @@ void start_clocktick() {
 	NVIC_ST_CTRL_R = 0x7;
 	return;
 }
+
 /**
  * 1ms delay
  */
@@ -54,7 +244,7 @@ void delay_1ms() {
  * can be used.
  */
 void led_init() {
-	SYSCTL_RCGCGPIO_R |= (1 << 5); //Enable port f
+	SYSCTL_RCGCGPIO_R |= (1 << 5); //Enable port F
 	/* Dummy instruction to let the clock settle */
 	#pragma GCC diagnostic push //Remember the diagnostic state
 	#pragma GCC diagnostic ignored "-Wunused-variable" //choose to ignore
@@ -117,28 +307,28 @@ void led_bloff() {
  * Returns 0 on success, -1 on error.
  */
 int write_flash(void *saddr, void *eaddr, void *faddr) {
-  if((word)faddr <= 0x1000) {
+  if((uint32_t)faddr <= 0x1000) {
     while(1);
   }
-  if((word)eaddr - (word)saddr > 1*KB) {
+  if((uint32_t)eaddr - (uint32_t)saddr > 1*KB) {
     return -1;
   }
 /* Align the flash address to the nearest 1KB boundary */
-	FLASH_FMA_R = ((word)faddr & ~(0x3FF));
+	FLASH_FMA_R = ((uint32_t)faddr & ~(0x3FF));
 /* If the write can't be done with one set of buffer registers, then set the */
 /* cflag to re-fill the buffer regs and continue writing. */
 	int cflag = 0;
 /* current address being written to flash copy */
-	word *curraddr = (word *)saddr;
+	uint32_t *curraddr = (uint32_t *)saddr;
 /* The fpage_os is the offset of FLASH_FMA_R where the flash writes begin at.*/
-/* This address must be word aligned. */
-	word fpage_os = (word)faddr & 0xFC;
+/* This address must be uint32_t aligned. */
+	uint32_t fpage_os = (uint32_t)faddr & 0xFC;
 /* Since 0's can not be programmed back to a 1. We have to copy and erase */
 /* flash before making the write. */
-	word fcopy[256]; /* 1KB of space */
+	uint32_t fcopy[256]; /* 1KB of space */
 	int i, j;
 	for(i = 0; i < 256; i++) {
-		fcopy[i] = *((word *)FLASH_FMA_R + i);
+		fcopy[i] = *((uint32_t *)FLASH_FMA_R + i);
 	}
 /* Write the new data into the copy we've obtained. */
   if(fpage_os != 0) {
@@ -148,7 +338,7 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
     i = 0;
   }
 /* Write in the new values into the copy we've obtained. */
-  while(curraddr < (word *)eaddr) {
+  while(curraddr < (uint32_t *)eaddr) {
     fcopy[i] = *curraddr;
     curraddr += 1;
     i++;
@@ -205,7 +395,7 @@ Write:
 /**
  * Erase the 1KB flash page that contains the address pageaddr.
  */
-void erase_flash(word pageaddr) {
+void erase_flash(uint32_t pageaddr) {
 /* Align the flash address to the nearest 1KB boundary */
 	FLASH_FMA_R = pageaddr & ~0x3FF;
 /* Erase the 1KB block of flash starting at pageaddr. */
@@ -214,31 +404,6 @@ void erase_flash(word pageaddr) {
   return;
 }
 
-/**
- * Permanently protect the flash page given by pageno from being modified by a
- * flash write. Page 0 will protect flash memory from 0x0 to 0x7FF. 1 will
- * protect from 0x800 to 0xFFF, etc.
- * @return 
- *   -1 on failure, 0 on success.
- */
-int protect_flash(int pageno) {
-  if(pageno < 0 || pageno > 128) {
-    return -1;
-  }
-  if(pageno < 32) {
-    FLASH_FMPPE0_R &= (1 << pageno);
-  }
-  else if(pageno <  64) {
-    FLASH_FMPPE0_R &= (1 << (pageno % 32));
-  }
-  else if(pageno < 96) {
-    FLASH_FMPPE0_R &=(1 << (pageno % 32));
-  }
-  else {
-    FLASH_FMPPE0_R &= (1 << (pageno % 32));
-  }
-  return 0;
-}
 /***********************************UART**************************************/
 
 /**
@@ -275,7 +440,10 @@ int uart1_init(unsigned int baud) {
 /* Use the system clock and generate baud rates. 16 is the divisor */
 /* of the system clock for the UART clock obtained from the value of the HSE */
 /* bit in the UART control register. */
-  brd = (float)SYS_CLOCK_FREQ / (16 * baud);
+/*TODO:
+ * Are there any illegal baud rates?
+ */
+  brd = SysClkFrequency / (16 * baud);
   ibrd = brd;
   fbrd = (brd - ibrd) * 64 + 0.5;
   UART1_IBRD_R = ibrd;

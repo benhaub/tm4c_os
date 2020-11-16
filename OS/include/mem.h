@@ -41,7 +41,7 @@ extern const int KRAM_USE;
 /* 1 MB */
 #define MB 1024u*KB
 /* Size of the kernel in flash */
-#define KSIZE (word)((word)smain + (word)&smainsize)
+#define KSIZE (uint32_t)((uint32_t)smain + (uint32_t)&smainsize)
 /* Number of flash pages used by the kernel */
 #define KFLASHPGS ((KSIZE / FLASH_PAGE_SIZE) + 1)
 
