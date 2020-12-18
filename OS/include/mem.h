@@ -23,6 +23,8 @@ extern const int KRAM_USE;
  * value, also change the stack size used in Reset_EXCP.
  */
 #define STACK_SIZE 0x400 /*1KB Stack */
+/* Context switch stack size (in bytes, 4 bytes per uint32_t saved) */
+#define CTXSTACK 32
 #define FLASH_PAGE_SIZE 0x800
 /* Beginning of SRAM */
 #define _SRAM 0x20000000
@@ -40,7 +42,8 @@ extern const int KRAM_USE;
 #define KB 1024u
 /* 1 MB */
 #define MB 1024u*KB
-/* Size of the kernel in flash */
+/* Size of the kernel in flash. This calculation is possible because */
+/* .text.smain is the last of the code place in flash (see link.ld). */
 #define KSIZE (uint32_t)((uint32_t)smain + (uint32_t)&smainsize)
 /* Number of flash pages used by the kernel */
 #define KFLASHPGS ((KSIZE / FLASH_PAGE_SIZE) + 1)

@@ -15,7 +15,7 @@
 /* since it's calculated at startup in RESET_EXCP. The OS will warn you if */
 /* MAX_PROC is defined to be too large by doing a single runtime check in */
 /* user_init. */
-#define MAX_PROC 25
+#define MAX_PROC 24
 /* That maximum number of creatable processes, which accounts for the */
 /* the creation of initshell during OS initialization. */
 #define NPROC MAX_PROC - 1
@@ -24,8 +24,6 @@
 /* Exit codes */
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
-/* Context switch stack size (in bytes, 4 bytes per uint32_t saved) */
-#define CTXSTACK 32
 
 /**
  * KERNEL:
