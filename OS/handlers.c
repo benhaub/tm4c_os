@@ -204,9 +204,10 @@ void psv_handler() {
 void syst_handler(uint32_t sp) {
 /* Reset the systick counter by making a write to CURRENT. */
   NVIC_ST_CURRENT_R = 0;
-/* Don't change the state to RUNNABLE, just go to the scheduler */
 	if(UNUSED == currproc()->state || WAITING == currproc()->state) {
 		kernel_entry(currproc());
+/* Don't change the state to RUNNABLE for unused or waiting, */
+/* just go to the scheduler */
 		scheduler();
 	}
 	else {

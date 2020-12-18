@@ -24,7 +24,7 @@
 static float determine_frequency(struct clocksource_config_t cs_config) {
   switch(cs_config.oscsrc) {
     case 0:
-      if(cs_config.sysdiv > 2) {
+      if(cs_config.sysdiv) {
         if(cs_config.use_pll) {
           return 200.0f*1E6 / cs_config.sysdiv;
         }
@@ -32,10 +32,10 @@ static float determine_frequency(struct clocksource_config_t cs_config) {
           return (float)MAIN_OSC_FREQ / cs_config.sysdiv;
         }
       }
-      else if(cs_config.sysdiv2 > 4) {
+      else if(cs_config.sysdiv2) {
         if(cs_config.use_pll) {
           if(cs_config.div400) {
-            return 400.0f*1E6 / ((cs_config.sysdiv2 << 1) | cs_config.sysdiv2lsb);
+            return 400.0f*1E6 / cs_config.sysdiv2;
           }
           else {
             return 200.0f*1E6 / cs_config.sysdiv2;
@@ -49,7 +49,7 @@ static float determine_frequency(struct clocksource_config_t cs_config) {
         return (float)MAIN_OSC_FREQ;
       }
     case 1:
-      if(cs_config.sysdiv > 2) {
+      if(cs_config.sysdiv) {
         if(cs_config.use_pll) {
           return 200.0f*1E6 / cs_config.sysdiv;
         }
@@ -57,10 +57,10 @@ static float determine_frequency(struct clocksource_config_t cs_config) {
           return 16.0f*1E6 / cs_config.sysdiv;
         }
       }
-      else if(cs_config.sysdiv2 > 4) {
+      else if(cs_config.sysdiv2) {
         if(cs_config.use_pll) {
           if(cs_config.div400) {
-            return 400.0f*1E6 / ((cs_config.sysdiv2 << 1) | cs_config.sysdiv2lsb);
+            return 400.0f*1E6 / cs_config.sysdiv2;
           }
           else {
             return 200.0f*1E6 / cs_config.sysdiv2;
@@ -74,30 +74,30 @@ static float determine_frequency(struct clocksource_config_t cs_config) {
         return 16.0f*1E6;
       }
     case 2:
-      if(cs_config.sysdiv > 2) {
+      if(cs_config.sysdiv) {
         return 16.0f*1E6 / cs_config.sysdiv;
       }
-      else if(cs_config.sysdiv2 > 4) {
+      else if(cs_config.sysdiv2) {
         return 16.0f*1E6 / cs_config.sysdiv2;
       }
       else {
         return 0;
       }
     case 3:
-      if(cs_config.sysdiv > 2) {
+      if(cs_config.sysdiv) {
         return 0.03f*1E6 / cs_config.sysdiv;
       }
-      else if(cs_config.sysdiv2 > 4) {
+      else if(cs_config.sysdiv2) {
         return 0.03f*1E6 / cs_config.sysdiv2;
       }
       else {
         return 0.03f*1E6;
       }
     case 4:
-      if(cs_config.sysdiv > 2) {
+      if(cs_config.sysdiv) {
         return 0.032768f*1E6 / cs_config.sysdiv;
       }
-      else if(cs_config.sysdiv2 > 4) {
+      else if(cs_config.sysdiv2) {
         return 0.032768f*1E6/ cs_config.sysdiv2;
       }
       else {
@@ -116,17 +116,36 @@ static float determine_frequency(struct clocksource_config_t cs_config) {
  *   The frequency in Hz that the clock has been set to is stored on return.
  * @return 0 on success, -1 otherwise. As an added check, you may also verify
  * that the frequency you expected is the same one returned by this function.
+ * @pre
+ *   If the EEPROM is being used, there must not be an EEPROM operation in
+ *   progress.
  */
 int set_clocksource(struct clocksource_config_t cs_config, float *SysClk) {
 /* Zero out the RCC and RCC2 registers. */
-  if(cs_config.sysdiv > 2 && cs_config.sysdiv2 > 4) {
-    /* Clocks can not be set using both sysdiv and sysdiv2 */
+  if(cs_config.sysdiv && cs_config.sysdiv2) {
+/* Clocks can not be set using both sysdiv and sysdiv2 */
     return -1;
   }
-  //else if(EEPROM_EEDONE_R & 0x1) {
+  if(cs_config.use_pll && cs_config.sysdiv2 > 0 && cs_config.sysdiv2 < 2) {
+/* You can't divide by less than MINSYSDIV when using the PLL. */
+    return -1;
+  }
+  if(cs_config.use_pll && cs_config.sysdiv > 0 && cs_config.sysdiv < 2) {
+/* You can't divide by less than MINSYSDIV when using the PLL. */
+    return -1;
+  }
+  if(cs_config.div400 && cs_config.sysdiv2 < 5) {
+/* sysdiv2 must be at least 5 when using div400 */
+    return -1;
+  }
+  if(cs_config.div400 && !cs_config.use_pll) {
+/* div400 is only valid when the pll is being used. */
+    return -1;
+  }
+  else if((SYSCTL_RCGCEEPROM_R & 0x1) && EEPROM_EEDONE_R & 0x1) {
     //You can't adjust clocks while an EEPROM operation is in progress.
-    //return -1;
-  //}
+    return -1;
+  }
   if(SysClk != NULL) {
     *SysClk = determine_frequency(cs_config);
   }
@@ -135,63 +154,116 @@ int set_clocksource(struct clocksource_config_t cs_config, float *SysClk) {
   SYSCTL_RCC2_R = (0x7c06810);
   switch(cs_config.oscsrc) {
     case 0:
-      SYSCTL_RCC_R &= 0x1; //Enable the main oscillator
+      SYSCTL_RCC_R |= 0x1; //Disable the main oscillator
+      SYSCTL_RCC_R &= ~(0x1F << 6); //Clear, then set XTAL
+      SYSCTL_RCC_R |= (0x15 << 6);
 /* Set the clocksource in RCC2 if sysdiv2 is being used, otherwise set it in */
 /* RCC. */
-      cs_config.sysdiv2 < 5 ? SYSCTL_RCC_R &= ~(3 << 4) :
-        (SYSCTL_RCC2_R &= ~(3 << 4));
-      cs_config.use_pll ? SYSCTL_RCC_R &= ~(1 << 11) :
-        (SYSCTL_RCC_R |= (1 << 11));
+      if(cs_config.sysdiv2) {
+        SYSCTL_RCC2_R &= ~(7 << 4);
+      }
+      else {
+        SYSCTL_RCC_R &= ~(7 << 4);
+      }
+      if(cs_config.use_pll) {
+        SYSCTL_RCC_R &= ~(1 << 11);
+        SYSCTL_RCC_R &= ~(1 << 13); //Power up the PLL
+      }
+      else {
+        SYSCTL_RCC_R |= (1 << 11);
+      }
+      SYSCTL_RCC_R &= ~0x1; //Enable the main oscillator
+/* Check if the MOSC has failed */
+      if(SYSCTL_RIS_R & (1 << 3)) {
+        SYSCTL_MISC_R |= (1 << 3);
+        return -1;
+      }
+      while(!(SYSCTL_RIS_R & (1 << 8))); //Wait for the MOSC to lock
+      SYSCTL_MISC_R |= (1 << 8); //Clear the interrupt.
       break;
     case 1:
-      cs_config.sysdiv2 < 5 ? SYSCTL_RCC_R |= (1 << 4) :
-        (SYSCTL_RCC2_R |= (1 << 4));
-      cs_config.use_pll ? SYSCTL_RCC_R &= ~(1 << 11) :
-        (SYSCTL_RCC_R |= (1 << 11));
+      if(cs_config.sysdiv2) {
+        SYSCTL_RCC2_R |= (1 << 4);
+      }
+      else {
+        SYSCTL_RCC_R |= (1 << 4);
+      }
+      if(cs_config.use_pll) {
+        SYSCTL_RCC_R &= ~(1 << 11);
+        SYSCTL_RCC_R &= ~(1 << 13); //Power up the PLL
+      }
+      else {
+        SYSCTL_RCC_R |= (1 << 11);
+        SYSCTL_RCC_R |= (1 << 13); //Power down the PLL
+      }
       break;
 /* PLL can only be used for PIOSC and MOSC. */
     case 2:
-      cs_config.sysdiv2 < 5 ? SYSCTL_RCC_R |= (2 << 4) :
-        (SYSCTL_RCC2_R |= (2 << 4));
+      if(cs_config.sysdiv2) {
+        SYSCTL_RCC2_R |= (2 << 4);
+      }
+      else {
+        SYSCTL_RCC_R |= (2 << 4);
+      }
       SYSCTL_RCC_R |= (1 << 11); //oscsrc does not pass through PLL
       break;
     case 3:
-      cs_config.sysdiv2 < 5 ? SYSCTL_RCC_R |= (3 << 4) :
-        (SYSCTL_RCC2_R |= (3 << 4));
+      if(cs_config.sysdiv2) {
+        SYSCTL_RCC2_R |= (3 << 4);
+      }
+      else {
+        SYSCTL_RCC_R |= (3 << 4);
+      }
       SYSCTL_RCC_R |= (1 << 11);
       break;
 /* This oscsrc is only available on RCC2. */
     case 4:
-      SYSCTL_RCC2_R |= (7 << 4);
       SYSCTL_RCC_R |= (1 << 11);
+      SYSCTL_RCC2_R |= (7 << 4);
       break;
     default: /* Invalid oscillator source */
-            return -1;
+      return -1;
   }
-  if(cs_config.sysdiv >2 && cs_config.sysdiv <=16 && 0 == cs_config.div400) {
-    SYSCTL_RCC2_R &= ~(1 << 31); //Do not use RCC2
+/* These settings use RCC */
+  if(cs_config.sysdiv > 1 && cs_config.sysdiv <= 16) {
     SYSCTL_RCC_R |= (1 << 22); //Set USESYSDIV
-    SYSCTL_RCC_R |= (cs_config.sysdiv << 23);
+    SYSCTL_RCC_R &= ~(0xF << 23); //Clear and set sysdiv.
+    SYSCTL_RCC_R |= ((cs_config.sysdiv - 1) << 23);
+    SYSCTL_RCC2_R &= ~(1 << 31); //Do not use RCC2
   }
 /* These parameters require the use of RCC2. */
-  else if(cs_config.sysdiv2 > 4 && cs_config.sysdiv2 <= 128) {
-    SYSCTL_RCC2_R |= (1 << 31); //RCC2 overrides RCC
+  else if(cs_config.sysdiv2 > 1 && cs_config.sysdiv2 <= 128) {
     SYSCTL_RCC_R |= (1 << 22); //Set USESYSDIV
-    SYSCTL_RCC2_R |= (cs_config.sysdiv2 << 23); //SYSDIV2
-    cs_config.use_pll ? SYSCTL_RCC2_R &= ~(1<<11) : (SYSCTL_RCC2_R |= (1<<11));
-    cs_config.div400 ? SYSCTL_RCC2_R |= (1<<30) : (SYSCTL_RCC2_R &= ~(1<<30));
-  }
-/* The oscsrc is undivided. */
-  else if(cs_config.sysdiv2 < 5 && cs_config.sysdiv < 3) {
-    SYSCTL_RCC_R &= ~(1 << 22);
+    SYSCTL_RCC2_R |= (1 << 31); //RCC2 overrides RCC
+    SYSCTL_RCC2_R &= ~(0x3F << 23); //Clear and set sysdiv.
+    if(cs_config.div400) {
+      SYSCTL_RCC2_R |= (1 << 30);
+      //Bit field encodings are offset by 3 for div400.
+      SYSCTL_RCC2_R |= ((cs_config.sysdiv2 - 3) << 23); //SYSDIV2
+    }
+    else {
+      SYSCTL_RCC2_R &= ~(1 << 30);
+      SYSCTL_RCC2_R |= ((cs_config.sysdiv2 - 1) << 23); //SYSDIV2
+    }
     if(cs_config.use_pll) {
-      SYSCTL_RCC_R |= ((SYSCTL_DC1_R & (0xf << 12)) << 23); //Use MINSYSDIV
+      SYSCTL_RCC2_R &= ~(1 << 11);
+      SYSCTL_RCC2_R &= ~(1 << 13); //Power up the PLL
+    }
+    else {
+      SYSCTL_RCC2_R |= (1 << 11);
+      SYSCTL_RCC2_R |= (1 << 13); //Power down the PLL
     }
   }
+/* Not using sysdiv */
   else {
-    /* Invalid system clock divider settings */
-    /* Please check sysdiv, sysdiv2, and sysdiv400 */
-    return -1;
+    SYSCTL_RCC_R &= ~(1 << 22);
+  }
+
+  /* As a final step, if the PLL was used, allow time for it to lock the */
+  /* frequency in */
+  if(cs_config.use_pll) {
+    while(!(SYSCTL_RIS_R & (1 << 6)));
+    SYSCTL_MISC_R |= (1 << 6); //Clear the interrupt.
   }
   return 0;
 }
@@ -201,12 +273,26 @@ int set_clocksource(struct clocksource_config_t cs_config, float *SysClk) {
 /* PIOSC clock is default. See Pg. 219 and Pg. 256-257. RCC is left at */
 /* default, so what the datasheet refers to as the "System Clock" is the same */
 /* as the OSCSRC since the BYPASS is not enabled, nor is SYSDIV. */
-void systick_init() {
+
+/**
+ * @brief systick_init
+ *   Initialize SysTick with no
+ * @param clksrc
+ *   0x0 - PIOSC/4
+ *   0x1 - SysClk
+ * @param inten
+ *   0x0 - No interrupts when NVIC_ST_CURRENT reaches 0
+ *   0x1 - Interrupt when NVIC_ST_CURRENT reach 0
+ * @param reload
+ *   The value that systick should count to before resetting and counting again.
+ */
+void systick_init(int clksrc, int inten, uint32_t reload) {
 	/* Make sure systick is disabled for initialization */
 	NVIC_ST_CTRL_R = 0;
-	NVIC_ST_RELOAD_R = (SysClkFrequency / 2);
+	NVIC_ST_RELOAD_R = reload;
 	NVIC_ST_CURRENT_R = 0;
-	NVIC_ST_CTRL_R = 0x1;
+  NVIC_ST_CTRL_R |= (((clksrc<<1) | inten) << 1);
+	NVIC_ST_CTRL_R |= 0x1; //Re-enable SysTick
 	return;
 }
 
@@ -214,12 +300,27 @@ void systick_init() {
  * Start a system clock tick with interrupts enabled. Interrupts frequencies
  * must be such that the OS has time to complete scheduling and context
  * switching.
+ * @param clksrc
+ *   0x0 - PIOSC/4
+ *   0x1 - SysClk
+ * @param period
+ *   The number of milliseconds before an interrupt is activated
  */
-void start_clocktick() {
+void start_clocktick(int clksrc, int period) {
 	NVIC_ST_CTRL_R = 0;
-	NVIC_ST_RELOAD_R = CLOCK_TICK*10;
+  if(clksrc) {
+    NVIC_ST_RELOAD_R = (SysClkFrequency / 1000) * period;
+  }
+  else {
+    NVIC_ST_RELOAD_R = (SysClkFrequency / 4000) * period;
+  }
 	NVIC_ST_CURRENT_R = 0;
-	NVIC_ST_CTRL_R = 0x7;
+  if(clksrc) {
+    NVIC_ST_CTRL_R = 0x7;
+  }
+  else {
+    NVIC_ST_CTRL_R  = 0x3;
+  }
 	return;
 }
 
@@ -227,13 +328,13 @@ void start_clocktick() {
  * 1ms delay
  */
 void delay_1ms() {
-	NVIC_ST_RELOAD_R = CLOCK_TICK;
+	NVIC_ST_RELOAD_R = (SysClkFrequency / 1000);
 	NVIC_ST_CURRENT_R = 0;
 	while(!(NVIC_ST_CTRL_R & (1 << 16)));
 	return;
 }
 
-/********************************LEDs*****************************************/
+/************************************LED**************************************/
 
 /* You can find which pins are LEDs by seeing the Tiva C Series LaunchPad */
 /* Evaluation Kit User's Manual, Pg.9. The Initializaton process is found */
@@ -274,6 +375,23 @@ void led_ron() {
 void led_roff() {
 	GPIO_PORTF_DATA_R &= ~(1 << 1);
 	return;
+}
+
+/**
+ * @brief led_rflash
+ *   flash the red led at 1Hz
+ * @return
+ *   1 if the LED has been flash, -1 if systick is not enabled.
+ */
+int led_rflash() {
+  if(NVIC_ST_CTRL_R & 0x1) { //Check if systick is enabled
+    led_ron();
+    for(int i = 0; i < 1000; i++) { delay_1ms(); }
+    led_roff();
+    for(int i = 0; i < 1000; i++) { delay_1ms(); }
+    return 1;
+  }
+  return -1;
 }
 
 void led_gron() {
@@ -437,13 +555,17 @@ int uart1_init(unsigned int baud) {
   UART1_CTL_R &= ~0x1;
 /* Set the End Of Transmission bit */
   UART1_CTL_R |= (1 << 4);
-/* Use the system clock and generate baud rates. 16 is the divisor */
+/* Use the PIOSC as UARTSysClk and generate baud rates. 16 is the divisor */
 /* of the system clock for the UART clock obtained from the value of the HSE */
 /* bit in the UART control register. */
-/*TODO:
- * Are there any illegal baud rates?
- */
-  brd = SysClkFrequency / (16 * baud);
+  UART1_CC_R &= ~0xF;
+  UART1_CC_R |= 0x5;
+  if(UART1_CTL_R & (1 << 5)) {
+    brd = (float)PIOSC_FREQ / (8 * baud);
+  }
+  else {
+    brd = (float)PIOSC_FREQ / (16 * baud);
+  }
   ibrd = brd;
   fbrd = (brd - ibrd) * 64 + 0.5;
   UART1_IBRD_R = ibrd;

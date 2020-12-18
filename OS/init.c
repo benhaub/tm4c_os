@@ -13,35 +13,29 @@
 #include <cstring.h>
 #include <kernel_services.h>
 
-/* From proc.c */
-extern struct pcb ptable[];
-
 int main() {
 /* Enable all the faults and exceptions. Pg.173, datasheet */
 	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 18); /* USAGE Enable */
-  struct clocksource_config_t cs_config = {.oscsrc = 0x1,
-                                           .use_pll = 0,
-                                           .sysdiv = 0,
+  struct clocksource_config_t cs_config = {.oscsrc = 0x0, //Main Osciallator
+                                           .use_pll = 0, //Not using PLL
+                                           .sysdiv = 0, //No divison.
                                            .sysdiv2 = 0,
                                            .div400 = 0,
-                                           .sysdiv2lsb = 0};
-  set_clocksource(cs_config, &SysClkFrequency);
+                                           .sysdiv2lsb = 1};
+	#pragma GCC diagnostic push //Remember the diagnostic state
+	#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers" //choose to ignore
+  if(-1 == set_clocksource(cs_config, &SysClkFrequency)) {
+    return 0;
+  }
+	#pragma GCC diagnostic push //push the state back to before we ingnored
   if(-1 == uart1_init(B115200)) {
-    syswrite("Failed to start UART\n\nr");
+    return 0;
   }
   /* We already in the kernel so we can use the kernel services directly. */
   syswrite("Initialising tm4c_os\n\r");
 	led_init();
-  systick_init();
-  while(1) {
-    led_roff();
-    for(int i = 0; i < 1000; i++) { delay_1ms(); }
-    led_ron();
-    for(int i = 0; i < 1000; i++) { delay_1ms(); }
-  }
-
   if(-1 == ssi0_init_master(0,0x7,2, 0)) {
     syswrite("Failed to start SSI0\n\r");
   }
@@ -51,7 +45,7 @@ int main() {
 	init_ram();
   mpu_tm4cOS_init();
 	init_ptable();
-	start_clocktick();
+	start_clocktick(1, 10);
 /* Set up the first user process (the shell) */
 	user_init();
 	return 0;

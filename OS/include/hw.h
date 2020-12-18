@@ -11,15 +11,15 @@
 
 /* On reset, PIOSC is the system clock */
 const float SysClkFrequency;
+//External 16.0MHz crystal (Y2) Frequency
 #define MAIN_OSC_FREQ 16000000
-/* Systick uses SysClk/4 so the clock tick is based of a 4MHz frequency. */
-/*TODO: Need to run tests on this. I have systick set to run on SysClk. */
-#define CLOCK_TICK SysClkFrequency / 4000 //1ms
+//Precision Internal Oscillator Frequency
+#define PIOSC_FREQ 16000000
 /* Supported baud rates for UART */
 #define B115200 115200u
 
 /* System Control */
-/*
+/**
  * @struct clocksource_config_t
  * @var oscsrc
  *   The oscillator source for the clock.
@@ -37,14 +37,15 @@ const float SysClkFrequency;
  *   SysClk unless div400 is set, in which case the divided value is 400.
  *   The maximum value for sysdiv is 16.
  * @var sysdiv2
- *   If sysdiv2 is greater than 4, then the oscsrc is divided by sysdiv2. If the
+ *   If sysdiv2 is greater than 2, then the oscsrc is divided by sysdiv2. If the
  *   oscsrc is sent through the PLL, then 200MHz is divided by sysdiv2 to
  *   produce SysClk unless div400 is set, in which case the divided value is 400
  *   Both sysdiv and sysdiv2 may not be used at the same time and attempts to do
  *   so will result in clock configuration failure. The maximum value for
  *   sysdiv2 is 128.
  * @var div400
- *   If set, then the PLL output is divided by 400MHz instead of 200.
+ *   If set, then the PLL output is divided by 400MHz instead of 200. When
+ *   div400 is used, sysdiv2 must be greater than 4.
  * @var sysdiv2lsb
  *   When div400 is used, sysdiv2lsb is either 1 or 0 to append an extra least
  *   significant bit to sysdiv2.
@@ -65,13 +66,14 @@ struct clocksource_config_t {
 
 int set_clocksource(struct clocksource_config_t, float *); 
 /* Systick */
-void systick_init(void);
-void start_clocktick(void);
+void systick_init(int, int, uint32_t);
+void start_clocktick(int, int);
 void delay_1ms(void);
 /* LED */
 void led_init(void);
 void led_ron(void);
 void led_roff(void);
+int led_rflash(void);
 void led_gron(void);
 void led_groff(void);
 void led_blon(void);

@@ -67,22 +67,18 @@ struct pcb* reserveproc(char *name) {
 		return NULL;
 	}
 /* Find an UNUSED process from the process table. */
-	while(1) {
-		if(ptable[i].state == UNUSED) {
+	for(i = 0; i < MAX_PROC; i++) {
+		if(UNUSED == ptable[i].state) {
 			if(maxpid < i) {
 				maxpid = i;
 			}
 			break;
 		}
-		else if(i > MAX_PROC) {
-      maxpid = maxpid_bu;
-      printk("No unused proc's in ptable\n\r");
-			return NULL;
-		}
-		else {
-			i++;
-		}
-	}
+  }
+  if(i >= MAX_PROC) {
+    printk("No unused proc's in ptable\n\r");
+    return NULL;
+  }
 /* Top of stack for this process. */
 	if(-1 != (rampg = get_stackpage())) {
 		ptable[i].rampg = rampg;
@@ -95,7 +91,9 @@ struct pcb* reserveproc(char *name) {
 		return NULL;
 	}
 	ptable[i].state = RESERVED;
-	strncpy(ptable[i].name, name, strlen(name));
+  if(NULL != name) {
+    strncpy(ptable[i].name, name, strlen(name));
+  }
 /* The pid is always the index where it was secured from. */
 	ptable[i].pid = i;
 	return (ptable + i);
