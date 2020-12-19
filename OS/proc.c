@@ -159,6 +159,12 @@ struct pcb* pidproc(int pid) {
 
 /**
  * Round Robin scheduler. Triggered by tick interrupt every 1ms
+ * TODO:
+ *   Try to make this more friendly for plug and play schedulers. I'm thinking
+ *   if there could be a function called scheduling_algorithm() that the
+ *   scheduler calls, then all you need to do to change the algorithm is to
+ *   change that function. That way it's not as confusing as to which part of
+ *   the scheduler you should and should not edit.
  */
 void scheduler() {
 /* Current index of the scheduler. */

@@ -33,10 +33,11 @@ void forktest() {
 	led(LED_GREEN, LED_ON);
 	int i;
 	int pids[NPROC];
-	for(i = 0; i < NPROC; i++) {
+	for(i = 0; i < NPROC+10; i++) {
 		pids[i] = fork();
 		if(-1 == pids[i]) {
-			exit(EXIT_FAILURE);
+//TODO: The LED stayed blue, expected it to be purple.
+			//exit(EXIT_FAILURE);
 		}
 		if(NULLPID == pids[i]) {
 			/* Child process */
