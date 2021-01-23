@@ -32,12 +32,11 @@ void count() {
 void forktest() {
 	led(LED_GREEN, LED_ON);
 	int i;
-	int pids[NPROC];
+  pid_t pids[NPROC+10];
 	for(i = 0; i < NPROC+10; i++) {
 		pids[i] = fork();
 		if(-1 == pids[i]) {
-//TODO: The LED stayed blue, expected it to be purple.
-			//exit(EXIT_FAILURE);
+			//Deliberately be bad and do nothing if we can't fork a process.
 		}
 		if(NULLPID == pids[i]) {
 			/* Child process */
@@ -51,8 +50,10 @@ void forktest() {
 			led(LED_BLUE, LED_ON);
 		}
 	}
-	for(i = 0; i < NPROC; i++) {
-		wait(pids[i]);
+	for(i = 0; i < NPROC+10; i++) {
+		if(-1 == wait(pids[i])) {
+      led(LED_BLUE, LED_OFF);
+    }
 	}
 	led(LED_RED, LED_ON);
 }
@@ -93,6 +94,9 @@ int stringtest() {
 /**
  * Test The OSs ability to detect stack overflow. The process should exit
  * before it's able to turn on the green LED.
+ * TODO:
+ * Make a recursive function on linux and see how that OS reacts to a stack
+ * overflow.
  */
 void stack_overflow() {
 /* Allocate an array that is greater than STACK_SIZE */
@@ -106,6 +110,22 @@ void stack_overflow() {
     led(LED_GREEN, LED_ON);
   }
 }
+
+/**
+ * Try to write to memory we don't own.
+ * The LED should be green when this function returns.
+ */
+void seg_fault() {
+  int arr[4];
+/* Fork a process so that initshell doesn't take the hit. */
+  int pid = fork();
+  if(0 != pid) {
+    arr[400] = 1; //Segmentation Fault
+    led(LED_BLUE, LED_ON);
+  }
+    led(LED_GREEN, LED_ON);
+}
+
 /**
  * Shell main. The first user program run by the kernel after reset.
  */
@@ -113,5 +133,6 @@ int smain() {
   stringtest();
   forktest();
   stack_overflow();
+  seg_fault();
 	return 0;
 }

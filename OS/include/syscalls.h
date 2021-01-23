@@ -7,6 +7,8 @@
 #ifndef __SYSCALLS_H__
 #define __SYSCALLS_H__
 
+#include <types.h>
+
 /* Syscall numbers */
 #define FORK 0
 #define WAIT 1
@@ -18,8 +20,16 @@ enum led_colours {LED_RED, LED_GREEN, LED_BLUE};
 enum led_states {LED_OFF, LED_ON};
 
 int fork(void);
-int wait(int);
-int exit(int) __attribute__((noreturn));
+int wait(pid_t);
+/**
+ * exit is word aligned because the memory, usage, and bus fault handlers will
+ * load the PC with this address if the fault can be services appropriately by
+ * the kernel. Loading an unaligned address to the PC has unpredicatable
+ * behaviour.
+ * @see
+ *   Pg. 48 Architecture Reference Manaual
+ */
+int exit(pid_t) __attribute__((noreturn, aligned(4)));
 int write(char *);
 int led(int, int);
 

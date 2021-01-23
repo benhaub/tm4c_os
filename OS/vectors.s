@@ -13,8 +13,10 @@
 
 /* If you change the stack size, make sure to adjust the MAX_PROC define in */
 /* mem.h */
+/*TODO:
+ * Move the stack to the end of flash so that an overflow can not corrupt it.
+ */
 	.section .stack, #progbits
-	.align 2
 STACK_TOP:
 	.skip 0x800, 0x0
 
@@ -61,7 +63,6 @@ Vectors:
 
 	.text
 
-	//.align 2
 	.type Reset_EXCP, %function
 Reset_EXCP: .fnstart
 /* Calculate how much ram the kernel is using so we know where to start */
@@ -89,40 +90,65 @@ Reset_EXCP: .fnstart
 						b main
 						.fnend
 
-	//.align 2
 	.type NMI_EXCP, %function
 NMI_EXCP: .fnstart
 				 b nmi_handler
 				 .fnend
 
-	//.align 2
 	.type HFAULT, %function
 HFAULT: .fnstart
 				b hfault_handler
 				.fnend
 
-	//.align 2
 	.type MM_FAULT, %function
 MM_FAULT: .fnstart
 /* The faulting process will exit() when the bus fault handler is done via the*/
 /* Exception return mechanism. It is not possible for the kernel to cause an */
 /* mm fault because it has access to the entire memory map. */
-          mrs r0, psp
-/* Return the stack to it's pre-exception position, representing it's value */
-/* that it had while the process was still running. */
-          add r0, #108
-          ldr r1,=sysexit
-          str r1, [r0, #24]
-					b mm_handler
+          mrs r1, psp
+          ldr r0,=exit
+/* Replace the exception stack frame PC with exit so we can kill this process */
+          str r0, [r1, #24]
+/* Check the fault stat register for stacking errors. If this happens we need */
+/* to return to privledged mode with msp to recover. */
+          movw r0, #0xED28
+          movt r0, #0xE000
+          ldr r0, [r0]
+          ands r0, r0, #0x10
+          bne MSTKE
+/* Get the Pre-IRQ top of stack for the mm_handler to examine. */
+          add r1, #108
+          mov r0, #0
+          b mm_handler
+MSTKE:
+/*TODO:
+ * Instead of going to exit, we should go to a separate routine and perform
+ * any repairs to the stack that we need to do.
+ */
+          movw r0, #0x0000
+          movt r0, #0x0100
+/* Clear out the stacked PSR (except for the thumb bit) so that we can return */
+/* properly. Consult the integrity checks on EXC_RETURN in the Armv7-m */
+/* technical reference manual if this does not make sense. */
+          str r0, [r1, #28]
+/* Get the Pre-IRQ top of stack for the mm_handler to examine. */
+          add r1, #108
+/* Change thread mode privledge level to privledged and switch stacks. When */
+/* we return from this handler, we are still using psp to pop off the */
+/* exception stack, but at the end of the exception return sequence we will */
+/* be using msp and be privledged. */
+					mrs r3, CONTROL
+					bic r3, r3, #0x3
+					msr CONTROL, r3
+          b mm_handler
 					.fnend
 
-	//.align 2
 	.type BFAULT, %function
 BFAULT: .fnstart
 /* The faulting process will exit() when the bus fault handler is done via the*/
 /* Exception return mechanism. */
         mrs r1, psp
-        ldr r0,=sysexit
+        ldr r0,=exit
         str r0, [r1, #24]
 /* If the bus fault was caused by the kernel, do not exit, just loop in the */
 /* fault handler. The value being compared is EXEC_RETURN on pg.111 in the */
@@ -132,31 +158,31 @@ BFAULT: .fnstart
         mov r0, #1
         b b_handler
 BUser:
-        mov r0, #2
+        mov r0, #0
         b b_handler
 				.fnend
 
-	//.align 2
 	.type UFAULT, %function
 UFAULT:	.fnstart
 /* The faulting process will exit() when the bus fault handler is done via the*/
-/* Exception return mechanism. */
+/* exception return mechanism. */
         mrs r1, psp
-        ldr r0,=sysexit
+        ldr r0,=exit
         str r0, [r1, #24]
         cmp lr, #0xFFFFFFED
         beq UUser
         mov r0, #1
         b u_handler
 UUser:
-        mov r0, #2
+        mov r0, #0
 				b u_handler
 				.fnend
 
-	//.align 2
 	.type SVC_EXCP, %function
 SVC_EXCP: .fnstart
 /* Use the svc immediate value to determine if this is syscall or a syscalln */
+/*TODO: Should I be popping this value instead? This might be eating away at */
+/* my stack. */
          mrs r9, psp
          ldr r9, [r9]
          cmp r9, #0
@@ -173,19 +199,17 @@ Syscall0:
          b svc_handler
 				 .fnend
 
-	//.align 2
 	.type DM_EXCP, %function
 DM_EXCP: .fnstart
 				b dm_handler
 				.fnend
 
-	//.align 2
 	.type PSV_EXCP, %function
 PSV_EXCP: .fnstart
 				 b psv_handler
 				 .fnend
 
-/**
+/*
  * The reason we don't do a direct branch to the handler is to avoid context
  * switching while in handler mode. The processor's exception mechanism makes
  * switching in handler mode very difficult. The exception mechanism exits
@@ -193,8 +217,10 @@ PSV_EXCP: .fnstart
  * purpose of this code here is too save r0, pc and lr because it will be
  * changed when we enter the exeption handler c code. kernel_entry will need
  * these values in order to save the context correclty.
+ *TODO:
+ *  Need to look at these functions again and make sure they make sense. Also
+ * figure out how exactly they interfere with syscall code.
  */
-	//.align 2
 	.type SYST_EXCP, %function
 SYST_EXCP: .fnstart
 /* Get the processes stack pointer and save it */
@@ -227,7 +253,7 @@ Thumb:
 					bx lr
 					.fnend
 
-/**
+/*
  * Entry to the kernel from the systick isr. It is executed from thread
  * mode so that it is possible to save stacks and context switch properly.
  * It makes sure the process stack is returned to it's orginal state, and then
@@ -235,7 +261,6 @@ Thumb:
  * switching stacks from psp to msp. The corresponding pop is made from swtch
  * so make sure that the push here and pop in swtch() are consistent.
  */
-	//.align 2
 	.type kernel_entry, %function
 kernel_entry: .fnstart
 /* Transfer r0 to r9 so that r0 can be returned to it's saved pre-systick */
@@ -257,11 +282,11 @@ kernel_entry: .fnstart
 							bx lr
 							.fnend
 
-/**
- * Change the processor state to either enable or disable interrupts.
- * use 1 as a parameter to enable, 0 to disable.
+/* Change the processor state to either enable or disable interrupts. */
+/* use 1 as a parameter to enable, 0 to disable. */
+/*TODO:
+ * bad name for this function.
  */
-	//.align 2
 	.type processor_state, %function
 processor_state: .fnstart
 								 cmp r0, #0

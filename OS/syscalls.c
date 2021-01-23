@@ -4,7 +4,6 @@
  * Synopsis : System calls for tm4c_os kernel services                        *
  * Date     : July 18th, 2019                                                 *
  *****************************************************************************/
-#include <types.h>
 #include <proc.h> //For pcb struct and proc states
 #include <syscalls.h> //Some functions have attributes
 
@@ -20,7 +19,10 @@ int fork() {
 	return syscall(FORK, currproc());
 }
 
-int wait(int pid) {
+int wait(pid_t pid) {
+  if(pid >= MAX_PROC) {
+    return -1;
+  }
 	int ret;
   struct pcb *waitproc;
 
@@ -40,7 +42,7 @@ int wait(int pid) {
 	return ret;
 }
 
-int exit(int exitcode) {
+int exit(pid_t exitcode) {
 	syscall1(EXIT, currproc(), &exitcode);
 /* Wait to be scheduled. This is done because all syscalls must return from */
 /* the svc handler in order to leave handler mode. */

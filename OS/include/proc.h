@@ -10,22 +10,34 @@
 #include <types.h>
 #include <mem.h>
 
-/* Every process needs a stack, so max processes is how many stacks can fit */
-/* in ram at the same time. The size of the kernel can not be pre-processed */
-/* since it's calculated at startup in RESET_EXCP. The OS will warn you if */
-/* MAX_PROC is defined to be too large by doing a single runtime check in */
-/* user_init. */
-#define MAX_PROC 24
-/* That maximum number of creatable processes, which accounts for the */
-/* the creation of initshell during OS initialization. */
+/**
+ * @def MAX_PROC
+ *   Every process needs a stack, so max processes is how many stacks can fit
+ *   in ram at the same time. The size of the kernel can not be pre-processed
+ *   since it's calculated at startup in RESET_EXCP. The OS will warn you if
+ *   MAX_PROC is defined to be too large by doing a single runtime check in
+ *   user_init.
+ * @warning
+ *   Do no not use MAX_PROC as a limit for process creation.
+ */
+#define MAX_PROC ((uint8_t)24)
+/**
+ * @def NPROC
+ *   The maximum number of creatable processes, which accounts for the
+ *   the creation of initshell during OS initialization.
+ */
 #define NPROC MAX_PROC - 1
-/* A pid that no valid process will ever have. */
+/**
+ * @def NULLPID
+ *   A pid that no valid process will ever have.
+ */
 #define NULLPID MAX_PROC + 1
 /* Exit codes */
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
 /**
+ * @enum procstate
  * KERNEL:
  * 	The space for this process is being used by the kernel and is unavailable
  * 	for use.
@@ -47,10 +59,11 @@
 enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, WAITING};
 
 /**
- * Note that any changes to a processes context do not take affect until
- * The next time a context switch changes to it. The registers here are
- * based off of the ones saved the cortex M4 exception return stack
- * r7 always needs the current stack pointer, and is taken care of in swtch
+ * @struct context
+ *   Note that any changes to a processes context do not take affect until
+ *   The next time a context switch changes to it. The registers here are
+ *   based off of the ones saved the cortex M4 exception return stack
+ *   r7 always needs the current stack pointer, and is taken care of in swtch
  */
 struct context {
 	 uint32_t sp;
@@ -62,18 +75,38 @@ struct context {
 	 uint32_t r12;
 };
 
-/* Process control block. */
-/* *** Don't forget to initialise values in init_ptable if needed *** */
+/**
+ * @struct pcb
+ *   Process control block.
+ * @var context
+ *   @sa context. CPU register context. Do not re-order this member
+ * @var name
+ *   For debugging
+ * @var pid
+ *   Process ID
+ * @var ppid
+ *   Parent process ID.
+ * @var waitpid
+ *   Process is waiting for this pid to change state.
+ * @var initflag
+ *   0 for not initialised yet, 1 for initialised
+ * @var rampg
+ *   Index of this processes allocated ram page.
+ * @var state
+ *   @sa procstate
+ * @warning
+ *   Don't forget to initialise values in init_ptable if needed
+ */
 struct pcb {
-	struct context context; /* CPU register context */
-	char name[16];	/* For debugging */
-	int numchildren; /* Number of child processes. */
-	int pid; /* Process ID */
-	int ppid; /* Parent process ID */
-	int waitpid; /* Process is waiting for this pid to change state.*/
-	int initflag; /* 0 for not initialised yet, 1 for initialised. */
-	int rampg; /* Index of this processes allocated ram page. */
-	enum procstate state; /* Process state */
+	struct context context; 
+	char name[16];
+	int numchildren;
+	pid_t pid;
+	pid_t ppid;
+	pid_t waitpid;
+	uint8_t initflag;
+	uint8_t rampg;
+	enum procstate state;
 };
 
 void user_init(void);

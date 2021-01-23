@@ -78,7 +78,11 @@ int sysexit(int exitcode) {
 	exitproc->context.lr = 0;
 	exitproc->context.r0 = 0;
 	int i;
-	if(maxpid == exitproc->pid) {
+  if(exitproc->pid > MAX_PROC) {
+/* Ignore the exit code given. Exiting an invalid process is always a failure */
+    return EXIT_FAILURE;
+  }
+  else if(maxpid == exitproc->pid) {
 		for(i = maxpid; i >= 0; i--) {
 			if(RUNNABLE == ptable[i].state || RESERVED == ptable[i].state) {
 				maxpid = i;
@@ -104,7 +108,7 @@ int sysexit(int exitcode) {
   }
 /* Return the exit code to the parent */
   if(exitcode != 0) {
-    return 1;
+    return EXIT_FAILURE;
   }
   return exitcode;
 }

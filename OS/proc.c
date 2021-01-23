@@ -149,6 +149,9 @@ inline struct pcb* currproc() {
  */
 struct pcb* pidproc(int pid) {
 	int i;
+  if(pid >= MAX_PROC) {
+    return NULL;
+  }
 	for(i = 0; i < MAX_PROC; i++) {
 		if(pid == ptable[i].pid) {
 			return (ptable + i);

@@ -96,6 +96,9 @@ void mpu_tm4cOS_init() {
  *   The rampg that the process is using.
  */
 void create_user_memory_region(int rampg) {
+  if(0 == (NVIC_MPU_CTRL_R & 0x1)) {
+    return;
+  }
   NVIC_MPU_NUMBER_R &= ~0x7;
   NVIC_MPU_NUMBER_R |= 0x7;
   NVIC_MPU_BASE_R &= ~0xFFFFFFE0;

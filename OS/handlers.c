@@ -4,10 +4,10 @@
  *Synopsis: fault handlers                                                    *
  *Date    : May 18th, 2019                                                    *
  *****************************************************************************/
-#include <proc.h> /* In systick interrupt, For scheduler() */
-#include <types.h>
+#include <proc.h> /* for currproc(), scheduler() */
+#include <types.h> /* for stdint.h */
 #include <tm4c123gh6pm.h> /* Hardware register macros. */
-#include <kernel_services.h> /* for syswrite() */
+#include <kernel_services.h> /* for syswrite(), sysexit() */
 #include <syscalls.h> /* For syscall numbers */
 
 /* From vectors.s */
@@ -41,10 +41,9 @@ void hfault_handler() {
 	faultstat_vect  = (NVIC_HFAULT_STAT_R & 1 << 1);
 	faultstat_forced = (NVIC_HFAULT_STAT_R & 1 << 30);
 	faultstat_dbg = (NVIC_HFAULT_STAT_R & 1 << 31);
-/* Eliminate unsed variable warnings. */
-	faultstat_vect=faultstat_vect;faultstat_forced=faultstat_forced;
-	faultstat_dbg=faultstat_dbg;
-  NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
+/* Clear out HFAULT_STAT */
+  NVIC_HFAULT_STAT_R |= (faultstat_vect | faultstat_forced | faultstat_dbg);
+/* View locals with a debugger. */
 	while(1);
 }
 
@@ -52,14 +51,17 @@ void hfault_handler() {
  * @brief
  *   Memory Management Handler.
  *
- * When a process attempts to access memory that doesn't belong to it, a memory
+ * When a process attempts to write memory that doesn't belong to it, a memory
  * management fault occurs. This is likely to happen because of stack overflow
- * or de-referencing NULL.
+ * or de-referencing and writing to NULL.
  * @param psp
  *   The process stack pointer
+ * @param stack
+ *   The stack that was being used when the fault was triggered. 0 for psp, 1
+ *   for msp
  * @see Pg. 181, datasheet
  */
-void mm_handler(uint32_t psp) {
+void mm_handler(uint8_t stack, uint32_t psp) {
   int mmarv, mlsperr, mstke, mustke, derr, ierr;
   uint32_t fault_addr;
  
@@ -69,6 +71,8 @@ void mm_handler(uint32_t psp) {
   mustke = (NVIC_FAULT_STAT_R & 1 << 3);
   derr = (NVIC_FAULT_STAT_R & 1 << 1);
   ierr = (NVIC_FAULT_STAT_R & 1);
+/* Clear out the FAULT_STAT register */
+  NVIC_FAULT_STAT_R |= (mmarv | mlsperr | mstke | mustke | derr | ierr);
 
   if (mmarv) {
     fault_addr = NVIC_MM_ADDR_R;
@@ -77,17 +81,23 @@ void mm_handler(uint32_t psp) {
     fault_addr = 0;
   }
 
-  if(psp > stacktop(currproc()->rampg) ||
-     psp < stackbottom(currproc()->rampg)) {
+/* We only want user processes to exit. If the kernel faults, it needs to be */
+/* debugged and fixed. */
+  if(stack) {
+    while(1);
+  }
+  if(psp > stacktop(currproc()->rampg) || psp < stackbottom(currproc()->rampg)){
     syswrite("Stack overflow\n\r");
-/* Return and kill the offending process. */
+/* Kill the offending process. */
     return;
   }
   else {
-    while(1);
+    syswrite("Segmentation fault\n\r");
+/* Kill the offending process. */
+    return;
   }
-  mmarv=mmarv;mlsperr=mlsperr;mstke=mstke;mustke=mustke;derr=derr;ierr=ierr;
-  fault_addr=fault_addr;
+/* Get rid of unused variable warnings. */
+  fault_addr = fault_addr;
 }
 
 /** 
@@ -97,10 +107,10 @@ void mm_handler(uint32_t psp) {
  * In the case of a bus fault, the memory address being accessed is one that
  * does not exist on the tm4c memory map.
  * @param stack
- *   The stack that was being used when the fault was triggered. 2 for psp, 1
+ *   The stack that was being used when the fault was triggered. 0 for psp, 1
  *   for msp
  */
-void b_handler(uint32_t stack) {
+void b_handler(uint8_t stack) {
 	uint32_t fault_addr;
 	uint32_t bfarv, blsperr, bstke, bustke, impre, precise, ibus;
 /* Make sure memory contents are valid. */
@@ -119,23 +129,21 @@ void b_handler(uint32_t stack) {
 	impre = (NVIC_FAULT_STAT_R & (1 << 10));
 	precise = (NVIC_FAULT_STAT_R & (1 << 9));
 	ibus = (NVIC_FAULT_STAT_R & (1 << 8));
-/* Eliminate unsed variable warnings. */
-	fault_addr=fault_addr;bfarv=bfarv;blsperr=blsperr;bstke=bstke;bustke=bustke;
-	impre=impre;precise=precise;ibus=ibus;
 /* Clear the contents of the fault register */
-  NVIC_HFAULT_STAT_R |= 0xFFFFFFFF;
-/* View the contents with a debugger. */
+  NVIC_FAULT_STAT_R |= (fault_addr | bfarv | blsperr | bstke | bustke | impre |
+                         precise | ibus);
+/* View locals with a debugger. */
   syswrite("Bus Fault\n\r"); //syswrite is faster than printk
-  if(2 == stack) {
-    return;
+  if(stack) {
+    while(1);
   }
-  while(1);
+  return;
 }
 
 /**
  * Usage Fault Handler.
  * @param stack
- *   The stack that was being used when the fault was triggered. 2 for psp, 1
+ *   The stack that was being used when the fault was triggered. 0 for psp, 1
  *   for msp
  */
 void u_handler(uint32_t stack) {
@@ -154,15 +162,15 @@ void u_handler(uint32_t stack) {
 	invstat = (NVIC_FAULT_STAT_R & (1 << 17));
 /* The processor has attemped to execute an undefined instruction. */
 	undef = (NVIC_FAULT_STAT_R & (1 << 16));
-/* Eliminate unused variable warnings. */
-	unalign=unalign;nocp=nocp;invpc=invpc;invstat=invstat;undef=undef;
+/* Clear out FAULT_STAT. */
+	NVIC_FAULT_STAT_R |= (div0 | unalign | nocp | invpc | invstat | undef);
   if(0 != div0) {
     syswrite("Divide by zero error\n\r");
   }
-  if(2 == stack) {
-    return;
+  if(stack) {
+    while(1);
   }
-  while(1);
+  return;
 }
 
 /**
