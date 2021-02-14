@@ -38,7 +38,8 @@ syscall: .fnstart
 /* original system call is in the stacked link register. The corresponding */
 /* str is done in the svc handler. */
 					  ldr r2, [sp, #4]
-/* The immediate value for svc is not used except for this assembly routine. */
+/* The immediate value for svc is not used except for this assembly routine */
+/* because fork requires the stack to be saved in the pcb context. */
 /* The number used for determining the kernel service is passed through as an */
 /* argument to syscalln() (here that manifests itself as r0). The cortex-m4 */
 /* exception entry and return model take care of context. */

@@ -94,9 +94,6 @@ int stringtest() {
 /**
  * Test The OSs ability to detect stack overflow. The process should exit
  * before it's able to turn on the green LED.
- * TODO:
- * Make a recursive function on linux and see how that OS reacts to a stack
- * overflow.
  */
 void stack_overflow() {
 /* Allocate an array that is greater than STACK_SIZE */

@@ -13,10 +13,7 @@
 
 /* If you change the stack size, make sure to adjust the MAX_PROC define in */
 /* mem.h */
-/*TODO:
- * Move the stack to the end of flash so that an overflow can not corrupt it.
- */
-	.section .stack, #progbits
+	.section .stack
 STACK_TOP:
 	.skip 0x800, 0x0
 
@@ -44,7 +41,7 @@ STACK_TOP:
  * user.
  */
 Vectors:
-	.word STACK_TOP + 0x800 /* Boot loader gets kernel stack pointer from here*/
+	.word STACK_TOP + 0x800 /* Boot loader gets kernel stack pointer from here */
 	.word Reset_EXCP	/* Reset Exception */
 	.word NMI_EXCP		/* Non-maskable interrupt */
 	.word HFAULT			/* Hard Fault */
@@ -181,10 +178,13 @@ UUser:
 	.type SVC_EXCP, %function
 SVC_EXCP: .fnstart
 /* Use the svc immediate value to determine if this is syscall or a syscalln */
-/*TODO: Should I be popping this value instead? This might be eating away at */
-/* my stack. */
          mrs r9, psp
-         ldr r9, [r9]
+/* load the PC from the exception stack */
+         ldr r9, [r9, #24]
+/* The exception stack saves the address of the next instruction, not the */
+/* instruction that caused the exception, so we have to go back to it. */
+         ldr r9, [r9, #-2]
+         and r9, r9, #0xFF
          cmp r9, #0
          beq Syscall0
 				 b svc_handler

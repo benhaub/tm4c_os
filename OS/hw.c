@@ -276,7 +276,7 @@ int set_clocksource(struct clocksource_config_t cs_config, float *SysClk) {
 
 /**
  * @brief systick_init
- *   Initialize SysTick with no
+ *   Initialize the SysTick counter.
  * @param clksrc
  *   0x0 - PIOSC/4
  *   0x1 - SysClk
@@ -285,6 +285,8 @@ int set_clocksource(struct clocksource_config_t cs_config, float *SysClk) {
  *   0x1 - Interrupt when NVIC_ST_CURRENT reach 0
  * @param reload
  *   The value that systick should count to before resetting and counting again.
+ * @post
+ *   The counter will begin counting.
  */
 void systick_init(int clksrc, int inten, uint32_t reload) {
 	/* Make sure systick is disabled for initialization */
