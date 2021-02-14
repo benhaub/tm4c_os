@@ -38,23 +38,23 @@
 
 /**
  * @enum procstate
- * KERNEL:
- * 	The space for this process is being used by the kernel and is unavailable
- * 	for use.
- * UNUSED:
- * 	The process is unused and can be reserved by a new process.
- * RESERVED:
- * 	The process has been reserved for use, but not initialised yet.
- * EMBRYO:
- * 	The process is midway through initialization
- * SLEEPING:
- * 	The process has been put to sleep and will not be run next scheduling cycle
- * RUNNABLE:
- * 	The process is ready to be scheduled
- * RUNNING:
- * 	The process is currently executing code
- * WAITING:
- * 	The processes is waiting for another process to exit
+ * @var KERNEL:
+ *   The space for this process is being used by the kernel and is unavailable
+ * 	 for use.
+ * @var UNUSED:
+ * 	 The process is unused and can be reserved by a new process.
+ * @var RESERVED:
+ * 	 The process has been reserved for use, but not initialised yet.
+ * @var EMBRYO:
+ * 	 The process is midway through initialization
+ * @var SLEEPING:
+ * 	 The process has been put to sleep and will not be run next scheduling cycle
+ * @var RUNNABLE:
+ * 	 The process is ready to be scheduled
+ * @var RUNNING:
+ * 	 The process is currently executing code
+ * @var WAITING:
+ * 	 The processes is waiting for another process to exit
  */
 enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, WAITING};
 

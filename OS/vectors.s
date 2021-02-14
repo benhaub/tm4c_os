@@ -24,8 +24,8 @@ STACK_TOP:
 	.set KRAM_USE, Vectors
 /* Reset_EXCP needs to be global so it can be used as an entry point. */
 	.global Reset_EXCP
-/* processor_state is externed in handlers.c for svc calls. */
-	.global processor_state
+/* interrupt_enable is externed in handlers.c for svc calls. */
+	.global interrupt_enable
 /* A way to dance around and deal with exception mechanisms */
 	.global kernel_entry
 
@@ -284,16 +284,14 @@ kernel_entry: .fnstart
 
 /* Change the processor state to either enable or disable interrupts. */
 /* use 1 as a parameter to enable, 0 to disable. */
-/*TODO:
- * bad name for this function.
- */
-	.type processor_state, %function
-processor_state: .fnstart
-								 cmp r0, #0
-								 beq Disable
-								 cpsie i
-								 b Return
-Disable:				 cpsid i
-Return:					 bx lr
-								 .fnend
+/* interrupt_enable(int enable). */
+	.type interrupt_enable, %function
+interrupt_enable: .fnstart
+								  cmp r0, #0
+								  beq Disable
+								  cpsie i
+								  b Return
+Disable:				  cpsid i
+Return:					  bx lr
+								  .fnend
 	.end

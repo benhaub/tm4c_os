@@ -11,7 +11,7 @@
 #include <syscalls.h> /* For syscall numbers */
 
 /* From vectors.s */
-extern void processor_state(int);
+extern void interrupt_enable(int);
 extern void kernel_entry(struct pcb *);
 /* From context.s */
 extern void swtch(uint32_t sp);

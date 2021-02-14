@@ -14,9 +14,6 @@
 extern void swtch(uint32_t);
 extern void initcode(uint32_t);
 
-/* The largest pid currently RUNNING. Keeping track of this speeds up */
-/* scheduling. */
-int maxpid;
 /* Array of processes for the scheduler. */
 struct pcb ptable[MAX_PROC];
 /* Pid of the current process. */
@@ -42,7 +39,6 @@ void user_init() {
   }
 /* Set all globals. Compiler doesn't seem to want to cooperate with global */
 /* initializations of variables. */
-	maxpid = 0;
 	currpid = 0;
 	struct pcb *initshell = reserveproc("initshell");
 	if(NULL == initshell) {
@@ -59,8 +55,6 @@ void user_init() {
 struct pcb* reserveproc(char *name) {
 	int rampg;
 	int i = 0;
-/* Back up the value of maxpid incase this fails. */
-  int maxpid_bu = maxpid;
 
 	if(NULL != name && strlen(name) > 16) {
     printk("Buffer overrun for process name\n\r");
@@ -69,9 +63,6 @@ struct pcb* reserveproc(char *name) {
 /* Find an UNUSED process from the process table. */
 	for(i = 0; i < MAX_PROC; i++) {
 		if(UNUSED == ptable[i].state) {
-			if(maxpid < i) {
-				maxpid = i;
-			}
 			break;
 		}
   }
@@ -87,7 +78,6 @@ struct pcb* reserveproc(char *name) {
 	else {
     free_stackpage(rampg);
     ptable[i].context.sp = 0;
-    maxpid = maxpid_bu;
 		return NULL;
 	}
 	ptable[i].state = RESERVED;
@@ -177,7 +167,7 @@ void scheduler() {
 	while(1) {
 /* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
 /* processes passed that index. */
-		if(index > maxpid || index > MAX_PROC) {
+		if(index >= MAX_PROC) {
 			index = 0;
 		}
 		schedproc = &ptable[index];

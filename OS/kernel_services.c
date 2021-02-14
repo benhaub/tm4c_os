@@ -82,14 +82,6 @@ int sysexit(int exitcode) {
 /* Ignore the exit code given. Exiting an invalid process is always a failure */
     return EXIT_FAILURE;
   }
-  else if(maxpid == exitproc->pid) {
-		for(i = maxpid; i >= 0; i--) {
-			if(RUNNABLE == ptable[i].state || RESERVED == ptable[i].state) {
-				maxpid = i;
-				break;
-			}
-		}
-	}
 	free_stackpage(exitproc->rampg);
 	exitproc->pid = NULLPID;
 /* If this process was the child of another, subtract it's number of children */
