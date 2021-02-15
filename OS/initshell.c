@@ -34,6 +34,11 @@ void forktest() {
 	int i;
   pid_t pids[NPROC+10];
 	for(i = 0; i < NPROC+10; i++) {
+/*TODO
+ * Need to remove the concept of NULLPID and replace it with 0 as the pid that
+ * no process will ever have. pid_t's are uint8_t's right now so returning -1
+ * causes it to take a value of 255.
+ */
 		pids[i] = fork();
 		if(-1 == pids[i]) {
 			//Deliberately be bad and do nothing if we can't fork a process.
@@ -98,7 +103,7 @@ int stringtest() {
 void stack_overflow() {
 /* Allocate an array that is greater than STACK_SIZE */
   int big_array[384]; //1.5KB
-/*TODO: Not working properly. Ending up with an invstat usage fault. */
+/*TODO: Why do I need to make a function call for this to trigger the mm fault?*/
   wait(NULLPID);
 }
 

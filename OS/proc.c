@@ -151,26 +151,35 @@ struct pcb* pidproc(int pid) {
 }
 
 /**
- * Round Robin scheduler. Triggered by tick interrupt every 1ms
- * TODO:
- *   Try to make this more friendly for plug and play schedulers. I'm thinking
- *   if there could be a function called scheduling_algorithm() that the
- *   scheduler calls, then all you need to do to change the algorithm is to
- *   change that function. That way it's not as confusing as to which part of
- *   the scheduler you should and should not edit.
+ * @brief scheduling_algorithm
+ *   The alogorithm that the scheduler uses to select the next process to run.
+ * Current Algorithm: Round Robin
+ * Current quanta: 1ms
  */
-void scheduler() {
+static struct pcb* scheduling_algorithm() {
 /* Current index of the scheduler. */
 	static unsigned int index = 0;
-  struct pcb *schedproc;
+  if(index >= MAX_PROC) {
+    index = 0;
+  }
+  else {
+    index++;
+  }
+  return &ptable[index];
+}
 
-	while(1) {
+/**
+ * @brief
+ *   Triggered by tick interrupt every everytime the
+ *   the system clock reaches zero.
+ * @see start_clocktick
+ */
+void scheduler() {
+  struct pcb *schedproc;
+  while(1) {
 /* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
 /* processes passed that index. */
-		if(index >= MAX_PROC) {
-			index = 0;
-		}
-		schedproc = &ptable[index];
+    schedproc = scheduling_algorithm();
 /* If the process is waiting for another, check to see if it's exited. */
 		if(schedproc->state == WAITING && \
 			ptable[schedproc->waitpid].state == UNUSED) {
@@ -180,16 +189,12 @@ void scheduler() {
 		if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
 			currpid = schedproc->pid;
 			if(1 == schedproc->initflag) {
-				initproc(ptable + index);
+				initproc(schedproc);
 				schedproc->initflag = 0;
 			}
-			index++;
 			schedproc->state = RUNNING;
       create_user_memory_region(schedproc->rampg);
 			swtch(schedproc->context.sp);
-		}
-		else {
-			index++;
 		}
 	}
 }	

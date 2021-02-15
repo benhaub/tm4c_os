@@ -20,11 +20,15 @@ int fork() {
 }
 
 int wait(pid_t pid) {
+	int ret;
+  struct pcb *waitproc;
+
   if(pid >= MAX_PROC) {
     return -1;
   }
-	int ret;
-  struct pcb *waitproc;
+  else if (pid == currproc()->pid) {
+    return -1;
+  }
 
   waitproc = pidproc(pid);
 /* No need to wait if the process is UNUSED. It may be in this state because */
