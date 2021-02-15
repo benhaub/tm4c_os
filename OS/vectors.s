@@ -27,7 +27,7 @@ STACK_TOP:
 /* interrupt_enable is externed in handlers.c for svc calls. */
 	.global interrupt_enable
 /* A way to dance around and deal with exception mechanisms */
-	.global kernel_entry
+	.global systick_context_save
 
 	.section .intvecs
 
@@ -97,15 +97,12 @@ HFAULT: .fnstart
 				b hfault_handler
 				.fnend
 
-	.type MM_FAULT, %function
-MM_FAULT: .fnstart
 /* The faulting process will exit() when the bus fault handler is done via the*/
 /* Exception return mechanism. It is not possible for the kernel to cause an */
 /* mm fault because it has access to the entire memory map. */
+	.type MM_FAULT, %function
+MM_FAULT: .fnstart
           mrs r1, psp
-          ldr r0,=exit
-/* Replace the exception stack frame PC with exit so we can kill this process */
-          str r0, [r1, #24]
 /* Check the fault stat register for stacking errors. If this happens we need */
 /* to return to privledged mode with msp to recover. */
           movw r0, #0xED28
@@ -113,20 +110,27 @@ MM_FAULT: .fnstart
           ldr r0, [r0]
           ands r0, r0, #0x10
           bne MSTKE
+/* Replace the exception stack frame PC with exit so we can kill this process */
+          ldr r0,=exit
+          str r0, [r1, #24]
 /* Get the Pre-IRQ top of stack for the mm_handler to examine. */
           add r1, #108
           mov r0, #0
           b mm_handler
 MSTKE:
-/*TODO:
- * Instead of going to exit, we should go to a separate routine and perform
- * any repairs to the stack that we need to do.
- */
-          movw r0, #0x0000
-          movt r0, #0x0100
+/* Replace the exception stack frame PC with mstke_reapair so we can repair */
+/* the stack and then kill the process. */
+          ldr r0,=mstke_repair
+/* Save the stack value before modifying it. This stack doesn't belong to us */
+/* so we have to leave it the way we found it. */
+          ldr r4, [r1, #24]
+          str r0, [r1, #24]
 /* Clear out the stacked PSR (except for the thumb bit) so that we can return */
 /* properly. Consult the integrity checks on EXC_RETURN in the Armv7-m */
 /* technical reference manual if this does not make sense. */
+          movw r0, #0x0000
+          movt r0, #0x0100
+          ldr r5, [r1, #28]
           str r0, [r1, #28]
 /* Get the Pre-IRQ top of stack for the mm_handler to examine. */
           add r1, #108
@@ -139,6 +143,18 @@ MSTKE:
 					msr CONTROL, r3
           b mm_handler
 					.fnend
+
+/*
+ * Repairs the stack that we overflowed on by replacing the values of the pc
+ * and IPSR with what they were before. The function then exits the process
+ * that caused the stack overflow.
+ */
+	.type mstke_repair, %function
+mstke_repair: .fnstart
+              str r4, [r1, #24]
+              str r5, [r1, #28]
+              b exit
+				      .fnend
 
 	.type BFAULT, %function
 BFAULT: .fnstart
@@ -210,12 +226,17 @@ PSV_EXCP: .fnstart
 				 .fnend
 
 /*
+ * Saves some of the process context before branching to the systick handler
+ * to execute the desired kernel service. Control is returned in privledged
+ * mode so that the rest of the context can be saved properly using
+ * systick_context_save()
+ *
  * The reason we don't do a direct branch to the handler is to avoid context
  * switching while in handler mode. The processor's exception mechanism makes
  * switching in handler mode very difficult. The exception mechanism exits
- * handler mode on the bx lr, and stack saving happens in kernel_entry. The
+ * handler mode on the bx lr, and stack saving happens in systick_context_save. The
  * purpose of this code here is too save r0, pc and lr because it will be
- * changed when we enter the exeption handler c code. kernel_entry will need
+ * changed when we enter the exeption handler c code. systick_context_save will need
  * these values in order to save the context correclty.
  *TODO:
  *  Need to look at these functions again and make sure they make sense. Also
@@ -238,7 +259,7 @@ SYST_EXCP: .fnstart
 Thumb:
 					ldr r3,=syst_handler
 /* overwrite r0 on the stack for a function call. It will be returned in */
-/* kernel_entry(). */
+/* systick_context_save(). */
 					str r0, [r4]
 /* Place syst_handler on the stacked pc. Exception mechanism retores it to lr*/
 					str r3, [r0, #24]
@@ -246,7 +267,8 @@ Thumb:
 					mov r8, r7
 /* Exception return mechanism will return r0-r3 to pre-exception values. */
 /* r4, r5, and r6 remain unscathed. */
-/* Change thread mode privledge level to privledged. */
+/* Change thread mode privledge level to privledged so that we can switch */
+/* stacks in systick_context_save(). */
 					mrs r3, CONTROL
 					bic r3, r3, #0x1
 					msr CONTROL, r3
@@ -254,33 +276,34 @@ Thumb:
 					.fnend
 
 /*
- * Entry to the kernel from the systick isr. It is executed from thread
- * mode so that it is possible to save stacks and context switch properly.
- * It makes sure the process stack is returned to it's orginal state, and then
- * pushes the context onto the stack and saves the stack pointer (psp) before
- * switching stacks from psp to msp. The corresponding pop is made from swtch
- * so make sure that the push here and pop in swtch() are consistent.
+ * Save the process context after a systick interrupt. It is executed from
+ * thread mode so that it is possible to save stacks and context switch
+ * properly. It makes sure the process stack is returned to it's orginal state,
+ * and then pushes the context onto the stack and saves the stack pointer (psp)
+ * before switching stacks from psp to msp. The corresponding pop is made from
+ * swtch so make sure that the push here and pop in swtch() are consistent.
  */
-	.type kernel_entry, %function
-kernel_entry: .fnstart
+	.type systick_context_save, %function
+systick_context_save: .fnstart
 /* Transfer r0 to r9 so that r0 can be returned to it's saved pre-systick */
 /* interrupt value. */
-							mov r9, r0
+							        mov r9, r0
 /* Return r0 to it's initial value */
-							mov r0, r4
+							        mov r0, r4
 /* Save the lr before moving the saved pc from systick isr into it. */
-							mov r4, r14
-							mov r14, r6
-							push {r0-r3, r5, r7, r12, r14}
+							        mov r4, r14
+							        mov r14, r6
+							        push {r0-r3, r5, r7, r12, r14}
 /* Save the stack pointer to context struct */
-							str sp, [r9] 
-/* Switch stacks to msp and restore lr to it's original value */
-							mov r14, r4
-							mrs r3, CONTROL
-							bic r3, r3, #0x2
-							msr CONTROL, r3
-							bx lr
-							.fnend
+							        str sp, [r9] 
+/* Restore lr to it's original value */
+							        mov r14, r4
+/* Switch stacks to MSP. */
+							        mrs r3, CONTROL
+							        bic r3, r3, #0x2
+							        msr CONTROL, r3
+							        bx lr
+							        .fnend
 
 /* Change the processor state to either enable or disable interrupts. */
 /* use 1 as a parameter to enable, 0 to disable. */

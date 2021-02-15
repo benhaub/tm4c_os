@@ -12,7 +12,7 @@
 
 /* From vectors.s */
 extern void interrupt_enable(int);
-extern void kernel_entry(struct pcb *);
+extern void systick_context_save(struct pcb *);
 /* From context.s */
 extern void swtch(uint32_t sp);
 /* Function prototypes. */
@@ -213,13 +213,13 @@ void syst_handler(uint32_t sp) {
 /* Reset the systick counter by making a write to CURRENT. */
   NVIC_ST_CURRENT_R = 0;
 	if(UNUSED == currproc()->state || WAITING == currproc()->state) {
-		kernel_entry(currproc());
+		systick_context_save(currproc());
 /* Don't change the state to RUNNABLE for unused or waiting, */
 /* just go to the scheduler */
 		scheduler();
 	}
 	else {
-		kernel_entry(currproc());
+		systick_context_save(currproc());
 		currproc()->state = RUNNABLE;
 		scheduler();
 	}

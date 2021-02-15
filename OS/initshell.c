@@ -98,14 +98,8 @@ int stringtest() {
 void stack_overflow() {
 /* Allocate an array that is greater than STACK_SIZE */
   int big_array[384]; //1.5KB
-/* Fork a process so that initshell doesn't take the hit. */
-  int pid = fork();
-  if(0 != pid) {
-    for(int i = 0; i < 40; i++) {
-      big_array[i] = 0;
-    }
-    led(LED_GREEN, LED_ON);
-  }
+/*TODO: Not working properly. Ending up with an invstat usage fault. */
+  wait(NULLPID);
 }
 
 /**
@@ -115,21 +109,31 @@ void stack_overflow() {
 void seg_fault() {
   int arr[4];
 /* Fork a process so that initshell doesn't take the hit. */
-  int pid = fork();
-  if(0 != pid) {
-    arr[400] = 1; //Segmentation Fault
-    led(LED_BLUE, LED_ON);
-  }
-    led(LED_GREEN, LED_ON);
+  arr[400] = 1; //Segmentation Fault
 }
 
 /**
  * Shell main. The first user program run by the kernel after reset.
  */
 int smain() {
+  int pid;
   stringtest();
   forktest();
-  stack_overflow();
-  seg_fault();
+/* Fork a process so that initshell doesn't take the hit. stack_overflow and */
+/* seg_fault will kill the process that executes it. */
+  pid = fork();
+  if(NULLPID == pid) {
+    stack_overflow();
+    led(LED_GREEN, LED_ON);
+    exit(EXIT_SUCCESS);
+  }
+  wait(pid);
+  pid = fork();
+  if(NULLPID == pid) {
+    seg_fault();
+    led(LED_GREEN, LED_ON);
+    exit(EXIT_SUCCESS);
+  }
+  wait(pid);
 	return 0;
 }
