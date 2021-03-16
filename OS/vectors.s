@@ -246,8 +246,6 @@ PSV_EXCP: .fnstart
 SYST_EXCP: .fnstart
 /* Get the processes stack pointer and save it */
 					mrs r0, psp
-/* Save the value of the exception stack r0. */
-					mov r4, r0
 /* Save the value of the exception stack pc. */
 					ldr r5, [r0, #24]
 /* Save the value of the exception stack lr. */
@@ -258,9 +256,6 @@ SYST_EXCP: .fnstart
 					add r5, r5, #0x1
 Thumb:
 					ldr r3,=syst_handler
-/* overwrite r0 on the stack for a function call. It will be returned in */
-/* systick_context_save(). */
-					str r0, [r4]
 /* Place syst_handler on the stacked pc. Exception mechanism retores it to lr*/
 					str r3, [r0, #24]
 /* Save r7 in case syst_handler changes it. */
@@ -275,21 +270,22 @@ Thumb:
 					bx lr
 					.fnend
 
-/*
+/**
  * Save the process context after a systick interrupt. It is executed from
  * thread mode so that it is possible to save stacks and context switch
  * properly. It makes sure the process stack is returned to it's orginal state,
  * and then pushes the context onto the stack and saves the stack pointer (psp)
  * before switching stacks from psp to msp. The corresponding pop is made from
  * swtch so make sure that the push here and pop in swtch() are consistent.
+ * @pre
+ *   You must be in a privledged processor state to execute this function
+ *   otherwise a usage fault will occur.
  */
 	.type systick_context_save, %function
 systick_context_save: .fnstart
 /* Transfer r0 to r9 so that r0 can be returned to it's saved pre-systick */
 /* interrupt value. */
 							        mov r9, r0
-/* Return r0 to it's initial value */
-							        mov r0, r4
 /* Save the lr before moving the saved pc from systick isr into it. */
 							        mov r4, r14
 							        mov r14, r6
@@ -305,9 +301,14 @@ systick_context_save: .fnstart
 							        bx lr
 							        .fnend
 
-/* Change the processor state to either enable or disable interrupts. */
-/* use 1 as a parameter to enable, 0 to disable. */
-/* interrupt_enable(int enable). */
+/**
+ * Change the processor state to either enable or disable interrupts.
+ * use 1 as a parameter to enable, 0 to disable.
+ * interrupt_enable(int enable).
+ * @pre
+ *   You must be in a privledged processor state to execute this function
+ *   otherwise a usage fault will occur.
+ */
 	.type interrupt_enable, %function
 interrupt_enable: .fnstart
 								  cmp r0, #0

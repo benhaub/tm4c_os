@@ -16,7 +16,7 @@ extern void systick_context_save(struct pcb *);
 /* From context.s */
 extern void swtch(uint32_t sp);
 /* Function prototypes. */
-void syst_handler(uint32_t) __attribute__((noreturn, naked));
+void syst_handler() __attribute__((noreturn, naked));
 
 /**
  * Puts the return value from system calls into the processes context.
@@ -209,7 +209,11 @@ void psv_handler() {
 /**
  * Systick handler (clock tick interrupt)
  */
-void syst_handler(uint32_t sp) {
+void syst_handler() {
+/*TODO:
+ * If I'm going to reset the SysTick counter here, I should at least say why.
+ * If I can't think of a good reason, should I be doing it (No)?
+ */
 /* Reset the systick counter by making a write to CURRENT. */
   NVIC_ST_CURRENT_R = 0;
 	if(UNUSED == currproc()->state || WAITING == currproc()->state) {

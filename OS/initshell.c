@@ -34,13 +34,8 @@ void forktest() {
 	int i;
   pid_t pids[NPROC+10];
 	for(i = 0; i < NPROC+10; i++) {
-/*TODO
- * Need to remove the concept of NULLPID and replace it with 0 as the pid that
- * no process will ever have. pid_t's are uint8_t's right now so returning -1
- * causes it to take a value of 255.
- */
 		pids[i] = fork();
-		if(-1 == pids[i]) {
+		if(pids[i] < 0) {
 			//Deliberately be bad and do nothing if we can't fork a process.
 		}
 		if(NULLPID == pids[i]) {

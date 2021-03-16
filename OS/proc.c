@@ -9,6 +9,7 @@
 #include <cstring.h>
 #include <tm4c123gh6pm.h>
 #include <kernel_services.h>
+#include <scheduling_algorithm.h>
 
 /* From context.s */
 extern void swtch(uint32_t);
@@ -151,35 +152,18 @@ struct pcb* pidproc(int pid) {
 }
 
 /**
- * @brief scheduling_algorithm
- *   The alogorithm that the scheduler uses to select the next process to run.
- * Current Algorithm: Round Robin
- * Current quanta: 1ms
- */
-static struct pcb* scheduling_algorithm() {
-/* Current index of the scheduler. */
-	static unsigned int index = 0;
-  if(index >= MAX_PROC) {
-    index = 0;
-  }
-  else {
-    index++;
-  }
-  return &ptable[index];
-}
-
-/**
  * @brief
  *   Triggered by tick interrupt every everytime the
  *   the system clock reaches zero.
  * @see start_clocktick
+ * @see scheduling_alogrithm.c
  */
 void scheduler() {
   struct pcb *schedproc;
   while(1) {
 /* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
 /* processes passed that index. */
-    schedproc = scheduling_algorithm();
+    schedproc = round_robin();
 /* If the process is waiting for another, check to see if it's exited. */
 		if(schedproc->state == WAITING && \
 			ptable[schedproc->waitpid].state == UNUSED) {

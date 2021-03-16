@@ -77,7 +77,6 @@ int sysexit(int exitcode) {
 	exitproc->context.sp = 0;
 	exitproc->context.lr = 0;
 	exitproc->context.r0 = 0;
-	int i;
   if(exitproc->pid > MAX_PROC) {
 /* Ignore the exit code given. Exiting an invalid process is always a failure */
     return EXIT_FAILURE;
