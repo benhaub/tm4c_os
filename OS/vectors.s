@@ -238,9 +238,12 @@ PSV_EXCP: .fnstart
  * purpose of this code here is too save r0, pc and lr because it will be
  * changed when we enter the exeption handler c code. systick_context_save will need
  * these values in order to save the context correclty.
- *TODO:
- *  Need to look at these functions again and make sure they make sense. Also
- * figure out how exactly they interfere with syscall code.
+ *
+ * @note
+ *  Do not use r10 here. If the syscallasm code is interrupted by systick then
+ *  using r10 will overwrite the pcb that is used to get the return value from
+ *  the kernel services.
+ * @sa sysc
  */
 	.type SYST_EXCP, %function
 SYST_EXCP: .fnstart
@@ -289,7 +292,11 @@ systick_context_save: .fnstart
 /* Save the lr before moving the saved pc from systick isr into it. */
 							        mov r4, r14
 							        mov r14, r6
-							        push {r0-r3, r5, r7, r12, r14}
+/* Changing what registers we save on the stack is not as easy as just adding */
+/* them here. The corresponding pop in swtch() must also be changed and the */
+/* size of the stack must be edited by changing the value of CTXSTACK in */
+/* mem.h */
+							        push {r0-r3, r5, r7, r10, r12, r14}
 /* Save the stack pointer to context struct */
 							        str sp, [r9] 
 /* Restore lr to it's original value */

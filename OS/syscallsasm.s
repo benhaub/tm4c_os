@@ -15,10 +15,8 @@
  * automatically by the exception entry and return mechanisms (which are
  * triggered by the svc instruction).
  *
- * This code is interruptable by clock interrupts. The systick isr will change
- * register values of r4, r8 and r9. These registers are modified by the systick
- * exception handler and are not pushed onto the stack so they will be lost when
- * the code returns here.
+ * This code is interruptable by clock interrupts. Any register that is not
+ * pushed onto the stack as part of the context switch will be lost.
  */
 
 /**

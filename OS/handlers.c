@@ -211,10 +211,9 @@ void psv_handler() {
  */
 void syst_handler() {
 /*TODO:
- * If I'm going to reset the SysTick counter here, I should at least say why.
- * If I can't think of a good reason, should I be doing it (No)?
+ * This rescheduling and context switching process should not be interruptable.
  */
-/* Reset the systick counter by making a write to CURRENT. */
+/* Reset the systick counter by making a write to CURRENT. TODO: Why? */
   NVIC_ST_CURRENT_R = 0;
 	if(UNUSED == currproc()->state || WAITING == currproc()->state) {
 		systick_context_save(currproc());
@@ -223,6 +222,10 @@ void syst_handler() {
 		scheduler();
 	}
 	else {
+    /*TODO:
+     * The systick context save is done no matter what, but does this function
+     * change of of the registers?
+     */
 		systick_context_save(currproc());
 		currproc()->state = RUNNABLE;
 		scheduler();

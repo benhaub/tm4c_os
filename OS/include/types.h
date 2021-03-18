@@ -16,6 +16,9 @@
 /**
  * @typedef pid_t
  *   Any valid pid will always be non-negative.
+ *TODO:
+ * I don't like this solution. Would rather have the only invalid pid be zero.
+ * and make pid_t and unsigned 8 bit int.
  */
 typedef int8_t pid_t;
 

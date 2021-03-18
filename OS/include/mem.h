@@ -24,7 +24,7 @@ extern const int KRAM_USE;
  */
 #define STACK_SIZE 0x400 /*1KB Stack */
 /* Context switch stack size (in bytes, 4 bytes per uint32_t saved) */
-#define CTXSTACK 32
+#define CTXSTACK 36
 #define FLASH_PAGE_SIZE 0x800
 /* Beginning of SRAM */
 #define _SRAM 0x20000000
