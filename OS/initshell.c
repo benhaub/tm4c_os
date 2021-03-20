@@ -35,7 +35,7 @@ void forktest() {
   pid_t pids[NPROC+10];
 	for(i = 0; i < NPROC+10; i++) {
 		pids[i] = fork();
-		if(pids[i] < 0) {
+		if(0 == pids[i]) {
 			//Deliberately be bad and do nothing if we can't fork a process.
 		}
 		if(NULLPID == pids[i]) {
@@ -127,12 +127,18 @@ int smain() {
     led(LED_GREEN, LED_ON);
     exit(EXIT_SUCCESS);
   }
+  else if(0 == pid) {
+    while(1);
+  }
   wait(pid);
   pid = fork();
   if(NULLPID == pid) {
     seg_fault();
     led(LED_GREEN, LED_ON);
     exit(EXIT_SUCCESS);
+  }
+  else if(0 == pid) {
+    while(1);
   }
   wait(pid);
 	return 0;

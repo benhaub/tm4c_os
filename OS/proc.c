@@ -86,7 +86,7 @@ struct pcb* reserveproc(char *name) {
     strncpy(ptable[i].name, name, strlen(name));
   }
 /* The pid is always the index where it was secured from. */
-	ptable[i].pid = i;
+	ptable[i].pid = i+1;
 	return (ptable + i);
 }
 
@@ -131,7 +131,7 @@ void init_ptable() {
  *   the process that is currently RUNNING.
  */
 inline struct pcb* currproc() {
-	return (ptable + currpid);
+	return (ptable + ptable_index_from_pid(currpid));
 }
 
 /**
@@ -166,16 +166,16 @@ void scheduler() {
     schedproc = round_robin();
 /* If the process is waiting for another, check to see if it's exited. */
 		if(schedproc->state == WAITING && \
-			ptable[schedproc->waitpid].state == UNUSED) {
+			ptable[ptable_index_from_pid(schedproc->waitpid)].state == UNUSED) {
 			schedproc->state = RUNNABLE;
 			schedproc->waitpid = NULLPID;
 		}
 		if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
-			currpid = schedproc->pid;
 			if(1 == schedproc->initflag) {
 				initproc(schedproc);
 				schedproc->initflag = 0;
 			}
+			currpid = schedproc->pid;
 			schedproc->state = RUNNING;
       create_user_memory_region(schedproc->rampg);
 			swtch(schedproc->context.sp);

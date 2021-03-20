@@ -19,7 +19,7 @@
 enum led_colours {LED_RED, LED_GREEN, LED_BLUE};
 enum led_states {LED_OFF, LED_ON};
 
-int fork(void);
+pid_t fork(void);
 int wait(pid_t);
 /**
  * exit is word aligned because the memory, usage, and bus fault handlers will

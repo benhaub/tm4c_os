@@ -20,7 +20,7 @@
  * @warning
  *   Do no not use MAX_PROC as a limit for process creation.
  */
-#define MAX_PROC ((uint8_t)24)
+#define MAX_PROC 24
 /**
  * @def NPROC
  *   The maximum number of creatable processes, which accounts for the
@@ -35,6 +35,15 @@
 /* Exit codes */
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
+
+/* Macro functions */
+/**
+ * @def ptable_index_from_pid
+ *   Given a pid, return the process index in the the ptable that it identities.
+ *   Therefore, this function should be a conversion from a pid to a ptable
+ *   index for that processes pid.
+ */
+#define ptable_index_from_pid(p) p-1
 
 /**
  * @enum procstate

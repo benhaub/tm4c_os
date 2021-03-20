@@ -24,12 +24,12 @@ extern struct pcb ptable[];
 
 /**
  * Creates a new process. The parent forks the child. parent returns the pid
- * of the new process, child returns NULLPID. Returns -1 on failure.
+ * of the new process, child returns NULLPID. Returns 0 on failure.
  */
-int sysfork() {
+pid_t sysfork() {
 	struct pcb *child = reserveproc(NULL);
 	if(NULL == child) {
-		return -1;
+		return 0;
 	}
 	struct pcb *parent = currproc();
   parent->numchildren++;

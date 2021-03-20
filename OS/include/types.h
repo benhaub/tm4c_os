@@ -15,11 +15,8 @@
 #define NULL (void *)0x0
 /**
  * @typedef pid_t
- *   Any valid pid will always be non-negative.
- *TODO:
- * I don't like this solution. Would rather have the only invalid pid be zero.
- * and make pid_t and unsigned 8 bit int.
+ *   Any valid pid will always be non-zero and less than or equal to MAX_PROC.
  */
-typedef int8_t pid_t;
+typedef uint8_t pid_t;
 
 #endif /*__TYPES_H__*/

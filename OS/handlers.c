@@ -208,25 +208,17 @@ void psv_handler() {
 
 /**
  * Systick handler (clock tick interrupt)
+ * @attention
+ *   Scheduling is interruptable by the clock tick.
  */
 void syst_handler() {
-/*TODO:
- * This rescheduling and context switching process should not be interruptable.
- */
-/* Reset the systick counter by making a write to CURRENT. TODO: Why? */
-  NVIC_ST_CURRENT_R = 0;
+	systick_context_save(currproc());
 	if(UNUSED == currproc()->state || WAITING == currproc()->state) {
-		systick_context_save(currproc());
 /* Don't change the state to RUNNABLE for unused or waiting, */
 /* just go to the scheduler */
 		scheduler();
 	}
 	else {
-    /*TODO:
-     * The systick context save is done no matter what, but does this function
-     * change of of the registers?
-     */
-		systick_context_save(currproc());
 		currproc()->state = RUNNABLE;
 		scheduler();
 	}

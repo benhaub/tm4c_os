@@ -19,8 +19,8 @@ int stacksize_pow2;
  * Each element represents the bottom of the stack that will be used. 0 will
  * use from 0 to STACK_SIZE-4, 1 will use STACK_SIZE to 2*STACK_SIZE-4, etc.
  * @return
- *  Return the index of the ram page that is not being used, or -1 if there
- *  is no page.
+ *   Return the index of the ram page that is not being used, or -1 if there
+ *   is no page.
  */
 int get_stackpage() {
 	int i = 0;

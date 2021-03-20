@@ -8,7 +8,7 @@
 #define __KERNELSERVICES_H__
 
 int sysflash(void *, void *, void *);
-int sysfork(void);
+pid_t sysfork(void);
 int syswait(int);
 int sysexit(int);
 int syswrite(const char *);

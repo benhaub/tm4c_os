@@ -15,7 +15,7 @@ extern int syscall3(int sysnum, struct pcb *, void *arg1, void *arg2, void *arg3
 
 /* See kernel_services.c for the implementation of each syscall. */
 
-int fork() {
+pid_t fork() {
 	return syscall(FORK, currproc());
 }
 
@@ -23,7 +23,7 @@ int wait(pid_t pid) {
 	int ret;
   struct pcb *waitproc;
 
-  if(pid >= MAX_PROC) {
+  if(ptable_index_from_pid(pid) >= MAX_PROC) {
     return -1;
   }
   else if (pid == currproc()->pid) {
