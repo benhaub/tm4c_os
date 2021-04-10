@@ -1,8 +1,8 @@
-/******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	syscalls.h
- * Synopsis	:	System calls for tm4c_os kernel services
- * Date			:	July 18th, 2019
+/**************************************************************************//**
+ * @author	Ben Haubrich
+ * @file		syscalls.h
+ * @date		July 18th, 2019
+ * @details \b Synopsis: \n System calls for tm4c_os kernel services
  *****************************************************************************/
 #ifndef __SYSCALLS_H__
 #define __SYSCALLS_H__
@@ -10,13 +10,41 @@
 #include <types.h>
 
 /* Syscall numbers */
+///@def FORK
+///Syscall number for fork
 #define FORK 0
+///@def WAIT
+///Syscall number for wait
 #define WAIT 1
+///@def EXIT
+///Syscall number for exit
 #define EXIT 2
+///@def WRITE
+///Syscall number for write
 #define WRITE 3
+///@def LED
+///Syscall number for led
 #define LED 4
 
+/**
+ * led colours
+ * @var led_colours::LED_RED
+ *   Set the red colour on the LED
+ * @var led_colours::LED_GREEN
+ *   Set the green colour on the LED
+ * @var led_colours::LED_BLUE
+ *   Set the blue colour on the LED
+ */   
 enum led_colours {LED_RED, LED_GREEN, LED_BLUE};
+
+/**
+ * @var LED_OFF
+ *   Turn on the LED with the given colour
+ * @sa led_colours
+ * @var LED_ON
+ *   Turn on the LED with the given colour
+ * @sa led_colours
+ */
 enum led_states {LED_OFF, LED_ON};
 
 pid_t fork(void);

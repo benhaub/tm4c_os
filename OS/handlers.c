@@ -1,8 +1,8 @@
-/******************************************************************************
- *Authour : Ben Haubrich                                                      *
- *File    : handlers.c                                                        *
- *Synopsis: fault handlers                                                    *
- *Date    : May 18th, 2019                                                    *
+/**************************************************************************//**
+ * @author  Ben Haubrich                                                      
+ * @file    handlers.c                                                        
+ * @date    May 18th, 2019                                                  
+ * @details \b Synopsis: \n fault handlers                                                  
  *****************************************************************************/
 #include <proc.h> /* for currproc(), scheduler() */
 #include <types.h> /* for stdint.h */
@@ -19,7 +19,8 @@ extern void swtch(uint32_t sp);
 void syst_handler() __attribute__((noreturn, naked));
 
 /**
- * Puts the return value from system calls into the processes context.
+ * @brief
+ *   Puts the return value from system calls into the processes context.
  */
 static inline void syscreturn(uint32_t val) {
 	struct pcb *userproc = currproc();
@@ -27,14 +28,16 @@ static inline void syscreturn(uint32_t val) {
 }
 
 /**
- * Non-maskable Interrupt Handler
+ * @brief
+ *   Non-maskable Interrupt Handler
  */
 void nmi_handler() {
 	while(1);
 }
 
 /**
- * Hard Fault Handler
+ * @brief
+ *   Hard Fault Handler
  */
 void hfault_handler() {
 	int faultstat_vect, faultstat_forced, faultstat_dbg;
@@ -54,6 +57,7 @@ void hfault_handler() {
  * When a process attempts to write memory that doesn't belong to it, a memory
  * management fault occurs. This is likely to happen because of stack overflow
  * or de-referencing and writing to NULL.
+ *
  * @param psp
  *   The process stack pointer
  * @param stack
@@ -141,7 +145,8 @@ void b_handler(uint8_t stack) {
 }
 
 /**
- * Usage Fault Handler.
+ * @brief
+ *   Usage Fault Handler.
  * @param stack
  *   The stack that was being used when the fault was triggered. 0 for psp, 1
  *   for msp
@@ -174,6 +179,9 @@ void u_handler(uint32_t stack) {
 }
 
 /**
+ * @brief
+ *   syscall handler
+ *
  * Supervisor Call (syscall) Handler. All SVC end up here, and then it's
  * decided how to handle it based on the sysnum.
  */
@@ -198,10 +206,20 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 	syscreturn(ret);
 }
 
+/**
+ * @brief
+ *   Debug monitor
+ * @note
+ *   disabled
+ */
 void dm_handler() {
 	while(1);
 }
 
+/**
+ * @brief
+ *   PendSV handler
+ */
 void psv_handler() {
 	while(1);
 }

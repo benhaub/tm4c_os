@@ -1,21 +1,33 @@
-/******************************************************************************
- * Authour  : Ben Haubrich                                                    *
- * File     : mem.c                                                           *
- * Synopsis : Memory management                                               *
- * Date     : June 13th, 2019                                                 *
+/**************************************************************************//**
+ * @author  Ben Haubrich                                                    
+ * @file    mem.c                                                           
+ * @date    June 13th, 2019                                                 
+ * @details \b Synopsis: \n  Memory management                                               
  *****************************************************************************/
 #include <mem.h>
 #include <kernel_services.h>
 #include <tm4c123gh6pm.h>
 
-/* Array to determine what space in ram is being used. */
-/* Kernel stack usage is automatically determined at reset and stored on the */
-/* stack and retrieved with KRAM_USE. */
+/**
+ * @var stackusage
+ *   Array to determine what space in ram is being used.
+ *   Kernel stack usage is automatically determined at reset and stored on the
+ *   stack and retrieved with KRAM_USE.
+*/
 int stackusage[SRAM_PAGES];
-/* Used for the MPU. Holds the exponent of the stack size with base 2. */
+
+/**
+ * @var stacksize_pow2
+ *   Used for the MPU. Holds the exponent of the stack size with base 2.
+ *   For example, if the stacksize is 1024, then this will hold 10.
+ * @sa mpu_tm4cOS_init
+ * @sa create_user_memory_region
+ */
 int stacksize_pow2;
 
 /**
+ * @brief
+ *   Find a section of memory for a process to use as its stack.
  * Each element represents the bottom of the stack that will be used. 0 will
  * use from 0 to STACK_SIZE-4, 1 will use STACK_SIZE to 2*STACK_SIZE-4, etc.
  * @return
@@ -35,6 +47,10 @@ int get_stackpage() {
 	return i;
 }
 
+/**
+ * @brief
+ *   Mark the the space for this processes stack as unused.
+ */
 inline void free_stackpage(int i) {
  	stackusage[i] = 0;
 }
@@ -60,6 +76,8 @@ void init_ram() {
 }
 
 /**
+ * @brief
+ *   Initialize the MPU
  * Initialize the MPU specifically for tm4cOS. During OS initialization, any
  * memory access from non-privledged software will cause a memory fault.
  */
@@ -85,6 +103,10 @@ void mpu_tm4cOS_init() {
 }
 
 /**
+ * @brief
+ *   Alter the MPU memory region so that the process with ram page rampg may
+ *   only access its own stack and no other memory.
+ *   
  * Create a region of memory for a user process to operate in. The process may
  * write only to it's stack. Reads are allowed anywhere in flash or RAM except
  * for the memory region of RAM association with the kernel.
@@ -92,8 +114,12 @@ void mpu_tm4cOS_init() {
  * (the kernel) only. The region in number 7 which overlaps the region in
  * number 6 will have all of it's attributes applied to that region since
  * it's number is higher.
+ *
  * @param rampg
  *   The rampg that the process is using.
+ * @pre
+ *   The MPU must be enabled for this function to have any effect.
+ * @sa get_stackspace
  */
 void create_user_memory_region(int rampg) {
   if(0 == (NVIC_MPU_CTRL_R & 0x1)) {

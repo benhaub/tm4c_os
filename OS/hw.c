@@ -1,8 +1,8 @@
-/******************************************************************************
- * Authour  : Ben Haubrich                                                    *
- * File     : hw.c                                                            *
- * Synopsis : Hardware peripheral calls for TM4C123                           *
- * Date     : May 16th, 2019                                                  *
+/**************************************************************************//**
+ * @author  Ben Haubrich                                                    
+ * @file    hw.c                                                            
+ * @date    May 16th, 2019                                                
+ * @details \b Synopsis: \n Hardware peripheral calls for TM4C123                         
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <hw.h>
@@ -12,9 +12,12 @@
 /******************************SYSTEM CONTROL*********************************/
 
 /**
- * @brief determine_frequency
- *   Determines the frequency which will be generated given the following params
- *   Frequency is return in units of Hz.
+ * @brief
+ *   Calculates the clock frequency
+ *
+ * Determines the frequency which will be generated given the following params
+ * Frequency is returned in units of Hz.
+ *
  * @param cs_config
  *   Must be set according to @sa clocksource_config_t
  * @return
@@ -277,12 +280,12 @@ int set_clocksource(struct clocksource_config_t cs_config, float *SysClk) {
 /**
  * @brief systick_init
  *   Initialize the SysTick counter.
- * @param clksrc
- *   0x0 - PIOSC/4
- *   0x1 - SysClk
- * @param inten
- *   0x0 - No interrupts when NVIC_ST_CURRENT reaches 0
- *   0x1 - Interrupt when NVIC_ST_CURRENT reach 0
+ * @param clksrc \n
+ *   \b 0x0 - PIOSC/4 \n
+ *   \b 0x1 - SysClk
+ * @param inten \n
+ *   \b 0x0 - No interrupts when NVIC_ST_CURRENT reaches 0 \n
+ *   \b 0x1 - Interrupt when NVIC_ST_CURRENT reach 0
  * @param reload
  *   The value that systick should count to before resetting and counting again.
  * @post
@@ -302,9 +305,9 @@ void systick_init(int clksrc, int inten, uint32_t reload) {
  * Start a system clock tick with interrupts enabled. Interrupts frequencies
  * must be such that the OS has time to complete scheduling and context
  * switching.
- * @param clksrc
- *   0x0 - PIOSC/4
- *   0x1 - SysClk
+ * @param clksrc \n
+ *   \b 0x0 - PIOSC/4 \n
+ *   \b 0x1 - SysClk
  * @param period
  *   The number of milliseconds before an interrupt is activated
  */
@@ -343,8 +346,9 @@ void delay_1ms() {
 /* in the datasheet on Pg.656. */
 
 /**
- * Initialize PortF for LED operation. This function must be run before the LEDs
- * can be used.
+ * @brief
+ *   Initialize PortF for LED operation. This function must be run before the
+ *   LEDs can be used.
  */
 void led_init() {
 	SYSCTL_RCGCGPIO_R |= (1 << 5); //Enable port F
@@ -364,7 +368,8 @@ void led_init() {
 }
 
 /**
- * Turn the red led on
+ * @brief
+ *   Turn the red led on
  */
 void led_ron() {
 	GPIO_PORTF_DATA_R |= (1 << 1);
@@ -372,7 +377,8 @@ void led_ron() {
 }
 
 /**
- * Turn off red led
+ * @brief
+ *   Turn off red led
  */
 void led_roff() {
 	GPIO_PORTF_DATA_R &= ~(1 << 1);
@@ -396,21 +402,37 @@ int led_rflash() {
   return -1;
 }
 
+/**
+ * @brief
+ *   Turn the green led on
+ */
 void led_gron() {
 	GPIO_PORTF_DATA_R |= (1 << 3);
 	return;
 }
 
+/**
+ * @brief
+ *   Turn off the green led on
+ */
 void led_groff() {
 	GPIO_PORTF_DATA_R &= ~(1 << 3);
 	return;
 }
 
+/**
+ * @brief
+ *   Turn the blue led on
+ */
 void led_blon() {
 	GPIO_PORTF_DATA_R |= (1 << 2);
 	return;
 }
 
+/**
+ * @brief
+ *   Turn the blue led off
+ */
 void led_bloff() {
 	GPIO_PORTF_DATA_R &= ~(1 << 2);
 	return;
@@ -419,12 +441,23 @@ void led_bloff() {
 /******************************Flash Memory***********************************/
 
 /**
+ * @brief
+ *   Write to flash memory
+ *
  * Follows the procedure on Pg. 532, datasheet.
  * Write values in ram from starting from saddr and ending at eaddr into
  * flash memory that starts at faddr. This function allows you to write a
  * maximum of 1KB per call. For successive block writes, make multiple calls.
  * This call requires more than 1KB of stack space.
- * Returns 0 on success, -1 on error.
+ *
+ * @param saddr
+ *   Starting address of the data to be written
+ * @param eaddr
+ *   Ending address of the data to be written
+ * @param faddr
+ *   The flash address where the write should start at
+ * @return
+ *   0 on success, -1 on error.
  */
 int write_flash(void *saddr, void *eaddr, void *faddr) {
   if((uint32_t)faddr <= 0x1000) {
@@ -513,7 +546,8 @@ Write:
 }
 
 /**
- * Erase the 1KB flash page that contains the address pageaddr.
+ * @brief
+ *   Erase the 1KB flash page that contains the address pageaddr.
  */
 void erase_flash(uint32_t pageaddr) {
 /* Align the flash address to the nearest 1KB boundary */
@@ -613,34 +647,39 @@ int uart1_tchar(char data) {
 /*************************************SSI*************************************/
 
 /**
+ * @brief
+ *   Initialize SSI0
+ *
  * Initialise a Synchronous Serial Interface master on GPIO Port A by following
  * the procedure on Pg. 965 of the datasheet. This procedure will not complete
  * and return -1 if port control for PA[5:2] has been changed from the POR
  * default.
+ *
  * @param protocol
- *   0 for Freescale SPI
- *   1 for Texas Instruments SSI
- *   2 for Microwire SSI
+ *   The protocol to use.
+ *   \b 0 for Freescale SPI \n
+ *   \b 1 for Texas Instruments SSI \n
+ *   \b 2 for Microwire SSI \n
  * @param ds
  *   The data size for each frame. Anywhere from 0x3 (4-bit data) to 0xF
  *   (16-bit data) is allowed.
  * @param drxr
- *   The drive strength for the pin.
- *   2 for 2mA
- *   4 for 4mA
- *   8 for 8mA
+ *   The drive strength for the pin. \n
+ *   \b 2 for 2mA \n
+ *   \b 4 for 4mA \n
+ *   \b 8 for 8mA
  * @param ff
- *   Frame format for the SPI lines
- *   0 to hold the clock low during idle.
- *     Data is caputred on the rising edge of the clock
- *   1 same as 0, but data is captured on the falling edge of the clock.
- *   2 to hold the clock high during idle. Data is caputured on the falling
+ *   Frame format for the SPI lines \n
+ *   \b 0 to hold the clock low during idle. \n
+ *     Data is caputred on the rising edge of the clock \n
+ *   \b 1 same as \b 0, but data is captured on the falling edge of the clock. \n
+ *   \b 2 to hold the clock high during idle. Data is caputured on the falling \n
  *     edge of the clock
- *   3 same as 2, but data is captured on the rising edge.
+ *   \b 3 same as \b 2, but data is captured on the rising edge.
  * @note
- *   PA2 - clock
- *   PA3 - frame signal
- *   PA4 - receive (MOSI. Driven by master, received by slave)
+ *   PA2 - clock \n
+ *   PA3 - frame signal \n
+ *   PA4 - recieve (MOSI. Driven by master, received by slave) \n
  *   PA5 - transmit (MISO. Driven by slave, received by master)
  */
 int ssi0_init_master(int protocol, int ds, int drxr, int ff) {
@@ -728,7 +767,10 @@ int ssi0_init_master(int protocol, int ds, int drxr, int ff) {
 }
 
 /**
- * Non-blocking SSI data transmission SSI0.
+ * @brief
+ *   Non-blocking SSI data transmission SSI0.
+ * @param data
+ *   The data to transmit
  */
 void ssi0_transmit(int data) {
 /* Check Raw Interrupt Status to see if the FIFO is empty. */

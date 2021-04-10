@@ -1,9 +1,9 @@
-/******************************************************************************
- * Authour  : Ben Haubrich                                                    *
- * File     : initshell.c                                                     *
- * Synopsis : Implements the shell for tm4c_os. For now, it's being used to   *
- *            write functions to test the operating system.                   *
- * Date     : July 10th, 2019                                                 *
+/**************************************************************************//**
+ * @author  Ben Haubrich                                                    
+ * @file    initshell.c                                                     
+ * @date    July 10th, 2019                                                 
+ * @details \b Synopsis: \n Implements the shell for tm4c_os. For now, it's
+ *         being used to write functions to test the operating system.                   
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <hw.h> /* For led functions */
@@ -98,7 +98,8 @@ int stringtest() {
 void stack_overflow() {
 /* Allocate an array that is greater than STACK_SIZE */
   int big_array[384]; //1.5KB
-/*TODO: Why do I need to make a function call for this to trigger the mm fault?*/
+/* Call wait to force a write to the stack. The array declaration only moves */
+/* the stack pointer. Nothing has been written to cause a memory fault yet. */
   wait(NULLPID);
 }
 

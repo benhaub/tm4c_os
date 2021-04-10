@@ -1,13 +1,12 @@
-/******************************************************************************
- * Authour	:	Ben Haubrich
- * File			:	kernel_services.h
- * Synopsis	:	Supported kernel services for users.
- * Date			:	July 18th, 2019
+/**************************************************************************//**
+ * @author	Ben Haubrich
+ * @file		kernel_services.h
+ * @date		July 18th, 2019
+ * @details \b Synopsis: \n Supported kernel services for users.
  *****************************************************************************/
 #ifndef __KERNELSERVICES_H__
 #define __KERNELSERVICES_H__
 
-int sysflash(void *, void *, void *);
 pid_t sysfork(void);
 int syswait(int);
 int sysexit(int);

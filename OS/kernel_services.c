@@ -1,8 +1,8 @@
-/******************************************************************************
- * Authour  : Ben Haubrich                                                    *
- * File     : kernel_services.c                                               *
- * Synopsis : Supported kernel services for users.                            *
- * Date     : July 18th, 2019                                                 *
+/**************************************************************************//**
+ * @author  Ben Haubrich                                                    
+ * @file    kernel_services.c                                              
+ * @date    July 18th, 2019                                               
+ * @details \b Synopsis: \n Supported kernel services for users.                          
  *****************************************************************************/
 #include <hw.h>
 #include <mem.h> /* in sysexit(), for free_stackpage() */
@@ -23,8 +23,7 @@ extern int maxpid;
 extern struct pcb ptable[];
 
 /**
- * Creates a new process. The parent forks the child. parent returns the pid
- * of the new process, child returns NULLPID. Returns 0 on failure.
+ * @sa fork
  */
 pid_t sysfork() {
 	struct pcb *child = reserveproc(NULL);
@@ -60,6 +59,7 @@ pid_t sysfork() {
  * The calling process waits for the process belonging to pid to exit (become
  * un-used). The scheduler handles the stopping and starting of waiting
  * processes.
+ * @sa wait
  */
 int syswait(int pid) {
 	struct pcb *waiting = currproc();
@@ -70,6 +70,7 @@ int syswait(int pid) {
 
 /**
  * Clears out the pcb of the process and notifies it's parent of the exit.
+ * @sa exit
  */
 int sysexit(int exitcode) {
 	struct pcb *exitproc = currproc();
@@ -105,11 +106,13 @@ int sysexit(int exitcode) {
 }
 
 /**
- * Print some characters using the uart.
+ * @brief
+ *   Print some characters using the uart.
  * @param msg
  *   The characters to print.
  * @return
  *   0 if the full message was printed, -1 if it was not all printed.
+ * @sa write uart1_tchar
  */
 int syswrite(const char *msg) {
   int i = 0;
@@ -125,7 +128,13 @@ int syswrite(const char *msg) {
 }
 
 /**
+ * @brief
+ *   Print a formatted string to the console
+ *
  * Exactly the same as printf except that a call is made directly to syswrite.
+ * @param s
+ *   The string to print
+ * @sa printf write
  */
 void printk(const char *s, ...) {
   uint32_t hex; /* Holds values for hex numbers */
@@ -221,6 +230,7 @@ void printk(const char *s, ...) {
  * @param state
  *   Either on or off
  * @return 0 on success, -1 otherwise.
+ * @sa led
  */
 int sysled(int colour, int state) {
   switch (colour) {

@@ -1,8 +1,8 @@
-/******************************************************************************
- * Authour  : Ben Haubrich                                                    *
- * File     : proc.c                                                          *
- * Synopsis : Process related structs and functions                           *
- * Date     : June 5th, 2019                                                  *
+/**************************************************************************//**
+ * @authour  Ben Haubrich                                                    
+ * @file     proc.c                                                          
+ * @date     June 5th, 2019                                                 
+ * @details \b Synopsis: \n Process related structs and functions                           
  *****************************************************************************/
 #include <mem.h>
 #include <proc.h>
@@ -15,15 +15,14 @@
 extern void swtch(uint32_t);
 extern void initcode(uint32_t);
 
-/* Array of processes for the scheduler. */
+/** Array of processes for the scheduler. */
 struct pcb ptable[MAX_PROC];
-/* Pid of the current process. */
+/** Pid of the current process. */
 static unsigned int currpid;
 
 /**
- * Initializes the first user process and runs it.
- * @param name
- *   The name of the new process
+ * @brief
+ *   Initializes the first user process and runs it.
  * @sa mem.c
  *   for an explantion of calculations made
  */
@@ -52,6 +51,8 @@ void user_init() {
 /**
  * Reserve a process for further initialization and scheduling. Returns the
  * pcb of the reserved process.
+ * @param name
+ *   The name for the process
  */
 struct pcb* reserveproc(char *name) {
 	int rampg;
@@ -110,6 +111,8 @@ static void initproc(struct pcb *reserved) {
 }
 
 /**
+ * @brief
+ *   Initialized the process table
  * @post
  *   Set all unused procs to unused state and initialize pcb members to known
  *   values.
@@ -127,6 +130,8 @@ void init_ptable() {
 }
 
 /**
+ * @brief
+ *   Return the process the is currently running
  * @return
  *   the process that is currently RUNNING.
  */
@@ -135,8 +140,12 @@ inline struct pcb* currproc() {
 }
 
 /**
- * Return the process belonging to pid, or NULL if it couldn't be found. One
- * example of a pid that can't be found is the pid of a process that has exited.
+ * @brief
+ *   Return the process whose pid is pid
+ * @return
+ *   Return the process belonging to pid, or NULL if it couldn't be found. One
+ *   example of a pid that can't be found is the pid of a process that has
+ *   exited.
  */
 struct pcb* pidproc(int pid) {
 	int i;

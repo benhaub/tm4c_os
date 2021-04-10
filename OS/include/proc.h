@@ -1,8 +1,8 @@
-/******************************************************************************
- * Authour  : Ben Haubrich                                                    *
- * File     : proc.h                                                          *
- * Synopsis : Process related structs and functions                           *
- * Date     : June 5th, 2019                                                  *
+/**************************************************************************//**
+ * @author  Ben Haubrich                                                    
+ * @file    proc.h                                                          
+ * @date    June 5th, 2019                                                  
+ * @details \b Synopsis: \n Process related structs and functions                           
  *****************************************************************************/
 #ifndef __PROC_H__
 #define __PROC_H__
@@ -18,7 +18,8 @@
  *   MAX_PROC is defined to be too large by doing a single runtime check in
  *   user_init.
  * @warning
- *   Do no not use MAX_PROC as a limit for process creation.
+ *   Do no not use MAX_PROC as a limit for process creation. Use NPROC instead.
+ * @sa NPROC
  */
 #define MAX_PROC 24
 /**
@@ -33,7 +34,17 @@
  */
 #define NULLPID MAX_PROC + 1
 /* Exit codes */
+/**
+ * @def EXIT_SUCCESS
+ *   Send the exit success code to exit()
+ * @sa sysexit
+ */
 #define EXIT_SUCCESS 0
+/**
+ * @def EXIT_FAILURE
+ *   Send the exit failure code to exit()
+ * @sa sysexit
+ */
 #define EXIT_FAILURE 1
 
 /* Macro functions */
@@ -46,23 +57,20 @@
 #define ptable_index_from_pid(p) p-1
 
 /**
- * @enum procstate
- * @var KERNEL:
- *   The space for this process is being used by the kernel and is unavailable
- * 	 for use.
- * @var UNUSED:
+ * @enum procstate Processor state
+ * @var procstate::UNUSED
  * 	 The process is unused and can be reserved by a new process.
- * @var RESERVED:
+ * @var procstate::RESERVED
  * 	 The process has been reserved for use, but not initialised yet.
- * @var EMBRYO:
+ * @var procstate::EMBRYO
  * 	 The process is midway through initialization
- * @var SLEEPING:
+ * @var procstate::SLEEPING
  * 	 The process has been put to sleep and will not be run next scheduling cycle
- * @var RUNNABLE:
+ * @var procstate::RUNNABLE
  * 	 The process is ready to be scheduled
- * @var RUNNING:
+ * @var procstate::RUNNING
  * 	 The process is currently executing code
- * @var WAITING:
+ * @var procstate::WAITING
  * 	 The processes is waiting for another process to exit
  */
 enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, WAITING};
@@ -73,6 +81,20 @@ enum procstate {UNUSED, RESERVED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, WAITING};
  *   The next time a context switch changes to it. The registers here are
  *   based off of the ones saved the cortex M4 exception return stack
  *   r7 always needs the current stack pointer, and is taken care of in swtch
+ * @var context::sp
+ *   Stack pointer
+ * @var context::pc
+ *   Program counter
+ * @var context::lr
+ *   Link register
+ * @var context::r0
+ *   General purpose register 0
+ * @var context::r3
+ *   General purpose register 3
+ * @var context::r7
+ *   General purpose register 7
+ * @var context::r12
+ *   General purpose register 12
  */
 struct context {
 	 uint32_t sp;
@@ -87,21 +109,23 @@ struct context {
 /**
  * @struct pcb
  *   Process control block.
- * @var context
+ * @var pcb::context
  *   @sa context. CPU register context. Do not re-order this member
- * @var name
+ * @var pcb::name
  *   For debugging
- * @var pid
+ * @var pcb::numchildren
+ *   The number of child processes belonging to this process
+ * @var pcb::pid
  *   Process ID
- * @var ppid
+ * @var pcb::ppid
  *   Parent process ID.
- * @var waitpid
+ * @var pcb::waitpid
  *   Process is waiting for this pid to change state.
- * @var initflag
+ * @var pcb::initflag
  *   0 for not initialised yet, 1 for initialised
- * @var rampg
+ * @var pcb::rampg
  *   Index of this processes allocated ram page.
- * @var state
+ * @var pcb::state
  *   @sa procstate
  * @warning
  *   Don't forget to initialise values in init_ptable if needed

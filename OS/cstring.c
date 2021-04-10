@@ -1,8 +1,8 @@
-/******************************************************************************
- * Authour  : Ben Haubrich                                                    *
- * File     : cstring.h                                                       *
- * Synopsis : String manipulation functions                                   *
- * Date     : June 18th, 2019                                                 *
+/**************************************************************************//**
+ * @author  Ben Haubrich                                                   
+ * @file    cstring.c                                                      
+ * @date    June 18th, 2019                                                 
+ * @details \b Synopsis: \n String manipulation functions                                   
  *****************************************************************************/
 #include <mem.h>
 #include <types.h>
@@ -11,7 +11,8 @@
 #include <syscalls.h>
 
 /**
- * Copy the string from src into dst.
+ * @brief
+ *   Copy the string from src into dst.
  * @param src:
  *   The source string to be copied
  * @param dst:
@@ -32,29 +33,18 @@ int strncpy(char *dst, const char *src, const unsigned int len) {
 }
 
 /**
- * Get the length of string.
- * @param string
- *   The string you want the length of
- * @return
- *   The number of bytes in the string or -1 on failure
- */
-unsigned int strlen(const char *string) {
-	int i = 0;
-	while(0 != *(string + i)) {
-		i++;
-	}
-return i;
-}
-
-/**
- * concatenate dest with with len bytes of str. dest will be null terminated
+ * @brief
+ *   Join two strings together
+ *
+ * Concatenate dest with with len bytes of str. dest will be null terminated
  * when the function returns. dest must be null terminated when the function
  * is called.
+ *
  * @param dest
  *   The destination string
  * @param str
  *   The string to be appended onto dest
- * @param n
+ * @param len
  *   The number of bytes from str to append.
  * @return
  *   A pointer to dest.
@@ -74,14 +64,36 @@ char *strncat(char *dest, const char *str, const unsigned int len) {
 }
 
 /**
- * compares up to len bytes of str1 to str2 by returning the difference of the
+ * @brief
+ *   Get the length of string.
+ * @param string
+ *   The string you want the length of
+ * @return
+ *   The number of bytes in the string or -1 on failure
+ */
+unsigned int strlen(const char *string) {
+	int i = 0;
+	while(0 != *(string + i)) {
+		i++;
+	}
+return i;
+}
+
+/**
+ * @brief
+ *   Compare two strings and return the difference
+ *
+ * Compares up to len bytes of str1 to str2 by returning the difference of the
  * ASCII value of the two strings. A value return that is less than zero or
  * greater than zero means the strings are not equal, a value returned of zero
  * means they are equal.
+ *
  * @param str1
  *   The first string to compare
  * @param str2
  *   The second string to compare
+ * @param len
+ *   Maximum number of bytes to compare
  * @return
  *   less than 0 if str1 is less than str2, 0 if str1 is equal to str2,
  *   greater than 0 if str1
@@ -105,8 +117,16 @@ int strncmp(const char *str1, const char *str2, const unsigned int len) {
 
   return (j - k);
 }
+
 /**
- * Copy n bytes from memory area src to memory area dst.
+ * @brief
+ *   Copy n bytes from memory area src to memory area dst.
+ * @param dest
+ *   The destination memory area to copy to
+ * @param src
+ *   The source of the memory to copy from
+ * @param n
+ *   Number of bytes to copy
  * @return
  *   NULL on failure, pointer to dest on success.
  */
@@ -120,7 +140,16 @@ void *memcpy(void *dest, const void *src, const unsigned int n) {
 }
 
 /**
- * Fills the first n bytes of dest with the constant value of src.
+ * @brief
+ *   Fills the first n bytes of dest with the constant value of src.
+ * @param dest
+ *   The destination memory area to set
+ * @param src
+ *   The source of the memory to that is used to set dest
+ * @param n
+ *   Number of bytes to copy
+ * @return
+ *   The destination pointer is returned
  */
 void *memset(void *dest, const int src, const unsigned int n) {
 	int i = 0;
@@ -132,8 +161,12 @@ void *memset(void *dest, const int src, const unsigned int n) {
 }
 
 /**
+ * @brief
+ *   Reverse a string.
  * Reverse the characters of the string s in place. The behaviour of this
  * function is undefined if the string is not null terminated.
+ * @param s
+ *   The string to reverse
  */
 void reverse(char *s) {
   int i, j, stringlen;
@@ -169,7 +202,12 @@ void reverse(char *s) {
 }
 
 /**
- * convert the integer n into the character string s.
+ * @brief
+ *   convert the integer n into the character string s.
+ * @param n
+ *   The integer to convert to a string
+ * @param s
+ *   The pointer to the string which will hold the value
  */
 void itoa(int n, char *s) {
   int i = 0;
@@ -195,7 +233,12 @@ void itoa(int n, char *s) {
 }
 
 /**
- * Converts the integer h to character string s in hexidecimal format.
+ * @brief
+ *   Converts the integer h to character string s in hexidecimal format.
+ * @param h
+ *   The hexedecimal to convert to a string
+ * @param s
+ *   Pointer to the string that will hold the value
  */
 void htoa(const int h, char *s) {
   int i = 0;
@@ -232,6 +275,10 @@ void htoa(const int h, char *s) {
   reverse(s);
 }
 
+/**
+ * @brief
+ *   print a formatted string
+ */
 void printf(char *s, ...) {
   uint32_t hex; /* Holds values for hex numbers */
   int integer;

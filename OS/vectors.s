@@ -126,8 +126,10 @@ MSTKE:
           ldr r4, [r1, #24]
           str r0, [r1, #24]
 /* Clear out the stacked PSR (except for the thumb bit) so that we can return */
-/* properly. Consult the integrity checks on EXC_RETURN in the Armv7-m */
-/* technical reference manual if this does not make sense. */
+/* properly. Since there was a stacking error, the PSR could not be pushed */
+/* likely contains invalid values. We don't know it's original state so we do */
+/* Consult the integrity checks on EXC_RETURN in the Armv7-m technical */
+/*reference manual if this does not make sense. */
           movw r0, #0x0000
           movt r0, #0x0100
           ldr r5, [r1, #28]
@@ -141,6 +143,10 @@ MSTKE:
 					mrs r3, CONTROL
 					bic r3, r3, #0x3
 					msr CONTROL, r3
+/* ISB flushes the processor pipeline so that all instructions that follow */
+/* are fetched from cache or memory. This ensures that we will start using */
+/* the new stack. */
+          ISB
           b mm_handler
 					.fnend
 
@@ -305,6 +311,7 @@ systick_context_save: .fnstart
 							        mrs r3, CONTROL
 							        bic r3, r3, #0x2
 							        msr CONTROL, r3
+                      ISB
 							        bx lr
 							        .fnend
 
