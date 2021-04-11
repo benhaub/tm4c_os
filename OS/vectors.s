@@ -28,6 +28,8 @@ STACK_TOP:
 	.global interrupt_enable
 /* A way to dance around and deal with exception mechanisms */
 	.global systick_context_save
+/* yeild calls the systick handler to perform scheduling. */
+  .global SYST_EXCP
 
 	.section .intvecs
 

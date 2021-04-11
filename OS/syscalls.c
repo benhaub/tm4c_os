@@ -17,7 +17,7 @@
  *   This parameter should always be set to currproc
  * @sa currproc
  */
-extern int syscall(int sysnum, struct pcb *);
+extern int syscall(int sysnum, struct pcb *pcb);
 /** @sa syscall */
 extern int syscall1(int sysnum, struct pcb *, void *arg1);
 /** @sa syscall */
@@ -72,8 +72,9 @@ int wait(pid_t pid) {
 /* Wait for state to change. This is done here because svc's are higher */
 /* priority than systick exceptions so the tick interrupt gets masked out. */
 /* Interrupts are allowed here. */
-//TODO: Add a yield call so we don't spin and wait.
-	while(WAITING == waitproc->state);
+	while(WAITING == waitproc->state) {
+    yeild();
+  }
 	return ret;
 }
 
@@ -91,9 +92,12 @@ int wait(pid_t pid) {
  */
 int exit(pid_t exitcode) {
 	syscall1(EXIT, currproc(), &exitcode);
-/* Wait to be scheduled. This is done because all syscalls must return from */
+/* Yeild here because all syscalls must return from */
 /* the svc handler in order to leave handler mode. */
-	while(1);
+  yeild();
+/* The loop here is to get rid of compiler warnings, but also serves as catch */
+/* if something goes wrong. We should not return back here from yeild. */
+  while(1);
 }
 
 /**
@@ -124,4 +128,17 @@ int write(char *msg) {
  */
 int led(int colour, int state) {
   return syscall2(LED, currproc(), &colour, &state);
+}
+
+/**
+ * @brief
+ *   The current process stops running and new one in sheduled to run
+ *
+ * Yeild tells the currently RUNNING process to stop running and transition to
+ * the RUNNABLE state before it's allotted quanta has finished. A new process
+ * will be sheduled if there is one in the RUNNABLE state
+ * @sa start_clocktick procstate scheduler
+ */
+void yeild() {
+  syscall(YEILD, currproc());
 }

@@ -25,9 +25,13 @@
 ///@def LED
 ///Syscall number for led
 #define LED 4
+///@def YEILD
+///Syscall number for yeild
+#define YEILD 5
 
 /**
- * led colours
+ * @enum led_colours
+ * @sa led led_states
  * @var led_colours::LED_RED
  *   Set the red colour on the LED
  * @var led_colours::LED_GREEN
@@ -38,12 +42,12 @@
 enum led_colours {LED_RED, LED_GREEN, LED_BLUE};
 
 /**
+ * @enum led_states
+ * @sa led, led_colours
  * @var LED_OFF
  *   Turn on the LED with the given colour
- * @sa led_colours
  * @var LED_ON
  *   Turn on the LED with the given colour
- * @sa led_colours
  */
 enum led_states {LED_OFF, LED_ON};
 
@@ -60,5 +64,6 @@ int wait(pid_t);
 int exit(pid_t) __attribute__((noreturn, aligned(4)));
 int write(char *);
 int led(int, int);
+void yeild();
 
 #endif /*__SYSCALLS_H__*/

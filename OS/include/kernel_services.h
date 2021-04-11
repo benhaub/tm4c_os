@@ -13,5 +13,6 @@ int sysexit(int);
 int syswrite(const char *);
 void printk(const char *, ...);
 int sysled(int, int);
+void sysyeild();
 
 #endif /*__KERNELSERVICES_H__*/

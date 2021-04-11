@@ -200,6 +200,8 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
             break;
     case LED: ret = sysled(*((int *)arg1), *((int *)arg2));
             break;
+    case YEILD: sysyeild();
+            break;
 		default: while(1); 
 	}
 /* Store return values */

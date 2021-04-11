@@ -1,5 +1,5 @@
 /**************************************************************************//**
- * @authour  Ben Haubrich                                                    
+ * @author  Ben Haubrich                                                    
  * @file     proc.c                                                          
  * @date     June 5th, 2019                                                 
  * @details \b Synopsis: \n Process related structs and functions                           
@@ -165,7 +165,7 @@ struct pcb* pidproc(int pid) {
  *   Triggered by tick interrupt every everytime the
  *   the system clock reaches zero.
  * @see start_clocktick
- * @see scheduling_alogrithm.c
+ * @see scheduling_algorithm.c
  */
 void scheduler() {
   struct pcb *schedproc;

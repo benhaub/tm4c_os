@@ -21,6 +21,8 @@
 /* From proc.c */
 extern int maxpid;
 extern struct pcb ptable[];
+/* From vectors.s */
+extern void SYST_EXCP(); //For yeild.
 
 /**
  * @sa fork
@@ -243,4 +245,16 @@ int sysled(int colour, int state) {
     default: return -1;
   }
   return 0;
+}
+
+/**
+ * @sa yeild
+ *
+ * Since yeild is called with syscall, we have an updated pcb with the processes
+ * stack pointer. We can use this stack pointer to edit the pc of the exception
+ * stack so that this process returns to the scheduler instead of the code it
+ * was running.
+ */
+void sysyeild() {
+  SYST_EXCP();
 }

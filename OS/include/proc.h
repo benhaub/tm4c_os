@@ -57,7 +57,7 @@
 #define ptable_index_from_pid(p) p-1
 
 /**
- * @enum procstate Processor state
+ * @enum procstate Process state
  * @var procstate::UNUSED
  * 	 The process is unused and can be reserved by a new process.
  * @var procstate::RESERVED
@@ -109,8 +109,11 @@ struct context {
 /**
  * @struct pcb
  *   Process control block.
+ * @warning
+ *   Don't forget to initialize values in init_ptable if needed
  * @var pcb::context
- *   @sa context. CPU register context. Do not re-order this member
+ *   CPU register context. Do not re-order this member
+ * @sa context
  * @var pcb::name
  *   For debugging
  * @var pcb::numchildren
@@ -123,12 +126,12 @@ struct context {
  *   Process is waiting for this pid to change state.
  * @var pcb::initflag
  *   0 for not initialised yet, 1 for initialised
+ * @sa scheduler
  * @var pcb::rampg
  *   Index of this processes allocated ram page.
+ * @sa get_stackpage
  * @var pcb::state
- *   @sa procstate
- * @warning
- *   Don't forget to initialise values in init_ptable if needed
+ * @sa procstate
  */
 struct pcb {
 	struct context context; 
