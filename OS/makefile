@@ -16,8 +16,8 @@ CPU=-mcpu=cortex-m4 -march=armv7e-m -mtune=cortex-m4
 FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=hard
 #Flags for C compiler.
 CFLAGS=-mthumb \
-        ${CPU} \
-        ${FPU} \
+			 ${CPU} \
+			 ${FPU} \
        -Iinclude \
        -MD \
        -MF ./.deps/$*.d \
@@ -96,4 +96,4 @@ flash:
 	lm4flash -E -s 0E22CCB1 -S 0x00000000 ./.binary/tm4c_os.bin
 
 clean:
-	rm -rf *.o ./.deps tm4c_os.map tm4c_os.elf tm4c_os.bin ./.binary
+	rm -rf *.o ./.deps ./.binary tm4c_os.map tm4c_os.elf tm4c_os.bin ./.binary
