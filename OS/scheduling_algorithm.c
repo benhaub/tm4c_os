@@ -7,8 +7,11 @@
  *****************************************************************************/
 #include <scheduling_algorithm.h>
 
+//! @cond Doxygen_Suppress_Warning
 /* From proc.c */
 extern struct pcb ptable[MAX_PROC];
+//! @endcond
+
 /**
  * Sequentially selects the next process in a fixed order every time the
  * amount of time has passed equal to the quanta. The quanta is typically

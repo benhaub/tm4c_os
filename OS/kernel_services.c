@@ -18,11 +18,13 @@
  *   is triggered here is an escalation to a hard fault.
  */
 
+//! @cond Doxygen_Suppress_Warning
 /* From proc.c */
 extern int maxpid;
 extern struct pcb ptable[];
 /* From vectors.s */
-extern void SYST_EXCP(); //For yeild.
+extern void SYST_EXCP(); //For yield.
+//! @endcond
 
 /**
  * @sa fork
@@ -248,13 +250,13 @@ int sysled(int colour, int state) {
 }
 
 /**
- * @sa yeild
+ * @sa yield
  *
- * Since yeild is called with syscall, we have an updated pcb with the processes
+ * Since yield is called with syscall, we have an updated pcb with the processes
  * stack pointer. We can use this stack pointer to edit the pc of the exception
  * stack so that this process returns to the scheduler instead of the code it
  * was running.
  */
-void sysyeild() {
+void sysyield() {
   SYST_EXCP();
 }

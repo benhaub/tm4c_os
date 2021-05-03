@@ -141,6 +141,13 @@ void *memcpy(void *dest, const void *src, const unsigned int n) {
 
 /**
  * @brief
+ *   Not implemented
+ */
+void *memmove(void *dest, const void *src, const unsigned int n) {
+}
+
+/**
+ * @brief
  *   Fills the first n bytes of dest with the constant value of src.
  * @param dest
  *   The destination memory area to set
@@ -158,6 +165,13 @@ void *memset(void *dest, const int src, const unsigned int n) {
 		i++;
 	}
 	return dest;
+}
+
+/**
+ * @brief
+ *   Not implemented
+ */
+int memcmp(const void *s1, const void *s2, unsigned int n) {
 }
 
 /**

@@ -48,6 +48,11 @@ pid_t fork() {
  *   The pid of the process to wait for
  * @return
  *   -1 on failure, 0 on success.
+ *TODO:
+ * I think that the stack pushes in systick_context_save might be stacking a
+ * few garbage values. The whole process could maybe use some optimization
+ * because the ptable is written into about 5 registers by the time we get
+ * to the scheduler.
  */
 int wait(pid_t pid) {
 	int ret;
@@ -73,7 +78,7 @@ int wait(pid_t pid) {
 /* priority than systick exceptions so the tick interrupt gets masked out. */
 /* Interrupts are allowed here. */
 	while(WAITING == waitproc->state) {
-    yeild();
+    yield();
   }
 	return ret;
 }
@@ -94,9 +99,9 @@ int exit(pid_t exitcode) {
 	syscall1(EXIT, currproc(), &exitcode);
 /* Yeild here because all syscalls must return from */
 /* the svc handler in order to leave handler mode. */
-  yeild();
+  yield();
 /* The loop here is to get rid of compiler warnings, but also serves as catch */
-/* if something goes wrong. We should not return back here from yeild. */
+/* if something goes wrong. We should not return back here from yield. */
   while(1);
 }
 
@@ -139,6 +144,6 @@ int led(int colour, int state) {
  * will be sheduled if there is one in the RUNNABLE state
  * @sa start_clocktick procstate scheduler
  */
-void yeild() {
+void yield() {
   syscall(YEILD, currproc());
 }

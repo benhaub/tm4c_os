@@ -26,7 +26,7 @@
 ///Syscall number for led
 #define LED 4
 ///@def YEILD
-///Syscall number for yeild
+///Syscall number for yield
 #define YEILD 5
 
 /**
@@ -53,6 +53,7 @@ enum led_states {LED_OFF, LED_ON};
 
 pid_t fork(void);
 int wait(pid_t);
+//! @cond Doxygen_Suppress_Warning
 /**
  * exit is word aligned because the memory, usage, and bus fault handlers will
  * load the PC with this address if the fault can be services appropriately by
@@ -62,8 +63,9 @@ int wait(pid_t);
  *   Pg. 48 Architecture Reference Manaual
  */
 int exit(pid_t) __attribute__((noreturn, aligned(4)));
+//! @endcond
 int write(char *);
 int led(int, int);
-void yeild();
+void yield();
 
 #endif /*__SYSCALLS_H__*/

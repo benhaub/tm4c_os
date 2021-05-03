@@ -11,6 +11,7 @@
 #include <kernel_services.h>
 #include <scheduling_algorithm.h>
 
+//! @cond Doxygen_Suppress_Warning
 /* From context.s */
 extern void swtch(uint32_t);
 extern void initcode(uint32_t);
@@ -19,6 +20,7 @@ extern void initcode(uint32_t);
 struct pcb ptable[MAX_PROC];
 /** Pid of the current process. */
 static unsigned int currpid;
+//! @endcond
 
 /**
  * @brief

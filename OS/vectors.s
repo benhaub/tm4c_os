@@ -28,7 +28,7 @@ STACK_TOP:
 	.global interrupt_enable
 /* A way to dance around and deal with exception mechanisms */
 	.global systick_context_save
-/* yeild calls the systick handler to perform scheduling. */
+/* yield calls the systick handler to perform scheduling. */
   .global SYST_EXCP
 
 	.section .intvecs
@@ -213,12 +213,14 @@ SVC_EXCP: .fnstart
          beq Syscall0
 				 b svc_handler
 Syscall0:
+/* Put the link register in the pcb */
          str r2, [r1, #4]
 /* Restore stack pointer to where it was before system call. */
          mrs r9, psp
 /* 108 is the size of the floating point exception frame as well as a stack */
 /* push of 8 bytes from the prologue of the syscalln functions. */
          add r9, #116
+/* Put the stack pointer in the pcb */
          str r9, [r1]
          b svc_handler
 				 .fnend
@@ -251,7 +253,6 @@ PSV_EXCP: .fnstart
  *  Do not use r10 here. If the syscallasm code is interrupted by systick then
  *  using r10 will overwrite the pcb that is used to get the return value from
  *  the kernel services.
- * @sa sysc
  */
 	.type SYST_EXCP, %function
 SYST_EXCP: .fnstart

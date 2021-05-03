@@ -10,6 +10,7 @@
 #include <kernel_services.h> /* for syswrite(), sysexit() */
 #include <syscalls.h> /* For syscall numbers */
 
+//! @cond Doxygen_Suppress_Warning
 /* From vectors.s */
 extern void interrupt_enable(int);
 extern void systick_context_save(struct pcb *);
@@ -17,6 +18,7 @@ extern void systick_context_save(struct pcb *);
 extern void swtch(uint32_t sp);
 /* Function prototypes. */
 void syst_handler() __attribute__((noreturn, naked));
+//! @endcond
 
 /**
  * @brief
@@ -200,7 +202,7 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
             break;
     case LED: ret = sysled(*((int *)arg1), *((int *)arg2));
             break;
-    case YEILD: sysyeild();
+    case YEILD: sysyield();
             break;
 		default: while(1); 
 	}
