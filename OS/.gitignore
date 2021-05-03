@@ -10,3 +10,6 @@ BUGS
 .deps
 .bin
 *.bash
+gdb.cmd
+doxygen/latex
+doxygen/html
