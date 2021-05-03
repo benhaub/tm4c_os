@@ -13,7 +13,7 @@
 //! @cond Doxygen_Suppress_Warning
 /* From link.ld. See linkerscript. */
 extern void *smainsize;
-/* From initshell. Not called. Only used to calculate ksize. */
+/* From userinit. Not called. Only used to calculate ksize. */
 extern int smain(void);
 /* From vectors.s */
 extern const int KRAM_USE;

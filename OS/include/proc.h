@@ -25,7 +25,7 @@
 /**
  * @def NPROC
  *   The maximum number of creatable processes, which accounts for the
- *   the creation of initshell during OS initialization.
+ *   the creation of userinit during OS initialization.
  */
 #define NPROC MAX_PROC - 1
 /**

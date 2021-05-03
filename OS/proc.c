@@ -42,11 +42,11 @@ void user_init() {
 /* Set all globals. Compiler doesn't seem to want to cooperate with global */
 /* initializations of variables. */
 	currpid = 0;
-	struct pcb *initshell = reserveproc("initshell");
-	if(NULL == initshell) {
+	struct pcb *userinit = reserveproc("userinit");
+	if(NULL == userinit) {
 		return;
 	}
-	initshell->context.pc = (uint32_t)smain;
+	userinit->context.pc = (uint32_t)smain;
 	scheduler();
 }
 
