@@ -144,6 +144,7 @@ void *memcpy(void *dest, const void *src, const unsigned int n) {
  *   Not implemented
  */
 void *memmove(void *dest, const void *src, const unsigned int n) {
+  return NULL;
 }
 
 /**
@@ -172,6 +173,7 @@ void *memset(void *dest, const int src, const unsigned int n) {
  *   Not implemented
  */
 int memcmp(const void *s1, const void *s2, unsigned int n) {
+  return -1;
 }
 
 /**
