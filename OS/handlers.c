@@ -14,6 +14,7 @@
 /* From vectors.s */
 extern void interrupt_enable(int);
 extern void systick_context_save(struct pcb *);
+extern void mstke_repair(uint32_t psp);
 /* From context.s */
 extern void swtch(uint32_t sp);
 /* Function prototypes. */
@@ -91,6 +92,9 @@ void mm_handler(uint8_t stack, uint32_t psp) {
 /* debugged and fixed. */
   if(stack) {
     while(1);
+  }
+  if(mstke) {
+    mstke_repair(psp);
   }
   if(psp > stacktop(currproc()->rampg) || psp < stackbottom(currproc()->rampg)){
     syswrite("Stack overflow\n\r");

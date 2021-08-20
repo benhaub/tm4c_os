@@ -97,8 +97,9 @@ int wait(pid_t pid) {
  */
 int exit(pid_t exitcode) {
 	syscall1(EXIT, currproc(), &exitcode);
-/* Yeild here because all syscalls must return from */
-/* the svc handler in order to leave handler mode. */
+/* Yeild here because all syscalls must return from the svc handler in order */
+/* to leave handler mode. This process is now marked as unused in the ptable, */
+/* so we will never execute code after yield is called for this process. */
   yield();
 /* The loop here is to get rid of compiler warnings, but also serves as catch */
 /* if something goes wrong. We should not return back here from yield. */

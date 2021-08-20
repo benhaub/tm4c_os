@@ -30,6 +30,8 @@ STACK_TOP:
 	.global systick_context_save
 /* yield calls the systick handler to perform scheduling. */
   .global SYST_EXCP
+/* Called by mm_handler when a mstke error occurs */
+  .global mstke_repair
 
 	.section .intvecs
 
@@ -105,63 +107,74 @@ HFAULT: .fnstart
 	.type MM_FAULT, %function
 MM_FAULT: .fnstart
           mrs r1, psp
+/* If the bus fault was caused by the kernel, do not exit, just loop in the */
+/* fault handler. The value being compared is EXEC_RETURN on pg.111 in the */
+/* datasheet. */
+          cmp lr, #0xFFFFFFED
+          beq MUser
+          mov r0, #1
+MUser:
+          mov r0, #0
+/* Replace the exception stack frame PC with exit so we can kill this process */
+          ldr r4,=exit
+          str r4, [r1, #24]
 /* Check the fault stat register for stacking errors. If this happens we need */
 /* to return to privledged mode with msp to recover. */
-          movw r0, #0xED28
-          movt r0, #0xE000
-          ldr r0, [r0]
-          ands r0, r0, #0x10
+          movw r4, #0xED28
+          movt r4, #0xE000
+          ldr r4, [r4]
+          ands r4, r4, #0x10
           bne MSTKE
-/* Replace the exception stack frame PC with exit so we can kill this process */
-          ldr r0,=exit
-          str r0, [r1, #24]
 /* Get the Pre-IRQ top of stack for the mm_handler to examine. */
           add r1, #108
-          mov r0, #0
           b mm_handler
 MSTKE:
-/* Replace the exception stack frame PC with mstke_reapair so we can repair */
-/* the stack and then kill the process. */
-          ldr r0,=mstke_repair
-/* Save the stack value before modifying it. This stack doesn't belong to us */
+/* Save the stacked PC before modifying it. This stack doesn't belong to us */
 /* so we have to leave it the way we found it. */
           ldr r4, [r1, #24]
-          str r0, [r1, #24]
+          ldr r3,=exit
+/* Replace the exception stack frame PC with exit so we can kill this process */
+          str r3, [r1, #24]
+/* Change thread mode privledge level to privledged so we can switch stacks
+/* in mstke_repair to msp. When we return from this handler, we are still */
+/* using psp to pop off the exception stack, but at the end of the exception */
+/* return sequence we will be using msp and be privledged. */
+					mrs r3, CONTROL
+					bic r3, r3, #0x1
+					msr CONTROL, r3
 /* Clear out the stacked PSR (except for the thumb bit) so that we can return */
-/* properly. Since there was a stacking error, the PSR could not be pushed */
-/* likely contains invalid values. We don't know it's original state so we do */
-/* Consult the integrity checks on EXC_RETURN in the Armv7-m technical */
-/*reference manual if this does not make sense. */
-          movw r0, #0x0000
-          movt r0, #0x0100
+/* properly. Since there was a stacking error, the PSR could not be pushed and*/
+/* likely contains invalid values. We don't know it's original state. */
+/* See the integrity checks on EXC_RETURN in the Armv7-m technical */
+/* reference manual. */
+          movw r3, #0x0000
+          movt r3, #0x0100
           ldr r5, [r1, #28]
-          str r0, [r1, #28]
+          str r3, [r1, #28]
 /* Get the Pre-IRQ top of stack for the mm_handler to examine. */
           add r1, #108
-/* Change thread mode privledge level to privledged and switch stacks. When */
-/* we return from this handler, we are still using psp to pop off the */
-/* exception stack, but at the end of the exception return sequence we will */
-/* be using msp and be privledged. */
-					mrs r3, CONTROL
-					bic r3, r3, #0x3
-					msr CONTROL, r3
-/* ISB flushes the processor pipeline so that all instructions that follow */
-/* are fetched from cache or memory. This ensures that we will start using */
-/* the new stack. */
-          ISB
           b mm_handler
 					.fnend
 
 /*
  * Repairs the stack that we overflowed on by replacing the values of the pc
- * and IPSR with what they were before. The function then exits the process
+ * and xPSR with what they were before. The function then exits the process
  * that caused the stack overflow.
+ *
+ * Remember that the exception return stack spilled over into another stack, so
+ * we are not restoring actual stacked PC values and PSR values, but rather
+ * random stacked data from another process that happens to be contained in the
+ * spot where the exception return stack normally stores the PC and PSR.
  */
 	.type mstke_repair, %function
 mstke_repair: .fnstart
-              str r4, [r1, #24]
-              str r5, [r1, #28]
-              b exit
+              mrs r3, CONTROL
+              bic r3, r3, #0x2
+              msr CONTROL, r3
+              ISB
+              str r4, [r0, #24] //Restore the PC
+              str r5, [r0, #28] //Restore the PSR
+              bx lr
 				      .fnend
 
 	.type BFAULT, %function
@@ -314,6 +327,9 @@ systick_context_save: .fnstart
 							        mrs r3, CONTROL
 							        bic r3, r3, #0x2
 							        msr CONTROL, r3
+/* ISB flushes the processor pipeline so that all instructions that follow */
+/* are fetched from cache or memory. This ensures that we will start using */
+/* the new stack. */
                       ISB
 							        bx lr
 							        .fnend

@@ -99,8 +99,6 @@ int stringtest() {
  * @brief
  *   Test The OSs ability to detect stack overflow. The process should exit
  *   before it's able to turn on the green LED.
- *TODO:
- * Stack over flow is killing userinit!
  */
 int stack_overflow() {
   int pid = fork();
@@ -147,6 +145,7 @@ int seg_fault() {
  */
 void yield_test() {
   pid_t pids[5];
+
   for(int i = 0; i < 5; i++) {
     if(0 == (pids[i] = fork())) {
         led(LED_BLUE, LED_OFF);
@@ -166,13 +165,56 @@ void yield_test() {
 
 /**
  * @brief
+ *   Test out the stack repairing abilities of the OS.
+ *
+ * This function will create two process, and one process will create an array
+ * of the size of a user stack and then make a system call. The system call will
+ * write to the stack and overflow into the next stack in use the by second
+ * process. This second process will have a few variables and increment them.
+ *
+ * The second process will check after the increment that the value is greater
+ * than the previous value by the amount of the increment. If it's not then the
+ * red LED will turn off.
+ */
+void stack_repair() {
+  int i = 0;
+  int j = 0;
+  int k = 0;
+  pid_t cpid; //Child process pid
+
+  cpid = fork();
+
+  if(-1 == cpid) {
+    led(LED_RED, LED_OFF);
+  }
+  else if(NULLPID != cpid) {
+    //Parent process
+    i += 5; j += 6; k += 7;
+    yield(); //Yield so that the child process runs before we check.
+    if(i != 5 || j != 6 || k != 7) {
+      led(LED_RED, LED_OFF);
+      exit(EXIT_SUCCESS); //Exit and return to the scheduler
+    }
+  }
+  else {
+    //Child process
+    int arr[STACK_SIZE];
+    wait(cpid); //SVC exception return stack will cause a mem fault.
+  }
+  exit(EXIT_SUCCESS);
+}
+
+/**
+ * @brief
  *   Shell main. The first user program run by the kernel after reset.
  */
 int smain() {
-  stringtest();
-  forktest();
-  yield_test();
-  seg_fault();
-  stack_overflow();
+ // stringtest();
+ // forktest();
+ // yield_test();
+ // seg_fault();
+ // stack_overflow();
+ led(LED_RED, LED_ON);
+ stack_repair();
 	return 0;
 }
