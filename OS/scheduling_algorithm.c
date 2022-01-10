@@ -21,7 +21,7 @@ extern struct pcb ptable[MAX_PROC];
 struct pcb* round_robin() {
 /* Current index of the scheduler. */
 	static unsigned int index = 0;
-  if(index >= MAX_PROC) {
+  if(index > MAX_PROC) {
     index = 0;
   }
   else {

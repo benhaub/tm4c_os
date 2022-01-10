@@ -14,7 +14,8 @@
 /* From vectors.s */
 extern void interrupt_enable(int);
 extern void systick_context_save(struct pcb *);
-extern void mstke_repair(uint32_t psp);
+extern void mstke_repair();
+extern void switch_to_msp();
 /* From context.s */
 extern void swtch(uint32_t sp);
 /* Function prototypes. */
@@ -88,14 +89,17 @@ void mm_handler(uint8_t stack, uint32_t psp) {
     fault_addr = 0;
   }
 
+  /* Repair the stack so we can return properly. */
+  if(mstke) {
+    mstke_repair(psp);
+  }
+
 /* We only want user processes to exit. If the kernel faults, it needs to be */
 /* debugged and fixed. */
   if(stack) {
     while(1);
   }
-  if(mstke) {
-    mstke_repair(psp);
-  }
+
   if(psp > stacktop(currproc()->rampg) || psp < stackbottom(currproc()->rampg)){
     syswrite("Stack overflow\n\r");
 /* Kill the offending process. */
@@ -190,6 +194,9 @@ void u_handler(uint32_t stack) {
  *
  * Supervisor Call (syscall) Handler. All SVC end up here, and then it's
  * decided how to handle it based on the sysnum.
+ *
+ * This function is naked because if it wasn't it would subtract 8 bytes from
+ * the stack pointer and never add it back because it does not return.
  */
 void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
   /* Return values from system calls. */
@@ -200,8 +207,8 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 						break;
 		case WAIT: ret = syswait(*((uint32_t *)arg1));
 						break;
-		case EXIT: ret = sysexit(*((uint32_t *)arg1));
-						break;
+		case EXIT: sysexit(*((uint32_t *)arg1));
+            return;
     case WRITE: ret = syswrite((char *)arg1);
             break;
     case LED: ret = sysled(*((int *)arg1), *((int *)arg2));
@@ -236,12 +243,16 @@ void psv_handler() {
  * Systick handler (clock tick interrupt)
  * @attention
  *   Scheduling is interruptable by the clock tick.
+ * @pre
+ *   Mode must be privledged and stack must be msp
  */
 void syst_handler() {
-	systick_context_save(currproc());
-	if(UNUSED == currproc()->state || WAITING == currproc()->state) {
-/* Don't change the state to RUNNABLE for unused or waiting, */
-/* just go to the scheduler */
+  
+  systick_context_save(currproc());
+  switch_to_msp();
+
+	if(WAITING == currproc()->state) {
+/* Don't change the state to RUNNABLE for WAITING, just go to the scheduler */
 		scheduler();
 	}
 	else {

@@ -62,7 +62,7 @@ int wait(pid_t);
  * @see
  *   Pg. 48 Architecture Reference Manaual
  */
-int exit(pid_t) __attribute__((noreturn, aligned(4)));
+void exit(pid_t) __attribute__((noreturn, naked, aligned(4)));
 //! @endcond
 int write(char *);
 int led(int, int);

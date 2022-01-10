@@ -21,22 +21,27 @@ int smain(void) __attribute__((section(".text.smain")));
  */
 void count() {
   for(int i = 0; i < 10E6; i++);
+  //for(int i = 0; i < 10E7; i++);
   return;
 }
 
 /**
  * @brief
  *   The led should be purple when this test is done.
- *   First the parent turns on the green led, then forks NPROC processes. The
- *   children all turn off the green led and then exit while the parent waits
- *   for them. When all the children have exited, the parent turns on the red
- *   led and then exits.
+ *   First the parent turns on the green led, then forks NPROC+10 processes.
+ *   10 of these processes should fail to fork because there are no more unused
+ *   processes in the process table. The children all turn off the green led and
+ *   then exit while the parent turn on the blue led and waits for them. When
+ *   all the children have exited, the parent turns on the red led and then
+ *   exits.
  */
 void forktest() {
 	led(LED_GREEN, LED_ON);
 	int i;
-  pid_t pids[NPROC+10];
-	for(i = 0; i < NPROC+10; i++) {
+  //pid_t pids[NPROC+10];
+  pid_t pids[1];
+	//for(i = 0; i < NPROC+10; i++) {
+	for(i = 0; i < 1; i++) {
 		pids[i] = fork();
 		if(0 == pids[i]) {
 			//Deliberately be bad and do nothing if we can't fork a process.
@@ -53,7 +58,8 @@ void forktest() {
 			led(LED_BLUE, LED_ON);
 		}
 	}
-	for(i = 0; i < NPROC+10; i++) {
+	//for(i = 0; i < NPROC+10; i++) {
+	for(i = 0; i < 1; i++) {
 		if(-1 == wait(pids[i])) {
       led(LED_BLUE, LED_OFF);
     }
@@ -100,16 +106,20 @@ int stringtest() {
  *   Test The OSs ability to detect stack overflow. The process should exit
  *   before it's able to turn on the green LED.
  */
+void stack_overflow_child() {
+/* Allocate an array that is greater than STACK_SIZE */
+  int big_array[384]; //1.5KB
+/* Call wait to force a write to the stack. The array declaration only moves */
+/* the stack pointer. Nothing has been written to cause a memory fault yet. */
+  wait(NULLPID);
+  led(LED_GREEN, LED_ON);
+  exit(EXIT_SUCCESS);
+}
+
 int stack_overflow() {
   int pid = fork();
   if(NULLPID == pid) {
-/* Allocate an array that is greater than STACK_SIZE */
-    int big_array[384]; //1.5KB
-/* Call wait to force a write to the stack. The array declaration only moves */
-/* the stack pointer. Nothing has been written to cause a memory fault yet. */
-    wait(NULLPID);
-    led(LED_GREEN, LED_ON);
-    exit(EXIT_SUCCESS);
+    stack_overflow_child();
   }
   else if(0 == pid) {
     return -1;
@@ -176,32 +186,45 @@ void yield_test() {
  * than the previous value by the amount of the increment. If it's not then the
  * red LED will turn off.
  */
-void stack_repair() {
+void stack_repair_child() {
+  //Child process
+  char arr[STACK_SIZE];
+  wait(NULLPID); //SVC exception return stack will cause a mem fault.
+  exit(EXIT_SUCCESS);
+}
+
+void stack_repair_parent() {
   int i = 0;
   int j = 0;
   int k = 0;
-  pid_t cpid; //Child process pid
+  
+  led(LED_RED, LED_ON);
 
-  cpid = fork();
-
-  if(-1 == cpid) {
+  //Parent process
+  i += 5; j += 6; k += 7;
+  yield(); //Yield so that the child process runs before we check.
+  if(i != 5 || j != 6 || k != 7) {
     led(LED_RED, LED_OFF);
+    exit(EXIT_SUCCESS); //Exit and return to the scheduler
   }
-  else if(NULLPID != cpid) {
-    //Parent process
-    i += 5; j += 6; k += 7;
-    yield(); //Yield so that the child process runs before we check.
-    if(i != 5 || j != 6 || k != 7) {
-      led(LED_RED, LED_OFF);
-      exit(EXIT_SUCCESS); //Exit and return to the scheduler
-    }
+}
+
+void stack_repair() {
+  pid_t ret[2];
+  int i;
+  ret[0] = fork();
+  if(NULLPID == ret[0]) {
+    stack_repair_parent();
+    exit(EXIT_SUCCESS);
   }
-  else {
-    //Child process
-    int arr[STACK_SIZE];
-    wait(cpid); //SVC exception return stack will cause a mem fault.
+  ret[1] = fork();
+  if(NULLPID == ret[1]) {
+    stack_repair_child();
+    exit(EXIT_SUCCESS);
   }
-  exit(EXIT_SUCCESS);
+  for(i = 0; i < 2; i++) {
+    wait(ret[i]);
+  }
 }
 
 /**
@@ -209,12 +232,12 @@ void stack_repair() {
  *   Shell main. The first user program run by the kernel after reset.
  */
 int smain() {
- // stringtest();
- // forktest();
- // yield_test();
- // seg_fault();
- // stack_overflow();
- led(LED_RED, LED_ON);
- stack_repair();
-	return 0;
+  if(stringtest())
+    return 0;
+  forktest();
+//  yield_test();
+//  seg_fault();
+//  stack_overflow();
+//  stack_repair();
+  exit(EXIT_SUCCESS);
 }

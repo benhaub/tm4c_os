@@ -9,7 +9,7 @@
 
 pid_t sysfork(void);
 int syswait(int);
-int sysexit(int);
+void sysexit(int);
 int syswrite(const char *);
 void printk(const char *, ...);
 int sysled(int, int);

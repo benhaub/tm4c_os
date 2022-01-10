@@ -174,6 +174,9 @@ void scheduler() {
   while(1) {
 /* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
 /* processes passed that index. */
+//TODO: Sometimes schedproc is returned as 0x99000000. The index seems to behave
+//normally. This OS can run sucessfully 19 times in a row and then fail on the
+//20th.
     schedproc = round_robin();
 /* If the process is waiting for another, check to see if it's exited. */
 		if(schedproc->state == WAITING && \

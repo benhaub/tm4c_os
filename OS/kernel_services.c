@@ -24,6 +24,7 @@ extern int maxpid;
 extern struct pcb ptable[];
 /* From vectors.s */
 extern void SYST_EXCP(); //For yield.
+extern void switch_to_privledged(); //For exit
 //! @endcond
 
 /**
@@ -76,15 +77,15 @@ int syswait(int pid) {
  * Clears out the pcb of the process and notifies it's parent of the exit.
  * @sa exit
  */
-int sysexit(int exitcode) {
+void sysexit(int exitcode) {
 	struct pcb *exitproc = currproc();
 	exitproc->context.pc = 0;
 	exitproc->context.sp = 0;
 	exitproc->context.lr = 0;
 	exitproc->context.r0 = 0;
-  if(exitproc->pid > MAX_PROC) {
-/* Ignore the exit code given. Exiting an invalid process is always a failure */
-    return EXIT_FAILURE;
+  if(exitproc->pid > MAX_PROC || UNUSED == exitproc->state) {
+/* Exiting an invalid process is always a failure */
+    while(1);
   }
 	free_stackpage(exitproc->rampg);
 	exitproc->pid = NULLPID;
@@ -102,11 +103,10 @@ int sysexit(int exitcode) {
   if(NULL != exitproc->name) {
     strncpy(exitproc->name, "\0", 1);
   }
-/* Return the exit code to the parent */
-  if(exitcode != 0) {
-    return EXIT_FAILURE;
-  }
-  return exitcode;
+
+/* Switch to privledged mode so that we can call the scheduler directly when */
+/* we return from the svc_handler back to exit() */
+  switch_to_privledged();
 }
 
 /**
