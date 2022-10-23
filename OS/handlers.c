@@ -147,7 +147,7 @@ void b_handler(uint8_t stack) {
   NVIC_FAULT_STAT_R |= (fault_addr | bfarv | blsperr | bstke | bustke | impre |
                          precise | ibus);
 /* View locals with a debugger. */
-  syswrite("Bus Fault\n\r"); //syswrite is faster than printk
+  printk("Bus fault from process with pid %d\n\r", currproc()->pid);
   if(stack) {
     while(1);
   }

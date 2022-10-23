@@ -16,15 +16,15 @@ CPU=-mcpu=cortex-m4 -march=armv7e-m -mtune=cortex-m4
 FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=hard
 #Flags for C compiler.
 CFLAGS=-mthumb \
-			 ${CPU} \
-			 ${FPU} \
+       ${CPU} \
+       ${FPU} \
        -Iinclude \
        -MD \
        -MF ./.deps/$*.d \
        -ffunction-sections \
        -fdata-sections \
        -ffreestanding \
-			 -fsingle-precision-constant \
+       -fsingle-precision-constant \
        -std=c99 \
        -nodefaultlibs \
        -static \
@@ -40,7 +40,7 @@ CFLAGS=-mthumb \
 LDFLAGS=-Wl,--gc-sections \
         -Wl,--entry=Reset_EXCP \
         -Wl,-Tlink.ld \
-				-Wl,-Map=link.map \
+        -Wl,-Map=link.map \
         -Wl,-lgcc
 
 #Optionally include the symbol table for debugging. The 3 on the end of -g is

@@ -21,7 +21,6 @@ int smain(void) __attribute__((section(".text.smain")));
  */
 void count() {
   for(int i = 0; i < 10E6; i++);
-  //for(int i = 0; i < 10E7; i++);
   return;
 }
 
@@ -38,10 +37,8 @@ void count() {
 void forktest() {
 	led(LED_GREEN, LED_ON);
 	int i;
-  //pid_t pids[NPROC+10];
-  pid_t pids[1];
-	//for(i = 0; i < NPROC+10; i++) {
-	for(i = 0; i < 1; i++) {
+  pid_t pids[NPROC+10];
+	for(i = 0; i < NPROC+10; i++) {
 		pids[i] = fork();
 		if(0 == pids[i]) {
 			//Deliberately be bad and do nothing if we can't fork a process.
@@ -58,8 +55,7 @@ void forktest() {
 			led(LED_BLUE, LED_ON);
 		}
 	}
-	//for(i = 0; i < NPROC+10; i++) {
-	for(i = 0; i < 1; i++) {
+	for(i = 0; i < NPROC+10; i++) {
 		if(-1 == wait(pids[i])) {
       led(LED_BLUE, LED_OFF);
     }
@@ -235,9 +231,9 @@ int smain() {
   if(stringtest())
     return 0;
   forktest();
-//  yield_test();
-//  seg_fault();
-//  stack_overflow();
-//  stack_repair();
+  yield_test();
+  seg_fault();
+  stack_overflow();
+  stack_repair();
   exit(EXIT_SUCCESS);
 }

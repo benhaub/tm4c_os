@@ -96,7 +96,7 @@ void sysexit(int exitcode) {
 	exitproc->ppid = NULLPID;
   exitproc->waitpid = NULLPID;
   if(0 != exitproc->numchildren) {
-    printk("Parent with pid %d exited with children\n\r", exitproc->numchildren);
+    printk("Parent with pid %d exited with children\n\r", exitproc->pid);
   }
   exitproc->state = UNUSED;
 	exitproc->initflag = 1;
