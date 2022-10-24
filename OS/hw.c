@@ -671,7 +671,7 @@ int uart1_tchar(char data) {
  * @param ff
  *   Frame format for the SPI lines \n
  *   \b 0 to hold the clock low during idle. \n
- *     Data is caputred on the rising edge of the clock \n
+ *     Data is captured on the rising edge of the clock \n
  *   \b 1 same as \b 0, but data is captured on the falling edge of the clock. \n
  *   \b 2 to hold the clock high during idle. Data is caputured on the falling \n
  *     edge of the clock
