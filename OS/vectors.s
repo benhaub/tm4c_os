@@ -92,7 +92,7 @@ Reset_EXCP: .fnstart
             ldr     r1, [r0]
             orr     r1, r1, #0x00F00000
             str     r1, [r0]
-						b main
+						b init
 						.fnend
 
 	.type NMI_EXCP, %function

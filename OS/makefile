@@ -66,7 +66,7 @@ S_OBJECTS+=${S_SOURCES:.s=.o}
 
 .PHONY: flash clean dirs
 
-tm4c_os.bin: dirs tm4c_os.elf
+tm4c_os.bin: dirs tm4c_os.elf tm4c_os.a
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
 	mv *.elf *.o *.bin .binary
 
@@ -84,6 +84,9 @@ syscallsasm.o: syscallsasm.s
 
 dirs:
 	mkdir -p .deps .binary
+
+tm4c_os.a:
+	ar rcs lib/tm4c_os.a .binary/*.o
 
 #If a dependancy file is deleted for some reason, make will detect it and
 #rebuild them.

@@ -21,7 +21,7 @@
 #include <cstring.h>
 #include <kernel_services.h>
 
-int main() {
+int init() {
 /* Enable all the faults and exceptions. Pg.173, datasheet */
 	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
 	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
