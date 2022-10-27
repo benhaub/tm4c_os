@@ -13,6 +13,11 @@
  *   to help users focus more on the purpose rather than optimization techniques
  *   which often lead to having to understand serveral concepts in tandem and
  *   more complicated code.
+ * @section Compiling
+ *   Run make with no arguments. The makefile will produce a binary file located
+ *   in the .binary folder.
+ * @section Flashing
+ * @section Debugging
  *****************************************************************************/
 #include <tm4c123gh6pm.h>
 #include <hw.h>

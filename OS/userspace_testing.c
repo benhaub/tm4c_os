@@ -2,7 +2,7 @@
  * @author  Ben Haubrich                                                    
  * @file    userspace_testing.c                                                     
  * @date    July 10th, 2019                                                 
- * @details \b Synopsis: \n smain is the first user program called by the OS.
+ * @details \b Synopsis: \n main is the first user program called by the OS.
  *          This file tests the OS from non-privledged (non-kernel mode) mode
  *          software.
  *****************************************************************************/
@@ -13,7 +13,7 @@
 #include <mem.h> /* For flash address macros */
 #include <cstring.h> /* For testing cstring api */
 
-int smain(void) __attribute__((section(".text.smain")));
+int main(void) __attribute__((weak, section(".text.main")));
 
 /**
  * @brief
@@ -227,7 +227,7 @@ void stack_repair() {
  * @brief
  *   Shell main. The first user program run by the kernel after reset.
  */
-int smain() {
+int main() {
   if(stringtest())
     return 0;
   forktest();

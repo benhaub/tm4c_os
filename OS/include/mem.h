@@ -12,9 +12,9 @@
 
 //! @cond Doxygen_Suppress_Warning
 /* From link.ld. See linkerscript. */
-extern void *smainsize;
+extern void *mainsize;
 /* From userinit. Not called. Only used to calculate ksize. */
-extern int smain(void);
+extern int main(void);
 /* From vectors.s */
 extern const int KRAM_USE;
 //! @endcond
@@ -58,8 +58,8 @@ extern const int KRAM_USE;
 #define MB 1024u*KB
 ///@def KSIZE
 ///  Size of the kernel in flash. This calculation is possible because
-///  .text.smain is the last of the code place in flash (see link.ld).
-#define KSIZE (uint32_t)((uint32_t)smain + (uint32_t)&smainsize)
+///  .text.main is the last of the code place in flash (see link.ld).
+#define KSIZE (uint32_t)((uint32_t)main + (uint32_t)&mainsize)
 ///@def KFLASHPGS
 ///  Number of flash pages used by the kernel
 #define KFLASHPGS ((KSIZE / FLASH_PAGE_SIZE) + 1)

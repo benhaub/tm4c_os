@@ -46,7 +46,7 @@ void user_init() {
 	if(NULL == userinit) {
 		return;
 	}
-	userinit->context.pc = (uint32_t)smain;
+	userinit->context.pc = (uint32_t)main;
 	scheduler();
 }
 
