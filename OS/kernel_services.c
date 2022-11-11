@@ -260,3 +260,17 @@ int sysled(int colour, int state) {
 void sysyield() {
   SYST_EXCP();
 }
+
+/**
+ * @sa spi
+ *
+ * Chip select is always returned to low after each tranmission
+ */
+void sysspi(int direction, uint8_t *data) {
+  if (direction) {
+    data = ssi0_receive();
+  }
+  else {
+    ssi0_transmit(*data);
+  }
+}

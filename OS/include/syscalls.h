@@ -28,6 +28,9 @@
 ///@def YEILD
 ///Syscall number for yield
 #define YEILD 5
+///@def SPI
+///Syscall number for SPI operation
+#define SPI 6
 
 /**
  * @enum led_colours
@@ -51,6 +54,16 @@ enum led_colours {LED_RED, LED_GREEN, LED_BLUE};
  */
 enum led_states {LED_OFF, LED_ON};
 
+/**
+ * @enum spi_dir
+ * @sa spi
+ * @var SPI_TRANSMIT
+ *   Transmit SPI data
+ * @var SPI_RECEIVE
+ *   Receive SPI data
+ */
+enum spi_dir { SPI_TRANSMIT=0, SPI_RECEIVE };
+
 pid_t fork(void);
 int wait(pid_t);
 //! @cond Doxygen_Suppress_Warning
@@ -67,5 +80,6 @@ void exit(pid_t) __attribute__((noreturn, naked, aligned(4)));
 int write(char *);
 int led(int, int);
 void yield();
+void spi(int, uint8_t *);
 
 #endif /*__SYSCALLS_H__*/

@@ -1,5 +1,6 @@
 #include "tm4c_os.h"
 
 int main() {
-  printf("Hello World\n");
+  printf("Hello World\r\n");
+  return 0;
 }

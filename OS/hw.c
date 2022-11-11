@@ -679,8 +679,8 @@ int uart1_tchar(char data) {
  * @note
  *   PA2 - clock \n
  *   PA3 - frame signal \n
- *   PA4 - recieve (MOSI. Driven by master, received by slave) \n
- *   PA5 - transmit (MISO. Driven by slave, received by master)
+ *   PA4 - MOSI. (Driven by master, received by slave) \n
+ *   PA5 - MISO. (Driven by slave, received by master)
  */
 int ssi0_init_master(int protocol, int ds, int drxr, int ff) {
 /* Activate the SSI peripheral clock. */
@@ -704,6 +704,8 @@ int ssi0_init_master(int protocol, int ds, int drxr, int ff) {
   }
   GPIO_PORTA_AFSEL_R |= 0x3C;
   GPIO_PORTA_DEN_R |= 0x3C;
+  GPIO_PORTA_DIR_R |= (1 << 4);
+  GPIO_PORTA_DIR_R &= ~(1 << 5);
   switch (drxr) {
     case 2: GPIO_PORTA_DR2R_R |= 0x3C;
             break;
@@ -713,18 +715,17 @@ int ssi0_init_master(int protocol, int ds, int drxr, int ff) {
             break;
     default: return -1;
   }
-/* Disable SSI0 for initialisation. */
+/* Disable SSI0 for initialization. */
   SSI0_CR1_R &= ~(1 << 1);
 /* Configure the SSI peripheral as master. */
   SSI0_CR1_R &= ~(1 << 2);
-/* The clock source is the system clock, which for tm4c_os is the same as */
-/* PIOSC. */
-  SSI0_CC_R &= ~0x1;
-/* Divide the SysClk by 2. The formula is BR=SysClk/(CPSDVSR * (1 + SCR) */
-/* Where BR is the Bit Rate, SysClk is 16MHz. */
+/* The clock source is the system clock. See init() in main.c or the value of */
+/* SysClkFrequency. */
+  SSI0_CC_R &= ~0xF;
+/* Divide the SysClk by 2. The formula is SSInClk=SysClk/(CPSDVSR * (1 + SCR) */
   SSI0_CPSR_R |= 0x2; //DVSR
   SSI0_CR0_R &= ~(0xFF << 8); //SCR
-/* BR is now 8MHz. Define the protocol. */
+/* SSInClk is now SysClk/2. Define the protocol. */
   switch(protocol) {
     case 0: SSI0_CR0_R &= ~(0x3 << 4); //Freescale SPI
             SSI0_CR0_R &= ~(1 << 6);
@@ -771,11 +772,31 @@ int ssi0_init_master(int protocol, int ds, int drxr, int ff) {
  *   Non-blocking SSI data transmission SSI0.
  * @param data
  *   The data to transmit
+ * @return
+ *   0 if the fifo was empty and the data could be transmitted, -1 otherwise.
+ * @todo
+ *   Should queue up if the fifo is not empty and transmit it later when it
+ *   is.
  */
-void ssi0_transmit(int data) {
-/* Check Raw Interrupt Status to see if the FIFO is empty. */
-  if((1 << 3) == (SSI0_RIS_R & (1 << 3))) {
+int ssi0_transmit(uint8_t data) {
+/* Check status register to see if the FIFO is empty. */
+  if((SSI0_SR_R & (1 << 1))) {
 /* Write the data register for transmission. */
       SSI0_DR_R = data;
+      return 0;
   }
+  else {
+    return -1;
+  }
+}
+
+/**
+ * @brief
+ *   Receive SSI data
+ * @return
+ *   The SSI data
+ */
+
+uint8_t ssi0_receive() {
+  return SSI0_DR_R;
 }

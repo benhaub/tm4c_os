@@ -49,7 +49,7 @@ LDFLAGS := -Wl,--gc-sections \
 #the same as the text code. View page 120 of the GNU gcc docs for more
 #info
 ifdef DEBUG
-	CFLAGS+ := -g3 -ggdb -O0
+	CFLAGS += -g3 -ggdb -O0
 endif
 
 #Each module can add it's own sources and libs to the compilation
@@ -72,9 +72,9 @@ include $(patsubst %, %/module.mk, ${MODULES})
 #Get all the object files
 C_OBJECTS := $(patsubst %.c,%.o, $(filter %.c,${C_SOURCES}))
 S_OBJECTS := $(patsubst %.s,%.o, $(filter %.s,${S_SOURCES}))
-S_OBJECTS := $(patsubst %.S,%.o, $(filter %.S,${S_SOURCES}))
+S_OBJECTS += $(patsubst %.S,%.o, $(filter %.S,${S_SOURCES}))
 
-.PHONY: flash clean dirs debug
+.PHONY: flash clean dirs
 
 tm4c_os.bin: dirs tm4c_os.elf
 	${OBJCOPY} ${OBJCFLAGS} tm4c_os.elf tm4c_os.bin
@@ -94,10 +94,6 @@ syscallsasm.o: syscallsasm.s
 
 dirs:
 	mkdir -p .deps .binary
-
-debug:
-	echo ${S_OBJECTS}
-	echo ${C_OBJECTS}
 
 #If a dependancy file is deleted for some reason, make will detect it and
 #rebuild them.

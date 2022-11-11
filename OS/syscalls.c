@@ -146,3 +146,17 @@ int led(int colour, int state) {
 void yield() {
   syscall(YEILD, currproc());
 }
+
+/**
+ * @breif
+ *   Receive or transmit data using the Serial Peripheral Interface
+ * @param direction
+ *   The direction to transmit in
+ * @sa spi_dir
+ * #param data
+ *   The data to transmit. If direction is set to receive then the received
+ *   data will be stored in this parameter.
+ */
+void spi(int direction, uint8_t *data) {
+  syscall2(SPI, currproc(), &direction, data);
+}

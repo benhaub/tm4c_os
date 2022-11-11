@@ -215,6 +215,8 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
             break;
     case YEILD: sysyield();
             break;
+    case SPI: sysspi(*((int *)arg1), ((uint8_t *)arg2));
+            break;
 		default: while(1); 
 	}
 /* Store return values */

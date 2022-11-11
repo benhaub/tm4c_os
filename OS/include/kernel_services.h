@@ -14,5 +14,6 @@ int syswrite(const char *);
 void printk(const char *, ...);
 int sysled(int, int);
 void sysyield();
+void sysspi(int, uint8_t *);
 
 #endif /*__KERNELSERVICES_H__*/

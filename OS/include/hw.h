@@ -89,6 +89,6 @@ int uart1_init(unsigned int);
 int uart1_tchar(char);
 /* SSI */
 int ssi0_init_master(int, int, int, int);
-void ssi0_transmit(int);
+int ssi0_transmit(uint8_t);
 
 #endif /*__HW_H__*/
