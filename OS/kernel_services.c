@@ -267,8 +267,11 @@ void sysyield() {
  * Chip select is always returned to low after each tranmission
  */
 void sysspi(int direction, uint8_t *data) {
+  if (NULL == data)
+    return;
+
   if (direction) {
-    data = ssi0_receive();
+    *data = ssi0_receive();
   }
   else {
     ssi0_transmit(*data);

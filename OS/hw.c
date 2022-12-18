@@ -332,7 +332,7 @@ void start_clocktick(int clksrc, int period) {
 /**
  * 1ms delay
  */
-void delay_1ms() {
+void systick_delay_1ms() {
 	NVIC_ST_RELOAD_R = (SysClkFrequency / 1000);
 	NVIC_ST_CURRENT_R = 0;
 	while(!(NVIC_ST_CTRL_R & (1 << 16)));
@@ -383,23 +383,6 @@ void led_ron() {
 void led_roff() {
 	GPIO_PORTF_DATA_R &= ~(1 << 1);
 	return;
-}
-
-/**
- * @brief led_rflash
- *   flash the red led at 1Hz
- * @return
- *   1 if the LED has been flash, -1 if systick is not enabled.
- */
-int led_rflash() {
-  if(NVIC_ST_CTRL_R & 0x1) { //Check if systick is enabled
-    led_ron();
-    for(int i = 0; i < 1000; i++) { delay_1ms(); }
-    led_roff();
-    for(int i = 0; i < 1000; i++) { delay_1ms(); }
-    return 1;
-  }
-  return -1;
 }
 
 /**
@@ -799,4 +782,270 @@ int ssi0_transmit(uint8_t data) {
 
 uint8_t ssi0_receive() {
   return SSI0_DR_R;
+}
+/*****************************General Purpose Timer****************************/
+
+gptm_timer_t gptm_timer_init(struct timer_config_t *config) {
+  gptm_timer_t timer = NULL;
+  //Find an unused timer by first checking if the clock to the module has been
+  //enabled. If it has, then timer A is in use.
+  if (0 == (SYSCTL_RCGCTIMER_R & 0x1)) {
+    if(timer0A_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER0_CFG_R;
+    }
+  }
+  else if(0 == (TIMER0_CTL_R & 1<<8)) {
+    if(timer0B_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER0_CFG_R;
+    }
+  }
+  else if(0 == (SYSCTL_RCGCTIMER_R & 1<<1)) {
+    if(timer1A_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER1_CFG_R;
+    }
+  }
+  else if(0 == (TIMER1_CTL_R & 1<<8)) {
+    if(timer1B_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER1_CFG_R;
+    }
+  }
+  else if (0 == (SYSCTL_RCGCTIMER_R & 1<<2)) {
+    if(timer2A_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER2_CFG_R;
+    }
+  }
+  else if(0 == (TIMER2_CTL_R & 1<<8)) {
+    if(timer2B_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER2_CFG_R;
+    }
+  }
+  else if (0 == (SYSCTL_RCGCTIMER_R & 1<<3)) {
+    if(timer3A_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER3_CFG_R;
+    }
+  }
+  else if(0 == (TIMER3_CTL_R & 1<<8)) {
+    if(timer3B_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER3_CFG_R;
+    }
+  }
+  else if (0 == (SYSCTL_RCGCTIMER_R & 1<<4)) {
+    if(timer4A_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER4_CFG_R;
+    }
+  }
+  else if(0 == (TIMER4_CTL_R & 1<<8)) {
+    if(timer4B_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER4_CFG_R;
+    }
+  }
+  else if (0 == (SYSCTL_RCGCTIMER_R & 1<<5)) {
+    if(timer5A_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER5_CFG_R;
+    }
+  }
+  else if(0 == (TIMER5_CTL_R & 1<<8)) {
+    if(timer5B_init(config)) {
+      return timer;
+    }
+    else {
+      timer = &TIMER5_CFG_R;
+    }
+  }
+
+  return timer;
+}
+
+uint8_t timer0A_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= 0x1;
+  //Wait for the timer to be ready to access
+  while (0 == (SYSCTL_PRTIMER_R & 0x1));
+  TIMER0_CFG_R = 0x0;
+  TIMER0_TAMR_R |= config->periodic ? 0x2 : 0x1;
+  if (config->pwm) {
+    TIMER0_TAMR_R &= ~(1<<2);
+    TIMER0_TAMR_R |= (1<<3);
+    if (0 == (TIMER0_TAMR_R & 0x3) || 3 == (TIMER0_TAMR_R & 0x3))
+      //pwm mode must set either one-shot or peridic
+      return 1;
+  }
+  TIMER0_TAMR_R |= config->direction<<4;
+  TIMER0_TAMR_R |= config->wait_on_trigger<<6;
+  TIMER0_TAMR_R |= config->snapshot_mode<<7;
+
+  TIMER0_TAILR_R = config->interval;
+  config->instance = 0;
+  return 0;
+}
+
+uint8_t timer0B_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= 0x1;
+  TIMER0_CFG_R = 0x0;
+  TIMER0_TBMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER0_CTL_R |= (1<<8);
+  return 0;
+}
+
+uint8_t timer1A_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<1);
+  TIMER1_CFG_R = 0x0;
+  TIMER1_TAMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER1_CTL_R |= 0x1;
+  return 0;
+}
+
+uint8_t timer1B_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<1);
+  TIMER1_CFG_R = 0x0;
+  TIMER1_TBMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER1_CTL_R |= (1<<8);
+  return 0;
+}
+
+uint8_t timer2A_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<2);
+  TIMER2_CFG_R = 0x0;
+  TIMER2_TAMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER2_CTL_R |= 1;
+  return 0;
+}
+
+uint8_t timer2B_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<2);
+  TIMER2_CFG_R = 0x0;
+  TIMER2_TBMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER2_CTL_R |= (1<<8);
+  return 0;
+}
+
+uint8_t timer3A_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<3);
+  TIMER3_CFG_R = 0x0;
+  TIMER3_TBMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER3_CTL_R |= 1;
+  return 0;
+}
+
+uint8_t timer3B_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<3);
+  TIMER3_CFG_R = 0x0;
+  TIMER3_TBMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER3_CTL_R |= (1<<8);
+  return 0;
+}
+
+uint8_t timer4A_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<4);
+  TIMER4_CFG_R = 0x0;
+  TIMER4_TAMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER4_CTL_R |= 1;
+  return 0;
+}
+
+uint8_t timer4B_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<4);
+  TIMER4_CFG_R = 0x0;
+  TIMER4_TBMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER4_CTL_R |= (1<<8);
+  return 0;
+}
+
+uint8_t timer5A_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<5);
+  TIMER5_CFG_R = 0x0;
+  TIMER5_TAMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER5_CTL_R |= 1;
+  return 0;
+}
+
+uint8_t timer5B_init(struct timer_config_t *config) {
+  SYSCTL_RCGCTIMER_R |= (1<<5);
+  TIMER5_CFG_R = 0x0;
+  TIMER5_TBMR_R |= config->periodic ? 0x2 : 0x1;
+
+  TIMER5_CTL_R |= (1<<8);
+  return 0;
+}
+
+void gptm_start_timer(gptm_timer_t timer_base, uint8_t timer_instance) {
+  if (timer_instance)
+    //Timer B
+    *(timer_base + 3) |= (1<<8);
+  else
+    //Timer A
+    *(timer_base + 3) |= 0x1;
+}
+
+/*
+ * @breif
+ *   Check the raw interrupt status of the timer to see if it's timed out.
+ * @param base
+ *   The timer to check
+ * @param instance
+ *   The timer instance to check.
+ * @return
+ *   non-zero if the timer has not timed out.
+ * @post
+ *   The interrupt status is cleared
+ */
+uint8_t gptm_timeout(gptm_timer_t base, uint8_t timer_instance) {
+  if (timer_instance) {
+    //Timer B
+    if (*(base + 7) & 1<<8) {
+      (*(base + 9)) |= 1<<8;
+      return 0;
+    }
+  }
+  else {
+    //Timer A
+    if (*(base + 7) & 0x1) {
+      (*(base + 9)) |= 0x1;
+      return 0;
+    }
+  }
+
+  return 1;
 }

@@ -61,10 +61,10 @@ int init() {
     syswrite("Failed to start SSI0\n\r");
   }
 	init_ram();
-  mpu_tm4cOS_init();
 	init_ptable();
 	start_clocktick(1, 10);
 /* Set up the first user process (the shell) */
+  mpu_tm4cOS_init();
 	user_init();
 	return 0;
 }

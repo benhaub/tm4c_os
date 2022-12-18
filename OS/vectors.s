@@ -47,9 +47,13 @@ STACK_TOP:
  * Note that this is the KERNEL stack pointer not a user stack pointer.
  * They are unrelated. The kernel can have a different sized stack than a
  * user.
+ * See Pg. 526 of the datasheet. The presence of this vector table instructs
+ * the processor to load the stack pointer and pc from here and start running
+ * the user application stored in flash instead of executing the boot loader
+ * stored in ROM
  */
 Vectors:
-	.word STACK_TOP + 0x800 /* Boot loader gets kernel stack pointer from here */
+	.word STACK_TOP + 0x800
 	.word Reset_EXCP	/* Reset Exception */
 	.word NMI_EXCP		/* Non-maskable interrupt */
 	.word HFAULT			/* Hard Fault */
