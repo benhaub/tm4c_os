@@ -18,6 +18,7 @@ CFLAGS := -mthumb \
           ${CPU} \
           ${FPU} \
           -Iinclude \
+					-Llibs \
           -MD \
           -MF ./.deps/$*.d \
           -ffunction-sections \
@@ -40,7 +41,7 @@ LDFLAGS := -Wl,--gc-sections \
            -Wl,--entry=Reset_EXCP \
            -Wl,-Tlink.ld \
            -Wl,-Map=link.map \
-           -Wl,-lgcc
+					 -Wl,-lgcc
 
 #Optionally include the symbol table for debugging. The 3 on the end of -g is
 #the level. level 3 debugging symbols include everything up to preprocessor
@@ -53,8 +54,8 @@ ifdef DEBUG
 endif
 
 #Each module can add it's own sources and libs to the compilation
-MODULES := example_app
-LIBS :=
+MODULES := ../
+LIBS := -ldriver
 INCLUDES := include
 #Search for header files here as well as the current working directory
 VPATH := ${INCLUDES}
@@ -106,4 +107,4 @@ flash:
 	lm4flash -E -s 0E22CCB1 -S 0x00000000 ./.binary/tm4c_os.bin
 
 clean:
-	rm -rf *.o ./.deps ./.binary tm4c_os.map tm4c_os.elf tm4c_os.bin ./.binary
+	rm -rf ${C_OBJECTS} ./.deps ./.binary tm4c_os.map tm4c_os.elf tm4c_os.bin ./.binary

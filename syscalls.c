@@ -4,8 +4,8 @@
  * @date    July 18th, 2019                                               
  * @details \b Synopsis: \n System calls for tm4c_os kernel services                      
  *****************************************************************************/
-#include <proc.h> //For pcb struct and proc states
-#include <syscalls.h> //Some functions have attributes
+#include "proc.h" //For pcb struct and proc states
+#include "syscalls.h" //Some functions have attributes
 
 /* From syscall.s */
 /**
@@ -159,4 +159,28 @@ void yield() {
  */
 void spi(int direction, uint8_t *data) {
   syscall2(SPI, currproc(), &direction, data);
+}
+
+/**
+ * @brief
+ *  Toggle a GPIO
+ * @param port
+ *   The GPIO port or bank where the pin is located
+ * @param pin
+ *   The pin to toggle
+ * @param state
+ *   on or off
+ * @see GPIO_STATE GPIO_PIN GPIO_PORT
+ * @return
+ *   0 on success, non-zero otherwise
+ */
+int gpio(int port, int pin, int state) {
+  //Only 8 pins
+  if (pin > 7)
+    return 1;
+  //Only 6 port
+  if (port > 5)
+    return 0;
+
+  syscall3(GPIO, currproc(), &port, &pin, &state);
 }

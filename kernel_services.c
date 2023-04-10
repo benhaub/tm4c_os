@@ -4,13 +4,12 @@
  * @date    July 18th, 2019                                               
  * @details \b Synopsis: \n Supported kernel services for users.                          
  *****************************************************************************/
-#include <hw.h>
-#include <mem.h> /* in sysexit(), for free_stackpage() */
-#include <proc.h>
-#include <types.h>
-#include <stdarg.h>
-#include <cstring.h>
-#include <kernel_services.h>
+#include "hw.h"
+#include "mem.h" /* in sysexit(), for free_stackpage() */
+#include "proc.h"
+#include "stdarg.h"
+#include "cstring.h"
+#include "kernel_services.h"
 
 /*
  * IMPORTANT:
@@ -237,15 +236,15 @@ void printk(const char *s, ...) {
  * @sa led
  */
 int sysled(int colour, int state) {
-  switch (colour) {
-    case 0: state ? led_ron() : led_roff();
-            break;
-    case 1: state ? led_gron() : led_groff();
-            break;
-    case 2: state ? led_blon() : led_bloff();
-            break;
-    default: return -1;
-  }
+  //switch (colour) {
+  //  case LED_RED: state ? led_ron() : led_roff();
+  //          break;
+  //  case LED_GREEN: state ? led_gron() : led_groff();
+  //          break;
+  //  case LED_BLUE: state ? led_blon() : led_bloff();
+  //          break;
+  //  default: return -1;
+  //}
   return 0;
 }
 
@@ -263,8 +262,6 @@ void sysyield() {
 
 /**
  * @sa spi
- *
- * Chip select is always returned to low after each tranmission
  */
 void sysspi(int direction, uint8_t *data) {
   if (NULL == data)
@@ -276,4 +273,11 @@ void sysspi(int direction, uint8_t *data) {
   else {
     ssi0_transmit(*data);
   }
+}
+
+/**
+ * @sa gpio
+ */
+void sysgpio(int port, int pin, int state) {
+  gpio_write(port, pin, state);
 }

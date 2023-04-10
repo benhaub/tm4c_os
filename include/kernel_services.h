@@ -15,5 +15,6 @@ void printk(const char *, ...);
 int sysled(int, int);
 void sysyield();
 void sysspi(int, uint8_t *);
+void sysgpio(int port, int pin, int state);
 
 #endif /*__KERNELSERVICES_H__*/

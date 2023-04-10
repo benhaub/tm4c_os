@@ -26,6 +26,9 @@
 #include <cstring.h>
 #include <kernel_services.h>
 
+//Debug
+#include "sysctl.h"
+
 int init() {
 /* Enable all the faults and exceptions. Pg.173, datasheet */
 	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
@@ -39,17 +42,9 @@ int init() {
 	NVIC_SYS_PRI2_R |= (2 << 29); //SVC
 	NVIC_SYS_PRI1_R |= (3 << 21); //Usage
 	NVIC_SYS_PRI1_R |= (2 << 5); //Mem
-  struct clocksource_config_t cs_config = {.oscsrc = 0x0, //Main Osciallator
-                                           .use_pll = 0, //Not using PLL
-                                           .sysdiv = 0, //No divison.
-                                           .sysdiv2 = 0,
-                                           .div400 = 0,
-                                           .sysdiv2lsb = 1}; //Don't care
-	#pragma GCC diagnostic push //Remember the diagnostic state
-	#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers" //choose to ignore
-  if(-1 == set_clocksource(cs_config, &SysClkFrequency)) {
-    return 0;
-  }
+
+  SysCtlClockSet(SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+
 	#pragma GCC diagnostic push //push the state back to before we ignored
   if(-1 == uart1_init(115200u)) {
     return 0;

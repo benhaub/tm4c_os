@@ -4,12 +4,12 @@
  * @date     June 5th, 2019                                                 
  * @details \b Synopsis: \n Process related structs and functions                           
  *****************************************************************************/
-#include <mem.h>
-#include <proc.h>
-#include <cstring.h>
-#include <tm4c123gh6pm.h>
-#include <kernel_services.h>
-#include <scheduling_algorithm.h>
+#include "mem.h"
+#include "proc.h"
+#include "cstring.h"
+#include "tm4c123gh6pm.h"
+#include "kernel_services.h"
+#include "scheduling_algorithm.h"
 
 //! @cond Doxygen_Suppress_Warning
 /* From context.s */

@@ -4,272 +4,17 @@
  * @date    May 16th, 2019                                                
  * @details \b Synopsis: \n Hardware peripheral calls for TM4C123                         
  *****************************************************************************/
-#include <tm4c123gh6pm.h>
-#include <hw.h>
-#include <mem.h>
-#include <types.h>
+//tm4c includes
+#include "hw.h"
+#include "mem.h"
+#include "syscalls.h"
+//Texas Instruments includes
+#include "tm4c123gh6pm.h"
+#include "ssi.h"
+#include "gpio.h"
+#include "sysctl.h"
+#include "hw_memmap.h"
 
-/******************************SYSTEM CONTROL*********************************/
-
-/**
- * @brief
- *   Calculates the clock frequency
- *
- * Determines the frequency which will be generated given the following params
- * Frequency is returned in units of Hz.
- *
- * @param cs_config
- *   Must be set according to @sa clocksource_config_t
- * @return
- *   0 on failure due to invalid clock settings, or the non-zero frequency on
- *   success.
- */
-static float determine_frequency(struct clocksource_config_t cs_config) {
-  switch(cs_config.oscsrc) {
-    case 0:
-      if(cs_config.sysdiv) {
-        if(cs_config.use_pll) {
-          return 200.0f*1E6 / cs_config.sysdiv;
-        }
-        else {
-          return (float)MAIN_OSC_FREQ / cs_config.sysdiv;
-        }
-      }
-      else if(cs_config.sysdiv2) {
-        if(cs_config.use_pll) {
-          if(cs_config.div400) {
-            return 400.0f*1E6 / cs_config.sysdiv2;
-          }
-          else {
-            return 200.0f*1E6 / cs_config.sysdiv2;
-          }
-        }
-        else {
-          return MAIN_OSC_FREQ / cs_config.sysdiv2;
-        }
-      }
-      else {
-        return (float)MAIN_OSC_FREQ;
-      }
-    case 1:
-      if(cs_config.sysdiv) {
-        if(cs_config.use_pll) {
-          return 200.0f*1E6 / cs_config.sysdiv;
-        }
-        else {
-          return 16.0f*1E6 / cs_config.sysdiv;
-        }
-      }
-      else if(cs_config.sysdiv2) {
-        if(cs_config.use_pll) {
-          if(cs_config.div400) {
-            return 400.0f*1E6 / cs_config.sysdiv2;
-          }
-          else {
-            return 200.0f*1E6 / cs_config.sysdiv2;
-          }
-        }
-        else {
-          return 16.0f*1E6 / cs_config.sysdiv2;
-        }
-      }
-      else {
-        return 16.0f*1E6;
-      }
-    case 2:
-      if(cs_config.sysdiv) {
-        return 16.0f*1E6 / cs_config.sysdiv;
-      }
-      else if(cs_config.sysdiv2) {
-        return 16.0f*1E6 / cs_config.sysdiv2;
-      }
-      else {
-        return 0;
-      }
-    case 3:
-      if(cs_config.sysdiv) {
-        return 0.03f*1E6 / cs_config.sysdiv;
-      }
-      else if(cs_config.sysdiv2) {
-        return 0.03f*1E6 / cs_config.sysdiv2;
-      }
-      else {
-        return 0.03f*1E6;
-      }
-    case 4:
-      if(cs_config.sysdiv) {
-        return 0.032768f*1E6 / cs_config.sysdiv;
-      }
-      else if(cs_config.sysdiv2) {
-        return 0.032768f*1E6/ cs_config.sysdiv2;
-      }
-      else {
-        return 0.032768f*1E6;
-      }
-    default:
-      return 0;
-  }
-}
-/**
- * @brief
- *   Set the clock source to be used as SysClk.
- * @param cs_config
- *   @see clocksource_config_t
- * @param SysClk
- *   The frequency in Hz that the clock has been set to is stored on return.
- * @return 0 on success, -1 otherwise. As an added check, you may also verify
- * that the frequency you expected is the same one returned by this function.
- * @pre
- *   If the EEPROM is being used, there must not be an EEPROM operation in
- *   progress.
- */
-int set_clocksource(struct clocksource_config_t cs_config, float *SysClk) {
-/* Zero out the RCC and RCC2 registers. */
-  if(cs_config.sysdiv && cs_config.sysdiv2) {
-/* Clocks can not be set using both sysdiv and sysdiv2 */
-    return -1;
-  }
-  if(cs_config.use_pll && cs_config.sysdiv2 > 0 && cs_config.sysdiv2 < 2) {
-/* You can't divide by less than MINSYSDIV when using the PLL. */
-    return -1;
-  }
-  if(cs_config.use_pll && cs_config.sysdiv > 0 && cs_config.sysdiv < 2) {
-/* You can't divide by less than MINSYSDIV when using the PLL. */
-    return -1;
-  }
-  if(cs_config.div400 && cs_config.sysdiv2 < 5) {
-/* sysdiv2 must be at least 5 when using div400 */
-    return -1;
-  }
-  if(cs_config.div400 && !cs_config.use_pll) {
-/* div400 is only valid when the pll is being used. */
-    return -1;
-  }
-  else if((SYSCTL_RCGCEEPROM_R & 0x1) && EEPROM_EEDONE_R & 0x1) {
-    //You can't adjust clocks while an EEPROM operation is in progress.
-    return -1;
-  }
-  if(SysClk != NULL) {
-    *SysClk = determine_frequency(cs_config);
-  }
-  //Set the RCC registers back to default values.
-  SYSCTL_RCC_R = (0x78e3ad1);
-  SYSCTL_RCC2_R = (0x7c06810);
-  switch(cs_config.oscsrc) {
-    case 0:
-      SYSCTL_RCC_R |= 0x1; //Disable the main oscillator
-      SYSCTL_RCC_R &= ~(0x1F << 6); //Clear, then set XTAL
-      SYSCTL_RCC_R |= (0x15 << 6);
-/* Set the clocksource in RCC2 if sysdiv2 is being used, otherwise set it in */
-/* RCC. */
-      if(cs_config.sysdiv2) {
-        SYSCTL_RCC2_R &= ~(7 << 4);
-      }
-      else {
-        SYSCTL_RCC_R &= ~(7 << 4);
-      }
-      if(cs_config.use_pll) {
-        SYSCTL_RCC_R &= ~(1 << 11);
-        SYSCTL_RCC_R &= ~(1 << 13); //Power up the PLL
-      }
-      else {
-        SYSCTL_RCC_R |= (1 << 11);
-      }
-      SYSCTL_RCC_R &= ~0x1; //Enable the main oscillator
-/* Check if the MOSC has failed */
-      if(SYSCTL_RIS_R & (1 << 3)) {
-        SYSCTL_MISC_R |= (1 << 3);
-        return -1;
-      }
-      while(!(SYSCTL_RIS_R & (1 << 8))); //Wait for the MOSC to lock
-      SYSCTL_MISC_R |= (1 << 8); //Clear the interrupt.
-      break;
-    case 1:
-      if(cs_config.sysdiv2) {
-        SYSCTL_RCC2_R |= (1 << 4);
-      }
-      else {
-        SYSCTL_RCC_R |= (1 << 4);
-      }
-      if(cs_config.use_pll) {
-        SYSCTL_RCC_R &= ~(1 << 11);
-        SYSCTL_RCC_R &= ~(1 << 13); //Power up the PLL
-      }
-      else {
-        SYSCTL_RCC_R |= (1 << 11);
-        SYSCTL_RCC_R |= (1 << 13); //Power down the PLL
-      }
-      break;
-/* PLL can only be used for PIOSC and MOSC. */
-    case 2:
-      if(cs_config.sysdiv2) {
-        SYSCTL_RCC2_R |= (2 << 4);
-      }
-      else {
-        SYSCTL_RCC_R |= (2 << 4);
-      }
-      SYSCTL_RCC_R |= (1 << 11); //oscsrc does not pass through PLL
-      break;
-    case 3:
-      if(cs_config.sysdiv2) {
-        SYSCTL_RCC2_R |= (3 << 4);
-      }
-      else {
-        SYSCTL_RCC_R |= (3 << 4);
-      }
-      SYSCTL_RCC_R |= (1 << 11);
-      break;
-/* This oscsrc is only available on RCC2. */
-    case 4:
-      SYSCTL_RCC_R |= (1 << 11);
-      SYSCTL_RCC2_R |= (7 << 4);
-      break;
-    default: /* Invalid oscillator source */
-      return -1;
-  }
-/* These settings use RCC */
-  if(cs_config.sysdiv > 1 && cs_config.sysdiv <= 16) {
-    SYSCTL_RCC_R |= (1 << 22); //Set USESYSDIV
-    SYSCTL_RCC_R &= ~(0xF << 23); //Clear and set sysdiv.
-    SYSCTL_RCC_R |= ((cs_config.sysdiv - 1) << 23);
-    SYSCTL_RCC2_R &= ~(1 << 31); //Do not use RCC2
-  }
-/* These parameters require the use of RCC2. */
-  else if(cs_config.sysdiv2 > 1 && cs_config.sysdiv2 <= 128) {
-    SYSCTL_RCC_R |= (1 << 22); //Set USESYSDIV
-    SYSCTL_RCC2_R |= (1 << 31); //RCC2 overrides RCC
-    SYSCTL_RCC2_R &= ~(0x3F << 23); //Clear and set sysdiv.
-    if(cs_config.div400) {
-      SYSCTL_RCC2_R |= (1 << 30);
-      //Bit field encodings are offset by 3 for div400.
-      SYSCTL_RCC2_R |= ((cs_config.sysdiv2 - 3) << 23); //SYSDIV2
-    }
-    else {
-      SYSCTL_RCC2_R &= ~(1 << 30);
-      SYSCTL_RCC2_R |= ((cs_config.sysdiv2 - 1) << 23); //SYSDIV2
-    }
-    if(cs_config.use_pll) {
-      SYSCTL_RCC2_R &= ~(1 << 11);
-      SYSCTL_RCC2_R &= ~(1 << 13); //Power up the PLL
-    }
-    else {
-      SYSCTL_RCC2_R |= (1 << 11);
-      SYSCTL_RCC2_R |= (1 << 13); //Power down the PLL
-    }
-  }
-/* Not using sysdiv */
-  else {
-    SYSCTL_RCC_R &= ~(1 << 22);
-  }
-
-  /* As a final step, if the PLL was used, allow time for it to lock the */
-  /* frequency in */
-  if(cs_config.use_pll) {
-    while(!(SYSCTL_RIS_R & (1 << 6)));
-    SYSCTL_MISC_R |= (1 << 6); //Clear the interrupt.
-  }
-  return 0;
-}
 
 /*********************************SYSTICK*************************************/
 
@@ -312,28 +57,28 @@ void systick_init(int clksrc, int inten, uint32_t reload) {
  *   The number of milliseconds before an interrupt is activated
  */
 void start_clocktick(int clksrc, int period) {
-	NVIC_ST_CTRL_R = 0;
+  NVIC_ST_CTRL_R = 0;
   if(clksrc) {
-    NVIC_ST_RELOAD_R = (SysClkFrequency / 1000) * period;
+    NVIC_ST_RELOAD_R = (SysCtlClockGet() / 1000) * period;
   }
   else {
-    NVIC_ST_RELOAD_R = (SysClkFrequency / 4000) * period;
+    NVIC_ST_RELOAD_R = (SysCtlClockGet() / 4000) * period;
   }
-	NVIC_ST_CURRENT_R = 0;
+  NVIC_ST_CURRENT_R = 0;
   if(clksrc) {
     NVIC_ST_CTRL_R = 0x7;
   }
   else {
     NVIC_ST_CTRL_R  = 0x3;
   }
-	return;
+  return;
 }
 
 /**
  * 1ms delay
  */
 void systick_delay_1ms() {
-	NVIC_ST_RELOAD_R = (SysClkFrequency / 1000);
+	NVIC_ST_RELOAD_R = (SysCtlClockGet() / 1000);
 	NVIC_ST_CURRENT_R = 0;
 	while(!(NVIC_ST_CTRL_R & (1 << 16)));
 	return;
@@ -580,10 +325,10 @@ int uart1_init(unsigned int baud) {
   UART1_CC_R &= ~0xF;
   UART1_CC_R |= 0x5;
   if(UART1_CTL_R & (1 << 5)) {
-    brd = (float)PIOSC_FREQ / (8 * baud);
+    brd = (float)16E6 / (8 * baud);
   }
   else {
-    brd = (float)PIOSC_FREQ / (16 * baud);
+    brd = (float)16E6 / (16 * baud);
   }
   ibrd = brd;
   fbrd = (brd - ibrd) * 64 + 0.5;
@@ -632,44 +377,17 @@ int uart1_tchar(char data) {
 /**
  * @brief
  *   Initialize SSI0
+ * @return
+ *   non-zero on failure, 0 otherwise
  *
- * Initialise a Synchronous Serial Interface master on GPIO Port A by following
- * the procedure on Pg. 965 of the datasheet. This procedure will not complete
- * and return -1 if port control for PA[5:2] has been changed from the POR
- * default.
- *
- * @param protocol
- *   The protocol to use.
- *   \b 0 for Freescale SPI \n
- *   \b 1 for Texas Instruments SSI \n
- *   \b 2 for Microwire SSI \n
- * @param ds
- *   The data size for each frame. Anywhere from 0x3 (4-bit data) to 0xF
- *   (16-bit data) is allowed.
- * @param drxr
- *   The drive strength for the pin. \n
- *   \b 2 for 2mA \n
- *   \b 4 for 4mA \n
- *   \b 8 for 8mA
- * @param ff
- *   Frame format for the SPI lines \n
- *   \b 0 to hold the clock low during idle. \n
- *     Data is captured on the rising edge of the clock \n
- *   \b 1 same as \b 0, but data is captured on the falling edge of the clock. \n
- *   \b 2 to hold the clock high during idle. Data is caputured on the falling \n
- *     edge of the clock
- *   \b 3 same as \b 2, but data is captured on the rising edge.
- * @note
- *   PA2 - clock \n
- *   PA3 - frame signal \n
- *   PA4 - MOSI. (Driven by master, received by slave) \n
- *   PA5 - MISO. (Driven by slave, received by master)
  */
-int ssi0_init_master(int protocol, int ds, int drxr, int ff) {
-/* Activate the SSI peripheral clock. */
-  SYSCTL_RCGCSSI_R |= 0x1;
-/* Enable and provide a clock to GPIO Port A. */
-  SYSCTL_RCGCGPIO_R |= 0x1;
+int ssi0_init_master() {
+  SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI0);
+  SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+
+  while (!SysCtlPeripheralReady(SYSCTL_PERIPH_SSI0));
+  while (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA));
+
 /* There is no need to explicitely set the alternate function bits since */
 /* Port A's default function is set to the SSI0 signals. Instead we'll */
 /* check to make sure they haven't been changed. */
@@ -685,92 +403,33 @@ int ssi0_init_master(int protocol, int ds, int drxr, int ff) {
   else if((0x2 << 20) != (GPIO_PORTA_PCTL_R & 0xF << 20)) {
     return -1;
   }
+
+  SSIDisable(0x40008000);
+
+  SSIConfigSetExpClk(0x40008000,
+      SysCtlClockGet(),
+      SSI_FRF_MOTO_MODE_0,
+      SSI_MODE_MASTER,
+      SysCtlClockGet() / 8,
+      8);
+
   GPIO_PORTA_AFSEL_R |= 0x3C;
   GPIO_PORTA_DEN_R |= 0x3C;
-  GPIO_PORTA_DIR_R |= (1 << 4);
-  GPIO_PORTA_DIR_R &= ~(1 << 5);
-  switch (drxr) {
-    case 2: GPIO_PORTA_DR2R_R |= 0x3C;
-            break;
-    case 4: GPIO_PORTA_DR4R_R |= 0x3C;
-            break;
-    case 8: GPIO_PORTA_DR8R_R |= 0x3C;
-            break;
-    default: return -1;
-  }
-/* Disable SSI0 for initialization. */
-  SSI0_CR1_R &= ~(1 << 1);
-/* Configure the SSI peripheral as master. */
-  SSI0_CR1_R &= ~(1 << 2);
-/* The clock source is the system clock. See init() in main.c or the value of */
-/* SysClkFrequency. */
-  SSI0_CC_R &= ~0xF;
-/* Divide the SysClk by 2. The formula is SSInClk=SysClk/(CPSDVSR * (1 + SCR) */
-  SSI0_CPSR_R |= 0x2; //DVSR
-  SSI0_CR0_R &= ~(0xFF << 8); //SCR
-/* SSInClk is now SysClk/2. Define the protocol. */
-  switch(protocol) {
-    case 0: SSI0_CR0_R &= ~(0x3 << 4); //Freescale SPI
-            SSI0_CR0_R &= ~(1 << 6);
-            SSI0_CR0_R &= ~(1 << 7);
-            break;
-    case 1: SSI0_CR0_R |= (1 << 4); //TI SSI
-            break;
-    case 2: SSI0_CR0_R |= (2 << 4); //Microwire
-            break;
-    default: return -1;
-  }
-/*Frame select */
-  switch(ff) {
-    case 0: SSI0_CR0_R &= ~(1 << 7);
-            SSI0_CR0_R &= ~(1 << 6);
-            break;
-    case 1: SSI0_CR0_R |= (1 << 7);
-            SSI0_CR0_R &= ~(1 << 6);
-            break;
-    case 2: SSI0_CR0_R &= ~(1 << 7);
-            SSI0_CR0_R |= (1 << 6);
-            GPIO_PORTA_PUR_R |= (1 << 2);
-            GPIO_PORTA_ODR_R |= (1 << 2);
-            break;
-    case 3: SSI0_CR0_R |= (1 << 7);
-            SSI0_CR0_R |= (1 << 6);
-            GPIO_PORTA_PUR_R |= (1 << 2);
-            GPIO_PORTA_ODR_R |= (1 << 2);
-            break;
-    default: return -1;
-  }
-/*Data size */
-  if(ds <= 0xF && ds >= 0x3) {
-      SSI0_CR0_R |= ds;
-  }
-/* Enable SSI0. */
-  SSI0_CR1_R |= (1 << 1);
-/* No DMA for now... */
+  SSIEnable(0x40008000);
   return 0;
 }
 
 /**
  * @brief
- *   Non-blocking SSI data transmission SSI0.
+ *   Blocking SSI data transmission SSI0.
  * @param data
  *   The data to transmit
  * @return
- *   0 if the fifo was empty and the data could be transmitted, -1 otherwise.
- * @todo
- *   Should queue up if the fifo is not empty and transmit it later when it
- *   is.
+ *   non-zero on failure, 0 otherwise
  */
 int ssi0_transmit(uint8_t data) {
-/* Check status register to see if the FIFO is empty. */
-  if((SSI0_SR_R & (1 << 1))) {
-/* Write the data register for transmission. */
-      SSI0_DR_R = data;
-      return 0;
-  }
-  else {
-    return -1;
-  }
+  SSIDataPut(0x40008000, data);
+  return 0;
 }
 
 /**
@@ -779,12 +438,14 @@ int ssi0_transmit(uint8_t data) {
  * @return
  *   The SSI data
  */
-
 uint8_t ssi0_receive() {
-  return SSI0_DR_R;
+  uint32_t data;
+  SSIDataGet(0x40008000, &data);
+  return data;
 }
 /*****************************General Purpose Timer****************************/
-
+//TODO: What if you want a specific module? 0 for any, 1-5 for specific module.
+//add to config.
 gptm_timer_t gptm_timer_init(struct timer_config_t *config) {
   gptm_timer_t timer = NULL;
   //Find an unused timer by first checking if the clock to the module has been
@@ -797,6 +458,7 @@ gptm_timer_t gptm_timer_init(struct timer_config_t *config) {
       timer = &TIMER0_CFG_R;
     }
   }
+  //Clock was enabled which means A is used. Is B being used?
   else if(0 == (TIMER0_CTL_R & 1<<8)) {
     if(timer0B_init(config)) {
       return timer;
@@ -893,13 +555,16 @@ uint8_t timer0A_init(struct timer_config_t *config) {
   SYSCTL_RCGCTIMER_R |= 0x1;
   //Wait for the timer to be ready to access
   while (0 == (SYSCTL_PRTIMER_R & 0x1));
-  TIMER0_CFG_R = 0x0;
+  TIMER0_CFG_R &= ~0x3;
   TIMER0_TAMR_R |= config->periodic ? 0x2 : 0x1;
   if (config->pwm) {
     TIMER0_TAMR_R &= ~(1<<2);
     TIMER0_TAMR_R |= (1<<3);
+    //pwm mode must set either one-shot or peridic
     if (0 == (TIMER0_TAMR_R & 0x3) || 3 == (TIMER0_TAMR_R & 0x3))
-      //pwm mode must set either one-shot or peridic
+      return 1;
+    //pwm mode must have edge-count mode off.
+    if (0 != (TIMER0_TAMR_R & 1<<2))
       return 1;
   }
   TIMER0_TAMR_R |= config->direction<<4;
@@ -911,12 +576,28 @@ uint8_t timer0A_init(struct timer_config_t *config) {
   return 0;
 }
 
+//TODO: The rest of these should look like timer0A_init
 uint8_t timer0B_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= 0x1;
-  TIMER0_CFG_R = 0x0;
+  //Wait for the timer to be ready to access
+  while (0 == (SYSCTL_PRTIMER_R & 0x1));
+  TIMER0_CFG_R &= ~0x3;
   TIMER0_TBMR_R |= config->periodic ? 0x2 : 0x1;
+  if (config->pwm) {
+    TIMER0_TBMR_R &= ~(1<<2);
+    TIMER0_TBMR_R |= (1<<3);
+    //pwm mode must set either one-shot or peridic
+    if (0 == (TIMER0_TBMR_R & 0x3) || 3 == (TIMER0_TBMR_R & 0x3))
+      return 1;
+    //pwm mode must have edge-count mode off.
+    if (0 != (TIMER0_TBMR_R & 1<<2))
+      return 1;
+  }
+  TIMER0_TBMR_R |= config->direction<<4;
+  TIMER0_TBMR_R |= config->wait_on_trigger<<6;
+  TIMER0_TBMR_R |= config->snapshot_mode<<7;
 
-  TIMER0_CTL_R |= (1<<8);
+  TIMER0_TBILR_R = config->interval;
+  config->instance = 1;
   return 0;
 }
 
@@ -1010,6 +691,7 @@ uint8_t timer5B_init(struct timer_config_t *config) {
   return 0;
 }
 
+//#TODO: add callback as a parameter?
 void gptm_start_timer(gptm_timer_t timer_base, uint8_t timer_instance) {
   if (timer_instance)
     //Timer B
@@ -1030,22 +712,68 @@ void gptm_start_timer(gptm_timer_t timer_base, uint8_t timer_instance) {
  *   non-zero if the timer has not timed out.
  * @post
  *   The interrupt status is cleared
+ *TODO: Handle timeouts for one shot timers. It should disable the clock gate so
+ * it can be re-initialized.
  */
 uint8_t gptm_timeout(gptm_timer_t base, uint8_t timer_instance) {
-  if (timer_instance) {
+ if (timer_instance) {
     //Timer B
     if (*(base + 7) & 1<<8) {
-      (*(base + 9)) |= 1<<8;
+      *(base + 9) |= 1<<8;
       return 0;
     }
   }
   else {
     //Timer A
     if (*(base + 7) & 0x1) {
-      (*(base + 9)) |= 0x1;
+      *(base + 9) |= 0x1;
       return 0;
     }
   }
 
   return 1;
+}
+
+/*************************************GPIO************************************/
+void gpio_write(int port, int pin, int state) {
+  uint8_t pinBit = (1 << pin);
+  uint8_t stateBit = (state << pin);
+  switch (port) {
+    case GPIO_PORTA:
+      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA));
+      GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, pinBit);
+      GPIOPinWrite(GPIO_PORTA_BASE, pinBit, stateBit);
+      break;
+    case GPIO_PORTB:
+      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOB));
+      GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, pinBit);
+      GPIOPinWrite(GPIO_PORTB_BASE, pinBit, stateBit);
+      break;
+    case GPIO_PORTC:
+      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOC));
+      GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, pinBit);
+      GPIOPinWrite(GPIO_PORTC_BASE, pinBit, stateBit);
+      break;
+    case GPIO_PORTD:
+      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOD));
+      GPIOPinTypeGPIOOutput(GPIO_PORTD_BASE, pinBit);
+      GPIOPinWrite(GPIO_PORTD_BASE, pinBit, stateBit);
+      break;
+    case GPIO_PORTE:
+      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOE));
+      GPIOPinTypeGPIOOutput(GPIO_PORTE_BASE, pinBit);
+      GPIOPinWrite(GPIO_PORTE_BASE, pinBit, stateBit);
+      break;
+    case GPIO_PORTF:
+      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF));
+      GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, pinBit);
+      GPIOPinWrite(GPIO_PORTF_BASE, pinBit, stateBit);
+      break;
+  }
 }
