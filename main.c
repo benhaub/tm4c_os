@@ -43,7 +43,7 @@ int init() {
 	NVIC_SYS_PRI1_R |= (3 << 21); //Usage
 	NVIC_SYS_PRI1_R |= (2 << 5); //Mem
 
-  SysCtlClockSet(SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+  SysCtlClockSet(SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
 	#pragma GCC diagnostic push //push the state back to before we ignored
   if(-1 == uart1_init(115200u)) {

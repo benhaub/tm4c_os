@@ -410,7 +410,7 @@ int ssi0_init_master() {
       SysCtlClockGet(),
       SSI_FRF_MOTO_MODE_0,
       SSI_MODE_MASTER,
-      SysCtlClockGet() / 8,
+      SysCtlClockGet() / 5,
       8);
 
   GPIO_PORTA_AFSEL_R |= 0x3C;
