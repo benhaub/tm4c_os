@@ -18,7 +18,7 @@ CFLAGS := -mthumb \
           ${CPU} \
           ${FPU} \
           -Iinclude \
-					-Llibs \
+          -Llibs \
           -MD \
           -MF ./.deps/$*.d \
           -ffunction-sections \
@@ -41,7 +41,7 @@ LDFLAGS := -Wl,--gc-sections \
            -Wl,--entry=Reset_EXCP \
            -Wl,-Tlink.ld \
            -Wl,-Map=link.map \
-					 -Wl,-lgcc
+           -Wl,-lgcc
 
 #Optionally include the symbol table for debugging. The 3 on the end of -g is
 #the level. level 3 debugging symbols include everything up to preprocessor

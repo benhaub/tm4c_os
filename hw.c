@@ -6,8 +6,9 @@
  *****************************************************************************/
 //tm4c includes
 #include "hw.h"
-#include "mem.h"
+#include "include/mem.h"
 #include "syscalls.h"
+#include "kernel_services.h" //TEMP
 //Texas Instruments includes
 #include "tm4c123gh6pm.h"
 #include "ssi.h"
@@ -37,13 +38,13 @@
  *   The counter will begin counting.
  */
 void systick_init(int clksrc, int inten, uint32_t reload) {
-	/* Make sure systick is disabled for initialization */
-	NVIC_ST_CTRL_R = 0;
-	NVIC_ST_RELOAD_R = reload;
-	NVIC_ST_CURRENT_R = 0;
-  NVIC_ST_CTRL_R |= (((clksrc<<1) | inten) << 1);
-	NVIC_ST_CTRL_R |= 0x1; //Re-enable SysTick
-	return;
+    /* Make sure systick is disabled for initialization */
+    NVIC_ST_CTRL_R = 0;
+    NVIC_ST_RELOAD_R = reload;
+    NVIC_ST_CURRENT_R = 0;
+    NVIC_ST_CTRL_R |= (((clksrc<<1) | inten) << 1);
+    NVIC_ST_CTRL_R |= 0x1; //Re-enable SysTick
+    return;
 }
 
 /**
@@ -78,10 +79,10 @@ void start_clocktick(int clksrc, int period) {
  * 1ms delay
  */
 void systick_delay_1ms() {
-	NVIC_ST_RELOAD_R = (SysCtlClockGet() / 1000);
-	NVIC_ST_CURRENT_R = 0;
-	while(!(NVIC_ST_CTRL_R & (1 << 16)));
-	return;
+    NVIC_ST_RELOAD_R = (SysCtlClockGet() / 1000);
+    NVIC_ST_CURRENT_R = 0;
+    while(!(NVIC_ST_CTRL_R & (1 << 16)));
+    return;
 }
 
 /************************************LED**************************************/
@@ -96,20 +97,20 @@ void systick_delay_1ms() {
  *   LEDs can be used.
  */
 void led_init() {
-	SYSCTL_RCGCGPIO_R |= (1 << 5); //Enable port F
-	/* Dummy instruction to let the clock settle */
-	#pragma GCC diagnostic push //Remember the diagnostic state
-	#pragma GCC diagnostic ignored "-Wunused-variable" //choose to ignore
-	unsigned int dlyclk = SYSCTL_RCGCGPIO_R;
-	#pragma GCC diagnostic push //push the state back to before we ingnored
-	GPIO_PORTF_DIR_R |= (1 << 1); //Direction is output
-	GPIO_PORTF_DIR_R |= (1 << 2);
-	GPIO_PORTF_DIR_R |= (1 << 3);
-	GPIO_PORTF_AFSEL_R &= ~(1 << 0); //No alt function. Function as GPIO
-	GPIO_PORTF_DEN_R |= (1 << 1); //Digital Enable
-	GPIO_PORTF_DEN_R |= (1 << 2);
-	GPIO_PORTF_DEN_R |= (1 << 3);
-	return;
+    SYSCTL_RCGCGPIO_R |= (1 << 5); //Enable port F
+    /* Dummy instruction to let the clock settle */
+    #pragma GCC diagnostic push //Remember the diagnostic state
+    #pragma GCC diagnostic ignored "-Wunused-variable" //choose to ignore
+    unsigned int dlyclk = SYSCTL_RCGCGPIO_R;
+    #pragma GCC diagnostic push //push the state back to before we ingnored
+    GPIO_PORTF_DIR_R |= (1 << 1); //Direction is output
+    GPIO_PORTF_DIR_R |= (1 << 2);
+    GPIO_PORTF_DIR_R |= (1 << 3);
+    GPIO_PORTF_AFSEL_R &= ~(1 << 0); //No alt function. Function as GPIO
+    GPIO_PORTF_DEN_R |= (1 << 1); //Digital Enable
+    GPIO_PORTF_DEN_R |= (1 << 2);
+    GPIO_PORTF_DEN_R |= (1 << 3);
+    return;
 }
 
 /**
@@ -117,8 +118,8 @@ void led_init() {
  *   Turn the red led on
  */
 void led_ron() {
-	GPIO_PORTF_DATA_R |= (1 << 1);
-	return;
+    GPIO_PORTF_DATA_R |= (1 << 1);
+    return;
 }
 
 /**
@@ -126,8 +127,8 @@ void led_ron() {
  *   Turn off red led
  */
 void led_roff() {
-	GPIO_PORTF_DATA_R &= ~(1 << 1);
-	return;
+    GPIO_PORTF_DATA_R &= ~(1 << 1);
+    return;
 }
 
 /**
@@ -135,8 +136,8 @@ void led_roff() {
  *   Turn the green led on
  */
 void led_gron() {
-	GPIO_PORTF_DATA_R |= (1 << 3);
-	return;
+    GPIO_PORTF_DATA_R |= (1 << 3);
+    return;
 }
 
 /**
@@ -144,8 +145,8 @@ void led_gron() {
  *   Turn off the green led on
  */
 void led_groff() {
-	GPIO_PORTF_DATA_R &= ~(1 << 3);
-	return;
+    GPIO_PORTF_DATA_R &= ~(1 << 3);
+    return;
 }
 
 /**
@@ -153,8 +154,8 @@ void led_groff() {
  *   Turn the blue led on
  */
 void led_blon() {
-	GPIO_PORTF_DATA_R |= (1 << 2);
-	return;
+    GPIO_PORTF_DATA_R |= (1 << 2);
+    return;
 }
 
 /**
@@ -162,8 +163,8 @@ void led_blon() {
  *   Turn the blue led off
  */
 void led_bloff() {
-	GPIO_PORTF_DATA_R &= ~(1 << 2);
-	return;
+    GPIO_PORTF_DATA_R &= ~(1 << 2);
+    return;
 }
 
 /******************************Flash Memory***********************************/
@@ -195,22 +196,22 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
     return -1;
   }
 /* Align the flash address to the nearest 1KB boundary */
-	FLASH_FMA_R = ((uint32_t)faddr & ~(0x3FF));
+  FLASH_FMA_R = ((uint32_t)faddr & ~(0x3FF));
 /* If the write can't be done with one set of buffer registers, then set the */
 /* cflag to re-fill the buffer regs and continue writing. */
-	int cflag = 0;
+  int cflag = 0;
 /* current address being written to flash copy */
-	uint32_t *curraddr = (uint32_t *)saddr;
+  uint32_t *curraddr = (uint32_t *)saddr;
 /* The fpage_os is the offset of FLASH_FMA_R where the flash writes begin at.*/
 /* This address must be uint32_t aligned. */
-	uint32_t fpage_os = (uint32_t)faddr & 0xFC;
+  uint32_t fpage_os = (uint32_t)faddr & 0xFC;
 /* Since 0's can not be programmed back to a 1. We have to copy and erase */
 /* flash before making the write. */
-	uint32_t fcopy[256]; /* 1KB of space */
-	int i, j;
-	for(i = 0; i < 256; i++) {
-		fcopy[i] = *((uint32_t *)FLASH_FMA_R + i);
-	}
+  uint32_t fcopy[256]; /* 1KB of space */
+  int i, j;
+  for(i = 0; i < 256; i++) {
+      fcopy[i] = *((uint32_t *)FLASH_FMA_R + i);
+  }
 /* Write the new data into the copy we've obtained. */
   if(fpage_os != 0) {
     i = (fpage_os >> 2);
@@ -231,46 +232,46 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
 /* Copy the modified fcopy back into the flash write buffers. */
 Write:
   i = 0;
-	while((FLASH_FMA_R + i*4) < (FLASH_FMA_R + 1*KB)) {
-		*(&FLASH_FWBN_R + i) = fcopy[j];
+  while((FLASH_FMA_R + i*4) < (FLASH_FMA_R + 1*KB)) {
+      *(&FLASH_FWBN_R + i) = fcopy[j];
     i++;
     j++;
 /* Check to see if all the flash buffers have filled. If they have, then we */
 /* need to write and continue filling the buffers after the write has */
 /* completed. */
-		if(0xFFFFFFFF == FLASH_FWBVAL_R) {
-			cflag = 1;
-			break;
-		}
-	}
+    if(0xFFFFFFFF == FLASH_FWBVAL_R) {
+        cflag = 1;
+        break;
+    }
+  }
 /* Initiate the write sequence */
-	FLASH_FMC2_R |= FLASH_FMC_WRKEY | FLASH_FMC2_WRBUF;
+  FLASH_FMC2_R |= FLASH_FMC_WRKEY | FLASH_FMC2_WRBUF;
 /* Wait for WRBUF to clear */
-	while(FLASH_FMC2_R);
+  while(FLASH_FMC2_R);
 /* Check raw interrupt status for any errors, then clear it. */
-	if(FLASH_FCRIS_R & FLASH_FCRIS_PROGRIS) {
+  if(FLASH_FCRIS_R & FLASH_FCRIS_PROGRIS) {
     FLASH_FCMISC_R |= FLASH_FCMISC_PROGMISC;
-		return -1;
-	}
-	else if(FLASH_FCRIS_R & FLASH_FCRIS_ERRIS) {
+    return -1;
+  }
+  else if(FLASH_FCRIS_R & FLASH_FCRIS_ERRIS) {
     FLASH_FCMISC_R |= FLASH_FCMISC_ERMISC;
-		return -1;
-	}
-	else if(FLASH_FCRIS_R & FLASH_FCRIS_INVDRIS) {
+    return -1;
+  }
+  else if(FLASH_FCRIS_R & FLASH_FCRIS_INVDRIS) {
     FLASH_FCMISC_R |= FLASH_FCMISC_INVDMISC;
-		return -1;
-	}
-	else if(FLASH_FCRIS_R & FLASH_FCRIS_VOLTRIS) {
+    return -1;
+  }
+  else if(FLASH_FCRIS_R & FLASH_FCRIS_VOLTRIS) {
     FLASH_FCMISC_R |= FLASH_FCMISC_VOLTMISC;
-		return -1;
-	}
+    return -1;
+  }
 /* Load the buffer registers again if we need to from where we left off*/
-	if(1 == cflag) {
-		cflag = 0;
+  if(1 == cflag) {
+      cflag = 0;
     FLASH_FMA_R = FLASH_FMA_R + i*4;
-		goto Write;
-	}
-	return 0;
+    goto Write;
+  }
+  return 0;
 }
 
 /**
@@ -279,7 +280,7 @@ Write:
  */
 void erase_flash(uint32_t pageaddr) {
 /* Align the flash address to the nearest 1KB boundary */
-	FLASH_FMA_R = pageaddr & ~0x3FF;
+    FLASH_FMA_R = pageaddr & ~0x3FF;
 /* Erase the 1KB block of flash starting at pageaddr. */
   FLASH_FMC_R |= FLASH_FMC_WRKEY | FLASH_FMC_ERASE;
   while(FLASH_FMC_R);
@@ -385,10 +386,10 @@ int ssi0_init_master() {
   SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI0);
   SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 
-  while (!SysCtlPeripheralReady(SYSCTL_PERIPH_SSI0));
-  while (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA));
+  while(!SysCtlPeripheralReady(SYSCTL_PERIPH_SSI0));
+  while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA));
 
-/* There is no need to explicitely set the alternate function bits since */
+/* There is no need to explicitly set the alternate function bits since */
 /* Port A's default function is set to the SSI0 signals. Instead we'll */
 /* check to make sure they haven't been changed. */
   if((0x2 << 8) != (GPIO_PORTA_PCTL_R & 0xF << 8)) {
@@ -404,9 +405,9 @@ int ssi0_init_master() {
     return -1;
   }
 
-  SSIDisable(0x40008000);
+  SSIDisable(SSI0_BASE);
 
-  SSIConfigSetExpClk(0x40008000,
+  SSIConfigSetExpClk(SSI0_BASE,
       SysCtlClockGet(),
       SSI_FRF_MOTO_MODE_0,
       SSI_MODE_MASTER,
@@ -415,7 +416,10 @@ int ssi0_init_master() {
 
   GPIO_PORTA_AFSEL_R |= 0x3C;
   GPIO_PORTA_DEN_R |= 0x3C;
-  SSIEnable(0x40008000);
+
+  NVIC_EN0_R |= 1 << 7;
+  SSIIntEnable(SSI0_BASE, SSI_RXFF | SSI_RXTO | SSI_RXOR);
+  SSIEnable(SSI0_BASE);
   return 0;
 }
 
@@ -440,302 +444,28 @@ int ssi0_transmit(uint8_t data) {
  */
 uint8_t ssi0_receive() {
   uint32_t data;
-  SSIDataGet(0x40008000, &data);
-  return data;
+  //Send dummy data to drive the clock in order to receive.
+  SSIDataPut(SSI0_BASE, 0);
+  SSIDataGet(SSI0_BASE, &data);
+  return (data & 0xFF);
+}
+void ssi0_handler() {
+    uint32_t status = SSIIntStatus(SSI0_BASE, true);
+    SSIIntClear(SSI0_BASE, SSI_TXEOT | SSI_DMATX | SSI_DMARX | SSI_TXFF| SSI_RXFF | SSI_RXTO | SSI_RXOR);
+    if (status & SSI_RXOR)
+        printk("SSI RX fifo overrun\n\r");
+    else if ((status & SSI_RXFF) || (status & SSI_RXTO)) {
+      uint8_t data = (SSI0_DR_R << 1);
+    }
+    return;
 }
 /*****************************General Purpose Timer****************************/
-//TODO: What if you want a specific module? 0 for any, 1-5 for specific module.
-//add to config.
-gptm_timer_t gptm_timer_init(struct timer_config_t *config) {
-  gptm_timer_t timer = NULL;
-  //Find an unused timer by first checking if the clock to the module has been
-  //enabled. If it has, then timer A is in use.
-  if (0 == (SYSCTL_RCGCTIMER_R & 0x1)) {
-    if(timer0A_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER0_CFG_R;
-    }
-  }
-  //Clock was enabled which means A is used. Is B being used?
-  else if(0 == (TIMER0_CTL_R & 1<<8)) {
-    if(timer0B_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER0_CFG_R;
-    }
-  }
-  else if(0 == (SYSCTL_RCGCTIMER_R & 1<<1)) {
-    if(timer1A_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER1_CFG_R;
-    }
-  }
-  else if(0 == (TIMER1_CTL_R & 1<<8)) {
-    if(timer1B_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER1_CFG_R;
-    }
-  }
-  else if (0 == (SYSCTL_RCGCTIMER_R & 1<<2)) {
-    if(timer2A_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER2_CFG_R;
-    }
-  }
-  else if(0 == (TIMER2_CTL_R & 1<<8)) {
-    if(timer2B_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER2_CFG_R;
-    }
-  }
-  else if (0 == (SYSCTL_RCGCTIMER_R & 1<<3)) {
-    if(timer3A_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER3_CFG_R;
-    }
-  }
-  else if(0 == (TIMER3_CTL_R & 1<<8)) {
-    if(timer3B_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER3_CFG_R;
-    }
-  }
-  else if (0 == (SYSCTL_RCGCTIMER_R & 1<<4)) {
-    if(timer4A_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER4_CFG_R;
-    }
-  }
-  else if(0 == (TIMER4_CTL_R & 1<<8)) {
-    if(timer4B_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER4_CFG_R;
-    }
-  }
-  else if (0 == (SYSCTL_RCGCTIMER_R & 1<<5)) {
-    if(timer5A_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER5_CFG_R;
-    }
-  }
-  else if(0 == (TIMER5_CTL_R & 1<<8)) {
-    if(timer5B_init(config)) {
-      return timer;
-    }
-    else {
-      timer = &TIMER5_CFG_R;
-    }
-  }
+gptm_timer_init() {
 
-  return timer;
-}
-
-uint8_t timer0A_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= 0x1;
-  //Wait for the timer to be ready to access
-  while (0 == (SYSCTL_PRTIMER_R & 0x1));
-  TIMER0_CFG_R &= ~0x3;
-  TIMER0_TAMR_R |= config->periodic ? 0x2 : 0x1;
-  if (config->pwm) {
-    TIMER0_TAMR_R &= ~(1<<2);
-    TIMER0_TAMR_R |= (1<<3);
-    //pwm mode must set either one-shot or peridic
-    if (0 == (TIMER0_TAMR_R & 0x3) || 3 == (TIMER0_TAMR_R & 0x3))
-      return 1;
-    //pwm mode must have edge-count mode off.
-    if (0 != (TIMER0_TAMR_R & 1<<2))
-      return 1;
-  }
-  TIMER0_TAMR_R |= config->direction<<4;
-  TIMER0_TAMR_R |= config->wait_on_trigger<<6;
-  TIMER0_TAMR_R |= config->snapshot_mode<<7;
-
-  TIMER0_TAILR_R = config->interval;
-  config->instance = 0;
-  return 0;
-}
-
-//TODO: The rest of these should look like timer0A_init
-uint8_t timer0B_init(struct timer_config_t *config) {
-  //Wait for the timer to be ready to access
-  while (0 == (SYSCTL_PRTIMER_R & 0x1));
-  TIMER0_CFG_R &= ~0x3;
-  TIMER0_TBMR_R |= config->periodic ? 0x2 : 0x1;
-  if (config->pwm) {
-    TIMER0_TBMR_R &= ~(1<<2);
-    TIMER0_TBMR_R |= (1<<3);
-    //pwm mode must set either one-shot or peridic
-    if (0 == (TIMER0_TBMR_R & 0x3) || 3 == (TIMER0_TBMR_R & 0x3))
-      return 1;
-    //pwm mode must have edge-count mode off.
-    if (0 != (TIMER0_TBMR_R & 1<<2))
-      return 1;
-  }
-  TIMER0_TBMR_R |= config->direction<<4;
-  TIMER0_TBMR_R |= config->wait_on_trigger<<6;
-  TIMER0_TBMR_R |= config->snapshot_mode<<7;
-
-  TIMER0_TBILR_R = config->interval;
-  config->instance = 1;
-  return 0;
-}
-
-uint8_t timer1A_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<1);
-  TIMER1_CFG_R = 0x0;
-  TIMER1_TAMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER1_CTL_R |= 0x1;
-  return 0;
-}
-
-uint8_t timer1B_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<1);
-  TIMER1_CFG_R = 0x0;
-  TIMER1_TBMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER1_CTL_R |= (1<<8);
-  return 0;
-}
-
-uint8_t timer2A_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<2);
-  TIMER2_CFG_R = 0x0;
-  TIMER2_TAMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER2_CTL_R |= 1;
-  return 0;
-}
-
-uint8_t timer2B_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<2);
-  TIMER2_CFG_R = 0x0;
-  TIMER2_TBMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER2_CTL_R |= (1<<8);
-  return 0;
-}
-
-uint8_t timer3A_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<3);
-  TIMER3_CFG_R = 0x0;
-  TIMER3_TBMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER3_CTL_R |= 1;
-  return 0;
-}
-
-uint8_t timer3B_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<3);
-  TIMER3_CFG_R = 0x0;
-  TIMER3_TBMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER3_CTL_R |= (1<<8);
-  return 0;
-}
-
-uint8_t timer4A_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<4);
-  TIMER4_CFG_R = 0x0;
-  TIMER4_TAMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER4_CTL_R |= 1;
-  return 0;
-}
-
-uint8_t timer4B_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<4);
-  TIMER4_CFG_R = 0x0;
-  TIMER4_TBMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER4_CTL_R |= (1<<8);
-  return 0;
-}
-
-uint8_t timer5A_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<5);
-  TIMER5_CFG_R = 0x0;
-  TIMER5_TAMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER5_CTL_R |= 1;
-  return 0;
-}
-
-uint8_t timer5B_init(struct timer_config_t *config) {
-  SYSCTL_RCGCTIMER_R |= (1<<5);
-  TIMER5_CFG_R = 0x0;
-  TIMER5_TBMR_R |= config->periodic ? 0x2 : 0x1;
-
-  TIMER5_CTL_R |= (1<<8);
-  return 0;
-}
-
-//#TODO: add callback as a parameter?
-void gptm_start_timer(gptm_timer_t timer_base, uint8_t timer_instance) {
-  if (timer_instance)
-    //Timer B
-    *(timer_base + 3) |= (1<<8);
-  else
-    //Timer A
-    *(timer_base + 3) |= 0x1;
-}
-
-/*
- * @breif
- *   Check the raw interrupt status of the timer to see if it's timed out.
- * @param base
- *   The timer to check
- * @param instance
- *   The timer instance to check.
- * @return
- *   non-zero if the timer has not timed out.
- * @post
- *   The interrupt status is cleared
- *TODO: Handle timeouts for one shot timers. It should disable the clock gate so
- * it can be re-initialized.
- */
-uint8_t gptm_timeout(gptm_timer_t base, uint8_t timer_instance) {
- if (timer_instance) {
-    //Timer B
-    if (*(base + 7) & 1<<8) {
-      *(base + 9) |= 1<<8;
-      return 0;
-    }
-  }
-  else {
-    //Timer A
-    if (*(base + 7) & 0x1) {
-      *(base + 9) |= 0x1;
-      return 0;
-    }
-  }
-
-  return 1;
 }
 
 /*************************************GPIO************************************/
-void gpio_write(int port, int pin, int state) {
+int gpio_write(int port, int pin, int state) {
   uint8_t pinBit = (1 << pin);
   uint8_t stateBit = (state << pin);
   switch (port) {
@@ -776,4 +506,6 @@ void gpio_write(int port, int pin, int state) {
       GPIOPinWrite(GPIO_PORTF_BASE, pinBit, stateBit);
       break;
   }
+
+  return 0;
 }

@@ -31,35 +31,35 @@
 
 int init() {
 /* Enable all the faults and exceptions. Pg.173, datasheet */
-	NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
-	NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
-	NVIC_SYS_HND_CTRL_R |= (1 << 18); /* USAGE Enable */
+  NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
+  NVIC_SYS_HND_CTRL_R |= (1 << 17); /* BUS Enable */
+  NVIC_SYS_HND_CTRL_R |= (1 << 18); /* USAGE Enable */
   NVIC_CFG_CTRL_R |= 1;
   NVIC_CFG_CTRL_R |= (1 << 4); /* Enable traps on division by zero. */
 /* Configure Interrupt priorities. SVC exceptions are higher priority than */
 /* SysTick so that the kernel can't be interrupted. Pg. 170, datasheet. */
-	NVIC_SYS_PRI3_R |= (3 << 29); //SysTick
-	NVIC_SYS_PRI2_R |= (2 << 29); //SVC
-	NVIC_SYS_PRI1_R |= (3 << 21); //Usage
-	NVIC_SYS_PRI1_R |= (2 << 5); //Mem
+  NVIC_SYS_PRI3_R |= (3 << 29); //SysTick
+  NVIC_SYS_PRI2_R |= (2 << 29); //SVC
+  NVIC_SYS_PRI1_R |= (3 << 21); //Usage
+  NVIC_SYS_PRI1_R |= (2 << 5); //Mem
 
   SysCtlClockSet(SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
-	#pragma GCC diagnostic push //push the state back to before we ignored
+#pragma GCC diagnostic push //push the state back to before we ignored
   if(-1 == uart1_init(115200u)) {
     return 0;
   }
   /* We are already in the kernel so we can use the kernel services directly. */
   syswrite("Initialising tm4c_os\n\r");
-	led_init();
-  if(-1 == ssi0_init_master(0,0x7,2, 0)) {
+  led_init();
+  if(-1 == ssi0_init_master()) {
     syswrite("Failed to start SSI0\n\r");
   }
-	init_ram();
-	init_ptable();
-	start_clocktick(1, 10);
+  init_ram();
+  init_ptable();
+  start_clocktick(1, 10);
 /* Set up the first user process (the shell) */
   mpu_tm4cOS_init();
-	user_init();
-	return 0;
+  user_init();
+  return 0;
 }

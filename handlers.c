@@ -4,20 +4,17 @@
  * @date    May 18th, 2019                                                  
  * @details \b Synopsis: \n fault handlers                                                  
  *****************************************************************************/
-#include <proc.h> /* for currproc(), scheduler() */
-#include <types.h> /* for stdint.h */
-#include <tm4c123gh6pm.h> /* Hardware register macros. */
-#include <kernel_services.h> /* for syswrite(), sysexit() */
-#include <syscalls.h> /* For syscall numbers */
+#include "proc.h" /* for currproc(), scheduler() */
+#include "types.h" /* for stdint.h */
+#include "syscalls.h" /* For syscall numbers */
+#include "tm4c123gh6pm.h" /* Hardware register macros. */
+#include "kernel_services.h" /* for syswrite(), sysexit() */
 
 //! @cond Doxygen_Suppress_Warning
 /* From vectors.s */
-extern void interrupt_enable(int);
 extern void systick_context_save(struct pcb *);
 extern void mstke_repair();
 extern void switch_to_msp();
-/* From context.s */
-extern void swtch(uint32_t sp);
 /* Function prototypes. */
 void syst_handler() __attribute__((noreturn, naked));
 //! @endcond
@@ -110,8 +107,6 @@ void mm_handler(uint8_t stack, uint32_t psp) {
 /* Kill the offending process. */
     return;
   }
-/* Get rid of unused variable warnings. */
-  fault_addr = fault_addr;
 }
 
 /** 
@@ -175,7 +170,7 @@ void u_handler(uint32_t stack) {
 /* The processor has attempted to execute an instruction that makes illegal */
 /* use of the epsr register. */
 	invstat = (NVIC_FAULT_STAT_R & (1 << 17));
-/* The processor has attemped to execute an undefined instruction. */
+/* The processor has attempted to execute an undefined instruction. */
 	undef = (NVIC_FAULT_STAT_R & (1 << 16));
 /* Clear out FAULT_STAT. */
 	NVIC_FAULT_STAT_R |= (div0 | unalign | nocp | invpc | invstat | undef);
@@ -202,12 +197,12 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
   /* Return values from system calls. */
 	uint32_t ret;
 
-	switch(sysnum) {
-		case FORK: ret = sysfork();
-			break;
-		case WAIT: ret = syswait(*((uint32_t *)arg1));
-			break;
-		case EXIT: sysexit(*((uint32_t *)arg1));
+  switch(sysnum) {
+    case FORK: ret = sysfork();
+      break;
+    case WAIT: ret = syswait(*((uint32_t *)arg1));
+      break;
+    case EXIT: sysexit(*((uint32_t *)arg1));
       return;
     case WRITE: ret = syswrite((char *)arg1);
       break;
@@ -219,10 +214,10 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
       break;
     case GPIO: sysgpio(*((int *)arg1), *((int *)arg2), *((int *)arg3));
       break;
-		default: while(1); 
-	}
+    default: while(1);
+  }
 /* Store return values */
-	syscreturn(ret);
+  syscreturn(ret);
 }
 
 /**
@@ -232,7 +227,7 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
  *   disabled
  */
 void dm_handler() {
-	while(1);
+  while(1);
 }
 
 /**
@@ -240,27 +235,53 @@ void dm_handler() {
  *   PendSV handler
  */
 void psv_handler() {
-	while(1);
+  while(1);
 }
 
 /**
  * Systick handler (clock tick interrupt)
  * @attention
- *   Scheduling is interruptable by the clock tick.
+ *   Scheduling is interruptible by the clock tick.
  * @pre
- *   Mode must be privledged and stack must be msp
+ *   Mode must be privileged and stack must be msp
  */
 void syst_handler() {
   
   systick_context_save(currproc());
   switch_to_msp();
 
-	if(WAITING == currproc()->state) {
+  if(WAITING == currproc()->state) {
 /* Don't change the state to RUNNABLE for WAITING, just go to the scheduler */
-		scheduler();
-	}
-	else {
-		currproc()->state = RUNNABLE;
-		scheduler();
-	}
+    scheduler();
+  }
+  else {
+    currproc()->state = RUNNABLE;
+    scheduler();
+  }
+}
+
+__attribute((weak)) void gpio_porta_handler() {
+    return;
+}
+__attribute((weak)) void gpio_portb_handler() {
+    return;
+}
+__attribute((weak)) void gpio_portc_handler() {
+    return;
+}
+__attribute((weak)) void gpio_portd_handler() {
+    return;
+}
+__attribute((weak)) void gpio_porte_handler() {
+    return;
+}
+__attribute((weak)) void uart0_handler() {
+    return;
+}
+__attribute((weak)) void uart1_handler() {
+    return;
+}
+
+__attribute((weak)) void ssi0_handler() {
+    return;
 }

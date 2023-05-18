@@ -91,12 +91,12 @@ int wait(pid_t);
 /**
  * exit is word aligned because the memory, usage, and bus fault handlers will
  * load the PC with this address if the fault can be services appropriately by
- * the kernel. Loading an unaligned address to the PC has unpredicatable
+ * the kernel. Loading an unaligned address to the PC has unpredictable
  * behaviour.
  * @see
- *   Pg. 48 Architecture Reference Manaual
+ *   Pg. 48 Architecture Reference Manual
  */
-void exit(pid_t) __attribute__((noreturn, naked, aligned(4)));
+void exit(pid_t) __attribute__((noreturn, aligned(4), naked));
 //! @endcond
 int write(char *);
 int led(int, int);

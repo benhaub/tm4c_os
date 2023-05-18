@@ -40,7 +40,7 @@ extern void switch_to_msp(); //for exit()
  *   Returns 0 on failure.
  */
 pid_t fork() {
-	return syscall(FORK, currproc());
+  return syscall(FORK, currproc());
 }
 
 /**
@@ -57,7 +57,7 @@ pid_t fork() {
  * to the scheduler.
  */
 int wait(pid_t pid) {
-	int ret;
+  int ret;
   struct pcb *waitproc;
 
   if(ptable_index_from_pid(pid) >= MAX_PROC) {
@@ -79,8 +79,8 @@ int wait(pid_t pid) {
 /* Wait for state to change. This is done here because svc's are higher */
 /* priority than systick exceptions so the tick interrupt gets masked out. */
 /* Interrupts are allowed here. */
-	while(WAITING == waitproc->state) {
-    yield();
+  while(WAITING == waitproc->state) {
+      yield();
   }
 	return ret;
 }
@@ -98,7 +98,7 @@ int wait(pid_t pid) {
  * @sa procstate EXIT_SUCCESS EXIT_FAILURE
  */
 void exit(pid_t exitcode) {
-	syscall1(EXIT, currproc(), &exitcode);
+  syscall1(EXIT, currproc(), &exitcode);
   switch_to_msp();
   scheduler();
   while(1);
@@ -178,9 +178,9 @@ int gpio(int port, int pin, int state) {
   //Only 8 pins
   if (pin > 7)
     return 1;
-  //Only 6 port
+  //Only 6 ports
   if (port > 5)
-    return 0;
+    return 1;
 
-  syscall3(GPIO, currproc(), &port, &pin, &state);
+  return syscall3(GPIO, currproc(), &port, &pin, &state);
 }
