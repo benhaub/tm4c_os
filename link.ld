@@ -30,6 +30,13 @@ SECTIONS
 		_etext.main = .;
 	} >FLASH
 	
+	.stack :
+	{
+		_stack = .;
+		KEEP(*(.stack))
+		_estack = .;
+	} >SRAM
+
 	.data : 
 	{
 		_data = .;
@@ -43,15 +50,7 @@ SECTIONS
 		*(.bss)
 		*(COMMON)
 		_ebss = .;
-	} >SRAM
-
-	.stack :
-	{
-		_stack = .;
-		KEEP(*(.stack))
-		_estack = .;
-	} >SRAM
-	
+	} >SRAM	
 	/* 
 	 * This section is put in automatically by the arm compiler. It's asking for
 	 * some c library exception handling code that I don't want to include.

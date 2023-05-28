@@ -65,9 +65,9 @@ void init_ram() {
 /* The amount of RAM usage was pushed on the stack during reset. We need to */
 /* round the value up to make sure there's not stack overlap (+ 1). After a */
 /* push, the processor increments the stack pointer to the next uint32_t. */
-/* KRAM_USE is stored one uint32_t back (- 4). If you edit this calculation, also*/
+/* KRAM_USE is stored one uint32_t back (- 1). If you edit this calculation, also*/
 /* make the same changes to user_init() in proc.c. */
-	for(i = 0; i < *((uint32_t *)(KRAM_USE - 4)) + 1; i++) {
+	for(i = 0; i < *(KRAM_USE - 1) + 1; i++) {
 		stackusage[i] = 1;
 	}
 	while(i < SRAM_PAGES) {

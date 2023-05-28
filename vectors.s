@@ -14,7 +14,7 @@
 /* If you change the stack size, make sure to adjust the MAX_PROC define in */
 /* mem.h */
   .section .stack
-STACK_TOP:
+STACK_BOTTOM:
   .skip 0x800, 0x0
 
 /* Constants */	
@@ -41,7 +41,7 @@ STACK_TOP:
 
 /* Pg.103, datasheet - Table 2-8 details the vector table. */
 /* In C, this is similar to: */
-/* unsigned int Vectors[16] = {STACK_TOP, Reset_EXCP,...,SYST_EXCP}; */
+/* unsigned int Vectors[16] = {STACK_BOTTOM, Reset_EXCP,...,SYST_EXCP}; */
 
 /**
  * Note that this is the KERNEL stack pointer not a user stack pointer.
@@ -53,7 +53,7 @@ STACK_TOP:
  * stored in ROM
  */
 Vectors:
-  .word STACK_TOP + 0x800
+  .word STACK_BOTTOM + 0x800
   .word Reset_EXCP      /* Reset Exception */
   .word NMI_EXCP        /* Non-maskable interrupt */
   .word HFAULT          /* Hard Fault */

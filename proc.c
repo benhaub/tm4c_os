@@ -29,15 +29,15 @@ static unsigned int currpid;
  *   for an explantion of calculations made
  */
 void user_init() {
-  if(MAX_PROC > SRAM_PAGES - (*((uint32_t *)(KRAM_USE - 4)) + 1)) {
+  if(MAX_PROC > SRAM_PAGES - *(KRAM_USE - 1) + 1) {
     printk("MAX_PROC is set to allow more processes than the available RAM "\
         "can hold. Please use a value no greater than %d\n\r", \
        SRAM_PAGES - (*((uint32_t *)(KRAM_USE - 4)) + 1));
     return;
   }
-  else if(MAX_PROC < SRAM_PAGES - (*((uint32_t *)(KRAM_USE - 4)) + 1)) {
+  else if(MAX_PROC < SRAM_PAGES - *(KRAM_USE - 1) + 1) {
     printk("Currently capping %d/%d available processes\n\r", MAX_PROC, \
-      SRAM_PAGES - (*((uint32_t *)(KRAM_USE - 4)) + 1) - 1);
+      SRAM_PAGES - (*(KRAM_USE - 1) + 1) - 1);
   }
 /* Set all globals. Compiler doesn't seem to want to cooperate with global */
 /* initializations of variables. */

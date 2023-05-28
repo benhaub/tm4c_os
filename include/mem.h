@@ -16,7 +16,7 @@ extern void *mainsize;
 /* From userinit. Not called. Only used to calculate ksize. */
 extern int main(void);
 /* From vectors.s */
-extern const int KRAM_USE;
+extern const uint32_t *KRAM_USE;
 //! @endcond
 
 /**
