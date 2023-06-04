@@ -24,6 +24,9 @@ swtch: .fnstart
         mrs r2, CONTROL
         orr r2, r2, #0x3
         msr CONTROL, r2
+/* Required memory barrier instructions after changing MPU. Pg.127,datasheet. */
+        DSB
+        ISB
         pop {r0-r3, r5, r7, r10, r12, r14}
         bx r5
        .fnend

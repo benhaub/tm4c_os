@@ -12,6 +12,8 @@ MEMORY
 }
 /* Used by the kernel to calculate it's size in flash memory. */
 mainsize = SIZEOF(.text.main);
+_bss = LOADADDR(.bss);
+_ebss = _bss + SIZEOF(.bss);
 
 SECTIONS
 {
@@ -51,6 +53,8 @@ SECTIONS
 		*(COMMON)
 		_ebss = .;
 	} >SRAM	
+
+
 	/* 
 	 * This section is put in automatically by the arm compiler. It's asking for
 	 * some c library exception handling code that I don't want to include.

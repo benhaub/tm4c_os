@@ -59,7 +59,7 @@ int init() {
   init_ptable();
   start_clocktick(1, 10);
 /* Set up the first user process (the shell) */
-  mpu_tm4cOS_init();
+  mpuInit();
   user_init();
   return 0;
 }

@@ -12,7 +12,8 @@
 
 //! @cond Doxygen_Suppress_Warning
 /* From link.ld. See linkerscript. */
-extern void *mainsize;
+extern char mainsize;
+extern char _bss, _ebss;
 /* From userinit. Not called. Only used to calculate ksize. */
 extern int main(void);
 /* From vectors.s */
@@ -78,7 +79,7 @@ extern const uint32_t *KRAM_USE;
 int get_stackpage(void);
 void free_stackpage(int);
 void init_ram(void);
-void mpu_tm4cOS_init(void);
+void mpuInit(void);
 void create_user_memory_region(int);
 
 #endif /*__MEM_H__*/
