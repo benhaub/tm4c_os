@@ -34,6 +34,9 @@
 ///@def GPIO
 ///Syscall number for GPIO toggling
 #define GPIO 7
+///@def DELAY
+///Syscall number for delaying processes
+#define DELAY 8
 
 /**
  * @enum led_colours
@@ -45,7 +48,7 @@
  * @var led_colours::LED_BLUE
  *   Set the blue colour on the LED
  */   
-enum led_colours {LED_RED, LED_GREEN, LED_BLUE};
+enum led_colours {LED_RED=0, LED_GREEN, LED_BLUE};
 
 /**
  * @enum led_states
@@ -103,5 +106,6 @@ int led(int, int);
 void yield();
 void spi(int, uint8_t *);
 int gpio(int, int, int);
+void delay(uint32_t);
 
 #endif /*__SYSCALLS_H__*/

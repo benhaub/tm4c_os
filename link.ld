@@ -11,7 +11,6 @@ MEMORY
 	SRAM	(wx)	: ORIGIN = 0x20000000, LENGTH = 0x00008000 /* 32KB SRAM */
 }
 /* Used by the kernel to calculate it's size in flash memory. */
-mainsize = SIZEOF(.text.main);
 _bss = LOADADDR(.bss);
 _ebss = _bss + SIZEOF(.bss);
 
@@ -25,13 +24,6 @@ SECTIONS
 		_etext = .;
 	} >FLASH
 
-	.text.main :
-	{
-		_text.main = .;
-		KEEP(*(.text.main))
-		_etext.main = .;
-	} >FLASH
-	
 	.stack :
 	{
 		_stack = .;

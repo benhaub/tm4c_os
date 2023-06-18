@@ -236,15 +236,15 @@ void printk(const char *s, ...) {
  * @sa led
  */
 int sysled(int colour, int state) {
-  //switch (colour) {
-  //  case LED_RED: state ? led_ron() : led_roff();
-  //          break;
-  //  case LED_GREEN: state ? led_gron() : led_groff();
-  //          break;
-  //  case LED_BLUE: state ? led_blon() : led_bloff();
-  //          break;
-  //  default: return -1;
-  //}
+  switch (colour) {
+    case 0: state ? led_ron() : led_roff();
+            break;
+    case 1: state ? led_gron() : led_groff();
+            break;
+    case 2: state ? led_blon() : led_bloff();
+            break;
+    default: return -1;
+  }
   return 0;
 }
 
@@ -280,4 +280,17 @@ void sysspi(int direction, uint8_t *data) {
  */
 void sysgpio(int port, int pin, int state) {
   gpio_write(port, pin, state);
+}
+
+/**
+ * @sa delay
+ */
+void sysdelay(uint32_t delayMs) {
+  gptmTimerInit(delayMs);
+  gptmTimerStart();
+  //TODO: It would be nice if this could yeild or let another process do
+  //something while we wait for the timer. We are in interrupt context here so
+  //this blocks the entire OS. We might need to make all the syscalln save
+  //the context to memory instead of just syscall
+  while (gptmWaitForTimeout());
 }

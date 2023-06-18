@@ -15,6 +15,8 @@
 /* From context.s */
 extern void swtch(uint32_t);
 extern void initcode(uint32_t);
+/* Main function given to first process to begin execution. */
+extern int main(void);
 
 /** Array of processes for the scheduler. */
 struct pcb ptable[MAX_PROC];
@@ -172,25 +174,25 @@ struct pcb* pidproc(int pid) {
 void scheduler() {
   struct pcb *schedproc;
   while(1) {
-/* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
-/* processes passed that index. */
+    /* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
+    /* processes passed that index. */
     schedproc = round_robin();
 
-/* If the process is waiting for another, check to see if it's exited. */
-		if(schedproc->state == WAITING && \
-			ptable[ptable_index_from_pid(schedproc->waitpid)].state == UNUSED) {
-			schedproc->state = RUNNABLE;
-			schedproc->waitpid = NULLPID;
-		}
-		if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
-			if(1 == schedproc->initflag) {
-				initproc(schedproc);
-				schedproc->initflag = 0;
-			}
-			currpid = schedproc->pid;
-			schedproc->state = RUNNING;
+    /* If the process is waiting for another, check to see if it's exited. */
+    if(schedproc->state == WAITING && \
+        ptable[ptable_index_from_pid(schedproc->waitpid)].state == UNUSED) {
+      schedproc->state = RUNNABLE;
+      schedproc->waitpid = NULLPID;
+    }
+    if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
+      if(1 == schedproc->initflag) {
+        initproc(schedproc);
+        schedproc->initflag = 0;
+      }
+      currpid = schedproc->pid;
+      schedproc->state = RUNNING;
       create_user_memory_region(schedproc->rampg);
-			swtch(schedproc->context.sp);
-		}
-	}
+      swtch(schedproc->context.sp);
+    }
+  }
 }	

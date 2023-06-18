@@ -28,11 +28,13 @@ void erase_flash(uint32_t);
 int uart1_init(unsigned int);
 int uart1_tchar(char);
 /* SSI */
-int ssi0_init_master();
+int ssi0InitMaster();
 int ssi0_transmit(uint8_t);
 uint8_t ssi0_receive();
 /* GPTM */
-void gptm_timer_init();
+void gptmTimerInit(uint32_t);
+void gptmTimerStart();
+int gptmWaitForTimeout();
 
 /* GPIO */
 int gpio_write(int, int, int);

@@ -13,7 +13,7 @@
 #include <mem.h> /* For flash address macros */
 #include <cstring.h> /* For testing cstring api */
 
-int main(void) __attribute__((weak, section(".text.main")));
+int main(void) __attribute__((weak));
 
 /**
  * @brief

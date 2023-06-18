@@ -34,7 +34,7 @@ STACK_BOTTOM:
   .global mstke_repair
 /* Called by systick_handler when an a process that has exited yeilds */
   .global switch_to_msp
-/* Call by sysexit so that we can call the scheduler instead of yield */
+/* Called by sysexit so that we can call the scheduler instead of yield */
   .global switch_to_privledged
 
   .section .intvecs
@@ -399,7 +399,7 @@ Disable:
   cpsid i
 Return:
   bx lr
-  .fnend
+.fnend
 
 .type switch_to_msp, %function
 switch_to_msp: .fnstart
@@ -408,7 +408,7 @@ switch_to_msp: .fnstart
   msr CONTROL, r3
   ISB
   bx lr
-  .fnend
+.fnend
 
 .type switch_to_psp, %function
 switch_to_psp: .fnstart
@@ -417,7 +417,7 @@ switch_to_psp: .fnstart
   msr CONTROL, r3
   ISB
   bx lr
-  .fnend
+.fnend
 
 .type switch_to_privledged, %function
 switch_to_privledged: .fnstart
@@ -426,7 +426,7 @@ switch_to_privledged: .fnstart
   msr CONTROL, r3
   ISB
   bx lr
-  .fnend
+.fnend
 
 .type switch_to_unprivledged, %function
 switch_to_unprivledged: .fnstart
@@ -435,5 +435,6 @@ switch_to_unprivledged: .fnstart
   msr CONTROL, r3
   ISB
   bx lr
-  .fnend
-  .end
+.fnend
+
+.end

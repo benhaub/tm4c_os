@@ -52,9 +52,8 @@ int init() {
   /* We are already in the kernel so we can use the kernel services directly. */
   syswrite("Initialising tm4c_os\n\r");
   led_init();
-  if(-1 == ssi0_init_master()) {
+  if(-1 == ssi0InitMaster())
     syswrite("Failed to start SSI0\n\r");
-  }
   init_ram();
   init_ptable();
   start_clocktick(1, 10);

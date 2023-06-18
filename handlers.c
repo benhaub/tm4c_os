@@ -198,21 +198,23 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
 	uint32_t ret;
 
   switch(sysnum) {
-    case FORK: ret = sysfork();
+    case FORK:  ret = sysfork();
       break;
-    case WAIT: ret = syswait(*((uint32_t *)arg1));
+    case WAIT:  ret = syswait(*((uint32_t *)arg1));
       break;
-    case EXIT: sysexit(*((uint32_t *)arg1));
+    case EXIT:  sysexit(*((uint32_t *)arg1));
       return;
     case WRITE: ret = syswrite((char *)arg1);
       break;
-    case LED: ret = sysled(*((int *)arg1), *((int *)arg2));
+    case LED:   ret = sysled(*((int *)arg1), *((int *)arg2));
       break;
     case YEILD: sysyield();
       break;
-    case SPI: sysspi(*((int *)arg1), ((uint8_t *)arg2));
+    case SPI:   sysspi(*((int *)arg1), ((uint8_t *)arg2));
       break;
-    case GPIO: sysgpio(*((int *)arg1), *((int *)arg2), *((int *)arg3));
+    case GPIO:  sysgpio(*((int *)arg1), *((int *)arg2), *((int *)arg3));
+      break;
+    case DELAY: sysdelay(*((uint32_t *)arg1));
       break;
     default: while(1);
   }

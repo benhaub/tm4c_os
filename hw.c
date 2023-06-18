@@ -8,11 +8,11 @@
 #include "hw.h"
 #include "include/mem.h"
 #include "syscalls.h"
-#include "kernel_services.h" //TEMP
 //Texas Instruments includes
 #include "tm4c123gh6pm.h"
 #include "ssi.h"
 #include "gpio.h"
+#include "timer.h"
 #include "sysctl.h"
 #include "hw_memmap.h"
 
@@ -382,7 +382,7 @@ int uart1_tchar(char data) {
  *   non-zero on failure, 0 otherwise
  *
  */
-int ssi0_init_master() {
+int ssi0InitMaster() {
   SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI0);
   SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 
@@ -449,19 +449,40 @@ uint8_t ssi0_receive() {
   SSIDataGet(SSI0_BASE, &data);
   return (data & 0xFF);
 }
+
 void ssi0_handler() {
     uint32_t status = SSIIntStatus(SSI0_BASE, true);
     SSIIntClear(SSI0_BASE, SSI_TXEOT | SSI_DMATX | SSI_DMARX | SSI_TXFF| SSI_RXFF | SSI_RXTO | SSI_RXOR);
     if (status & SSI_RXOR)
-        printk("SSI RX fifo overrun\n\r");
+       return;
     else if ((status & SSI_RXFF) || (status & SSI_RXTO)) {
       uint8_t data = (SSI0_DR_R << 1);
     }
     return;
 }
 /*****************************General Purpose Timer****************************/
-gptm_timer_init() {
+void gptmTimerInit(uint32_t timeoutValueMs) {
+  SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
+  while(!SysCtlPeripheralReady(SYSCTL_PERIPH_TIMER0));
+  TimerConfigure(TIMER0_BASE, TIMER_CFG_SPLIT_PAIR | TIMER_CFG_A_ONE_SHOT);
+  TimerClockSourceSet(TIMER0_BASE, TIMER_CLOCK_SYSTEM);
+  TimerLoadSet(TIMER0_BASE, TIMER_A, (SysCtlClockGet()/1000)*timeoutValueMs);
+}
 
+void gptmTimerStart() {
+  TimerEnable(TIMER0_BASE, TIMER_A);
+}
+
+/**
+ * @brief
+ *   Returns 0 when the timer has expired.
+ */
+int gptmWaitForTimeout() {
+  if (TIMER_TIMA_TIMEOUT & TimerIntStatus(TIMER0_BASE, false)) {
+    TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+    return 1;
+  }
+  return 0;
 }
 
 /*************************************GPIO************************************/

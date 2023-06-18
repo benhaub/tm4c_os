@@ -7,8 +7,8 @@
 #ifndef __PROC_H__
 #define __PROC_H__
 
-#include <types.h>
-#include <mem.h>
+#include "mem.h"
+#include "types.h"
 
 /**
  * @def MAX_PROC
@@ -34,6 +34,8 @@
  */
 #define NULLPID MAX_PROC + 1
 /* Exit codes */
+//TODO: EXIT_SUCCESS and EXIT_FAILURE should not be defined if applications
+//want to include the stdlib.
 /**
  * @def EXIT_SUCCESS
  *   Send the exit success code to exit()

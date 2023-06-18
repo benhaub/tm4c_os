@@ -16,5 +16,6 @@ int sysled(int, int);
 void sysyield();
 void sysspi(int, uint8_t *);
 void sysgpio(int port, int pin, int state);
+void sysdelay(uint32_t delayMs);
 
 #endif /*__KERNELSERVICES_H__*/

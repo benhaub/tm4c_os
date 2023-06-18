@@ -138,9 +138,9 @@ int led(int colour, int state) {
  * @brief
  *   The current process stops running and new one in sheduled to run
  *
- * Yeild tells the currently RUNNING process to stop running and transition to
+ * Causes the currently RUNNING process to stop running and transition to
  * the RUNNABLE state before it's allotted quanta has finished. A new process
- * will be sheduled if there is one in the RUNNABLE state
+ * will be scheduled if there is one in the RUNNABLE state
  * @sa start_clocktick procstate scheduler
  */
 void yield() {
@@ -183,4 +183,16 @@ int gpio(int port, int pin, int state) {
     return 1;
 
   return syscall3(GPIO, currproc(), &port, &pin, &state);
+}
+
+/**
+ * @brief
+ *   Delay a process for delayMs milliseconds
+ * 
+ * The process will call yeild until the timer expires.
+ * @param delayMs
+ *   The number of milliseconds to delay for.
+ */
+void delay(uint32_t delayMs) {
+  syscall1(DELAY, currproc(), &delayMs);
 }
