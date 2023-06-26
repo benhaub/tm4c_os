@@ -19,7 +19,8 @@ extern void initcode(uint32_t);
 extern int main(void);
 
 /** Array of processes for the scheduler. */
-struct pcb ptable[MAX_PROC];
+struct pcb ptable[MAXPROC];
+struct pcb *schedproc;
 /** Pid of the current process. */
 static unsigned int currpid;
 //! @endcond
@@ -31,14 +32,14 @@ static unsigned int currpid;
  *   for an explantion of calculations made
  */
 void user_init() {
-  if(MAX_PROC > SRAM_PAGES - *(KRAM_USE - 1) + 1) {
-    printk("MAX_PROC is set to allow more processes than the available RAM "\
+  if(MAXPROC > SRAM_PAGES - *(KRAM_USE - 1) + 1) {
+    printk("MAXPROC is set to allow more processes than the available RAM "\
         "can hold. Please use a value no greater than %d\n\r", \
        SRAM_PAGES - (*((uint32_t *)(KRAM_USE - 4)) + 1));
     return;
   }
-  else if(MAX_PROC < SRAM_PAGES - *(KRAM_USE - 1) + 1) {
-    printk("Currently capping %d/%d available processes\n\r", MAX_PROC, \
+  else if(MAXPROC < SRAM_PAGES - *(KRAM_USE - 1) + 1) {
+    printk("Currently capping %d/%d available processes\n\r", MAXPROC, \
       SRAM_PAGES - (*(KRAM_USE - 1) + 1) - 1);
   }
 /* Set all globals. Compiler doesn't seem to want to cooperate with global */
@@ -67,12 +68,12 @@ struct pcb* reserveproc(char *name) {
 		return NULL;
 	}
 /* Find an UNUSED process from the process table. */
-	for(i = 0; i < MAX_PROC; i++) {
+	for(i = 0; i < MAXPROC; i++) {
 		if(UNUSED == ptable[i].state) {
 			break;
 		}
   }
-  if(i >= MAX_PROC) {
+  if(i >= MAXPROC) {
     printk("No unused proc's in ptable\n\r");
     return NULL;
   }
@@ -90,8 +91,8 @@ struct pcb* reserveproc(char *name) {
   if(NULL != name) {
     strncpy(ptable[i].name, name, strlen(name));
   }
-/* The pid is always the index where it was secured from. */
-	ptable[i].pid = i+1;
+  
+	ptable[i].pid = i;
 	return (ptable + i);
 }
 
@@ -122,7 +123,7 @@ static void initproc(struct pcb *reserved) {
  *   values.
  */
 void init_ptable() {
-	for(int i = 0; i < MAX_PROC; i++) {
+	for(int i = 0; i < MAXPROC; i++) {
 		ptable[i].state = UNUSED;
 		ptable[i].numchildren = 0;
     ptable[i].waitpid = NULLPID;
@@ -140,6 +141,9 @@ void init_ptable() {
  *   the process that is currently RUNNING.
  */
 inline struct pcb* currproc() {
+  if (currpid < 0 || currpid > MAXPROC)
+    while(1);
+
 	return (ptable + ptable_index_from_pid(currpid));
 }
 
@@ -153,10 +157,10 @@ inline struct pcb* currproc() {
  */
 struct pcb* pidproc(int pid) {
 	int i;
-  if(pid >= MAX_PROC) {
+  if(pid > MAXPROC) {
     return NULL;
   }
-	for(i = 0; i < MAX_PROC; i++) {
+	for(i = 0; i < MAXPROC; i++) {
 		if(pid == ptable[i].pid) {
 			return (ptable + i);
 		}
@@ -172,11 +176,12 @@ struct pcb* pidproc(int pid) {
  * @see scheduling_algorithm.c
  */
 void scheduler() {
-  struct pcb *schedproc;
   while(1) {
     /* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
     /* processes passed that index. */
     schedproc = round_robin();
+    if (schedproc->state == RUNNING)
+      while(1);
 
     /* If the process is waiting for another, check to see if it's exited. */
     if(schedproc->state == WAITING && \
@@ -190,6 +195,8 @@ void scheduler() {
         schedproc->initflag = 0;
       }
       currpid = schedproc->pid;
+      if (currpid < 0 || currpid > MAXPROC)
+        while(1);
       schedproc->state = RUNNING;
       create_user_memory_region(schedproc->rampg);
       swtch(schedproc->context.sp);

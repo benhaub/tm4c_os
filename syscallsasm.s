@@ -56,7 +56,7 @@ syscall: .fnstart
 syscall1: .fnstart
 /* Argument needs to be placed in r1 so svc_handler gets it in arg1. First */
 /* save currproc. */
-  mov r10, r1
+  push {r1}
 /* Move the syscalls argument over to r1 and overwrite the currproc pointer. */
   mov r1, r2
 /* The immediate value for svc is not used, however, make sure that a non-zero
@@ -66,7 +66,8 @@ syscall1: .fnstart
   svc #1
 /* Move the returned value from the syscall to r0 so that the kernel */
 /* services return the right value */
-  ldr r0, [r10, #12]
+  pop {r1}
+  ldr r0, [r1, #12]
   bx lr
   .fnend
 
@@ -76,26 +77,29 @@ syscall1: .fnstart
   .global syscall2
   .type syscall2, %function
 syscall2: .fnstart
-  mov r10, r1
+  push {r1}
 /* Shift all the arguments over so it lines up with arguments in the handler */
   mov r1, r2
   mov r2, r3
 /* The svc immediate value for any routine except syscall must be non-zero. */
   svc #2
-  ldr r0, [r10, #12]
+  pop {r1}
+  ldr r0, [r1, #12]
   bx lr
   .fnend
 
   .global syscall3
   .type syscall3, %function
 syscall3: .fnstart
-  mov r10, r1
+  mov r8, r1
   mov r1, r2
   mov r2, r3
-/* Arguments after the 4th are pushed onto the stack. */
+/*// Arguments after the 4th are pushed onto the stack. */
   pop {r3}
+  push {r8}
   svc #3
-  ldr r0, [r10, #12]
+  pop {r1}
+  ldr r0, [r1, #12]
   bx lr
   .fnend
 

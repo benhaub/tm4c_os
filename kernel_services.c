@@ -82,12 +82,11 @@ void sysexit(int exitcode) {
 	exitproc->context.sp = 0;
 	exitproc->context.lr = 0;
 	exitproc->context.r0 = 0;
-  if(exitproc->pid > MAX_PROC || UNUSED == exitproc->state) {
+  if(exitproc->pid > MAXPROC || UNUSED == exitproc->state) {
 /* Exiting an invalid process is always a failure */
     while(1);
   }
 	free_stackpage(exitproc->rampg);
-	exitproc->pid = NULLPID;
 /* If this process was the child of another, subtract it's number of children */
 	if(exitproc->ppid != NULLPID) {
 		pidproc(exitproc->ppid)->numchildren--;
@@ -105,6 +104,8 @@ void sysexit(int exitcode) {
 
 /* Switch to privledged mode so that we can call the scheduler directly when */
 /* we return from the svc_handler back to exit() */
+  printk("Process with pid %x exited.\n\r", exitproc->pid);
+	exitproc->pid = NULLPID;
   switch_to_privledged();
 }
 

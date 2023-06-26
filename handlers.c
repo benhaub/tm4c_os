@@ -12,9 +12,11 @@
 
 //! @cond Doxygen_Suppress_Warning
 /* From vectors.s */
-extern void systick_context_save(struct pcb *);
+extern void systick_context_save(struct pcb *currproc);
 extern void mstke_repair();
 extern void switch_to_msp();
+extern uint32_t get_psp();
+extern uint32_t get_msp();
 /* Function prototypes. */
 void syst_handler() __attribute__((noreturn, naked));
 //! @endcond
@@ -248,9 +250,10 @@ void psv_handler() {
  *   Mode must be privileged and stack must be msp
  */
 void syst_handler() {
-  
+  switch_to_msp();
   systick_context_save(currproc());
   switch_to_msp();
+  currproc()->context.sp = get_psp();
 
   if(WAITING == currproc()->state) {
 /* Don't change the state to RUNNABLE for WAITING, just go to the scheduler */

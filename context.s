@@ -27,8 +27,8 @@ swtch: .fnstart
 /* Required memory barrier instructions after changing MPU. Pg.127,datasheet. */
         DSB
         ISB
-        pop {r0-r3, r5, r7, r10, r12, r14}
-        bx r5
+        pop {r0-r8, r11, r12, r14} 
+        bx r11
        .fnend
 
 /**
@@ -41,20 +41,16 @@ swtch: .fnstart
   .global initcode
   .type initcode, %function
 initcode: .fnstart
-          add r1, r0, #4
-          ldr r2, [r1] //context.pc
+          ldr r2, [r0, #4] //context.pc
           ldr r3, [r0] //context.sp
-//Move pc to r5's spot on the stack so it gets branched to in swtch()
-          str r2, [r3, #16]
-          add r1, r0, #12
-          ldr r2, [r1] //context.r0
+//Move pc to r14's spot on the stack so it gets branched to in swtch()
+          str r2, [r3, #36]
+          ldr r2, [r0, #12] //context.r0
 //store context.r0 on the stack in r0's spot
           str r2, [r3]
-          add r1, r0, #20
-          ldr r2, [r1] //context.r7
+          ldr r2, [r0, #20] //context.r7
 //store context.r7 on the stack in r7's spot
-          str r2, [r3, #20]
+          str r2, [r3, #28]
           bx lr
           .fnend	
 	.end
-	

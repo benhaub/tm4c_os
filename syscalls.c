@@ -60,7 +60,7 @@ int wait(pid_t pid) {
   int ret;
   struct pcb *waitproc;
 
-  if(ptable_index_from_pid(pid) >= MAX_PROC) {
+  if(ptable_index_from_pid(pid) >= MAXPROC) {
     return -1;
   }
   else if (pid == currproc()->pid) {
@@ -183,6 +183,7 @@ int gpio(int port, int pin, int state) {
     return 1;
 
   return syscall3(GPIO, currproc(), &port, &pin, &state);
+  return 0;
 }
 
 /**

@@ -21,18 +21,18 @@
  *   Do no not use MAX_PROC as a limit for process creation. Use NPROC instead.
  * @sa NPROC
  */
-#define MAX_PROC 24
+#define MAXPROC 24
 /**
  * @def NPROC
  *   The maximum number of creatable processes, which accounts for the
  *   the creation of userinit during OS initialization.
  */
-#define NPROC MAX_PROC - 1
+#define NPROC MAXPROC - 1
 /**
  * @def NULLPID
  *   A pid that no valid process will ever have.
  */
-#define NULLPID MAX_PROC + 1
+#define NULLPID MAXPROC + 1
 /* Exit codes */
 //TODO: EXIT_SUCCESS and EXIT_FAILURE should not be defined if applications
 //want to include the stdlib.
@@ -56,7 +56,7 @@
  *   Therefore, this function should be a conversion from a pid to a ptable
  *   index for that processes pid.
  */
-#define ptable_index_from_pid(p) p-1
+#define ptable_index_from_pid(p) p
 
 /**
  * @enum procstate Process state
@@ -147,11 +147,11 @@ struct pcb {
 	enum procstate state;
 };
 
-void user_init(void);
+void user_init(void) __attribute__((noreturn));
 struct pcb* reserveproc(char *);
 void init_ptable(void);
 struct pcb *currproc(void);
 struct pcb *pidproc(int);
-void scheduler(void) __attribute__((noreturn));
+void scheduler(void) __attribute__((noreturn, naked));
 
 #endif /*__PROC_H__*/

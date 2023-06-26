@@ -23,10 +23,10 @@ extern const uint32_t *KRAM_USE;
  *   created in vectors.s at the top of the vector table. If you change this
  *   value, also change the stack size used in Reset_EXCP.
  */
-#define STACK_SIZE 0x400 /*1KB Stack */
+#define STACK_SIZE 0x400 /* 1KB Stack */
 ///@def CTXSTACK
 ///  Context switch stack size (in bytes, 4 bytes per uint32_t saved)
-#define CTXSTACK 36
+#define CTXSTACK 12*4
 ///@def FLASH_PAGE_SIZE
 ///  The size of one memory chunk of flash
 #define FLASH_PAGE_SIZE 0x800

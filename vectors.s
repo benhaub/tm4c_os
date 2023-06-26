@@ -36,6 +36,9 @@ STACK_BOTTOM:
   .global switch_to_msp
 /* Called by sysexit so that we can call the scheduler instead of yield */
   .global switch_to_privledged
+/* Called by systick_handler to save the psp in the pcb */
+  .global get_psp
+  .global get_msp
 
   .section .intvecs
 
@@ -283,37 +286,37 @@ PSV_EXCP: .fnstart
  * purpose of this code here is too save r0, pc and lr because it will be
  * changed when we enter the exeption handler c code. systick_context_save will need
  * these values in order to save the context correclty.
- *
- * @note
- *  Do not use r10 here. If the syscallasm code is interrupted by systick then
- *  using r10 will overwrite the pcb that is used to get the return value from
- *  the kernel services.
  */
   .type SYST_EXCP, %function
 SYST_EXCP: .fnstart
-/* Get the processes stack pointer and save it */
-  mrs r0, psp
-/* Save the value of the exception stack pc. */
-  ldr r5, [r0, #24]
-/* Save the value of the exception stack lr. */
-  ldr r6, [r0, #20]
-/* Make sure r5 has bit one set for thumb instructions. */
-  ands r8, r5, #0x1
+/* Save the context to msp stack */
+  mrs r9, psp
+  mov r10, r14
+  ldr r11, [r9, #24] //Exception stack PC
+  ldr r14, [r9, #20] //Exception stack LR
+  /* Make sure the thumb bit is set for the pc instruction. */
+  ands r9, r11, #0x1
   bne Thumb
-  add r5, r5, #0x1
+  add r11, r11, #0x1
 Thumb:
-  ldr r3,=syst_handler
+  push {r0-r8, r11, r12, r14}
+  mov r14, r10
+
+  mrs r0, psp
+/* Save exception stack value for the PC so that we can get back to our */
+/* execution path in swtch() in context.s */
+  ldr r1, [r0, #24]
 /* Place syst_handler on the stacked pc. Exception mechanism retores it to lr*/
-  str r3, [r0, #24]
-/* Save r7 in case syst_handler changes it. */
-  mov r8, r7
-/* Exception return mechanism will return r0-r3 to pre-exception values. */
-/* r4, r5, and r6 remain unscathed. */
+  ldr r2,=syst_handler
+  str r2, [r0, #24]
 /* Change thread mode privledge level to privledged so that we can switch */
-/* stacks in systick_context_save(). */
-  mrs r3, CONTROL
-  bic r3, r3, #0x1
-  msr CONTROL, r3
+/* stacks */
+  mrs r9, CONTROL
+  bic r9, r9, #0x1
+  msr CONTROL, r9
+  ISB
+/* Exception return mechanism will return r0-r3, r12, lr, pc and xPSR */
+/* to pre-exception values. */
   bx lr
   .fnend
 
@@ -330,21 +333,20 @@ Thumb:
  */
   .type systick_context_save, %function
 systick_context_save: .fnstart
-/* Transfer r0 to r9 so that r0 can be returned to it's saved pre-systick */
-/* interrupt value. */
-  mov r9, r0
-/* Save the lr before moving the saved pc from systick isr into it. */
-  mov r4, r14
-  mov r14, r6
+  mov r9, r14
+  pop {r0-r8, r11, r12, r14}
+
+  mrs r10, CONTROL
+  orr r10, r10, #0x2
+  msr CONTROL, r10
+
 /* Changing what registers we save on the stack is not as easy as just adding */
 /* them here. The corresponding pop in swtch() must also be changed and the */
 /* size of the stack must be edited by changing the value of CTXSTACK in */
 /* mem.h */
-  push {r0-r3, r5, r7, r10, r12, r14}
-/* Save the stack pointer to context struct */
-  str sp, [r9]
-/* Restore lr to it's original value */
-  mov r14, r4
+  push {r0-r8, r11, r12, r14}
+  mov r14, r9
+
   bx lr
   .fnend
 
@@ -434,6 +436,18 @@ switch_to_unprivledged: .fnstart
   orr r3, r3, #0x1
   msr CONTROL, r3
   ISB
+  bx lr
+.fnend
+
+.type get_psp, %function
+get_psp: .fnstart
+  mrs r0, psp
+  bx lr
+.fnend
+
+.type get_msp, %function
+get_msp: .fnstart
+  mrs r0, msp
   bx lr
 .fnend
 

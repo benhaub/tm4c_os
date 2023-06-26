@@ -9,7 +9,7 @@
 
 //! @cond Doxygen_Suppress_Warning
 /* From proc.c */
-extern struct pcb ptable[MAX_PROC];
+extern struct pcb ptable[MAXPROC];
 //! @endcond
 
 /**
@@ -17,20 +17,20 @@ extern struct pcb ptable[MAX_PROC];
  * amount of time has passed equal to the quanta. The quanta is typically
  * the tick interrupt.
  * @see start_clocktick
+ * @note
+ *   On the first run through all the processes, this will skip pid 0 and start
+ *   at 1. After go through all the process from pid 1 to MAXPROC-1, then we
+ *   will run pid 0.
  */
 struct pcb* round_robin() {
 /* Current index of the scheduler. */
 	static unsigned int index = 0;
 
-  if (index >= NPROC) {
+  index++;
+
+  if (index >= MAXPROC) {
     index = 0;
   }
-  else {
-    index++;
-  }
-
-  if (index == NULLPID)
-    while(1);
 
   return &ptable[index];
 }

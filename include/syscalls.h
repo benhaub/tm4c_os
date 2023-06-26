@@ -93,7 +93,7 @@ int wait(pid_t);
 //! @cond Doxygen_Suppress_Warning
 /**
  * exit is word aligned because the memory, usage, and bus fault handlers will
- * load the PC with this address if the fault can be services appropriately by
+ * load the PC with this address if the fault can be serviced appropriately by
  * the kernel. Loading an unaligned address to the PC has unpredictable
  * behaviour.
  * @see
