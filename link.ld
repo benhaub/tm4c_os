@@ -24,13 +24,6 @@ SECTIONS
 		_etext = .;
 	} >FLASH
 
-	.stack :
-	{
-		_stack = .;
-		KEEP(*(.stack))
-		_estack = .;
-	} >SRAM
-
 	.data : 
 	{
 		_data = .;
@@ -46,6 +39,12 @@ SECTIONS
 		_ebss = .;
 	} >SRAM	
 
+	.stack :
+	{
+		_stack = .;
+		KEEP(*(.stack))
+		_estack = .;
+	} >SRAM
 
 	/* 
 	 * This section is put in automatically by the arm compiler. It's asking for
