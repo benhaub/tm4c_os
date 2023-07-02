@@ -91,14 +91,17 @@ syscall2: .fnstart
   .global syscall3
   .type syscall3, %function
 syscall3: .fnstart
+/* Save r1 to r8 */
   mov r8, r1
   mov r1, r2
   mov r2, r3
 /*// Arguments after the 4th are pushed onto the stack. */
   pop {r3}
+/* Push r8 onto the stack to save the currproc pointer .*/
   push {r8}
   svc #3
   pop {r1}
+/* load the returned value in currproc to r0. See syscreturn in handlers.c */
   ldr r0, [r1, #12]
   bx lr
   .fnend

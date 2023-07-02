@@ -97,7 +97,7 @@ int wait(pid_t);
  * the kernel. Loading an unaligned address to the PC has unpredictable
  * behaviour.
  * @see
- *   Pg. 48 Architecture Reference Manual
+ *   Pg. 66 Architecture Reference Manual - Alignment and updates to the PC
  */
 void exit(pid_t) __attribute__((noreturn, aligned(4), naked));
 //! @endcond

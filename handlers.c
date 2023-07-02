@@ -18,7 +18,7 @@ extern void switch_to_msp();
 extern uint32_t get_psp();
 extern uint32_t get_msp();
 /* Function prototypes. */
-void syst_handler() __attribute__((noreturn, naked));
+void syst_handler() __attribute__((noreturn, naked, aligned(4)));
 //! @endcond
 
 /**
