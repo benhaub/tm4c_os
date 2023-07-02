@@ -309,6 +309,12 @@ Thumb:
 /* Place syst_handler on the stacked pc. Exception mechanism retores it to lr*/
   ldr r2,=syst_handler
   str r2, [r0, #24]
+/* Abandon any load or store multiple instructions and continue them from the */
+/* beginning when this process returns to it's context. */
+/* See ARMv7-M Architecture Reference Manual Pg. 543 - Sect. B1.5.10 */
+  ldr r2, [r0, #28]
+  bic r2, r2, #0xF000
+  str r2, [r0, #28]
 /* Change thread mode privledge level to privledged so that we can switch */
 /* stacks */
   mrs r9, CONTROL
