@@ -147,7 +147,7 @@ struct pcb {
 	enum procstate state;
 };
 
-void user_init(void) __attribute__((noreturn));
+void user_init(void);
 struct pcb* reserveproc(char *);
 void init_ptable(void);
 struct pcb *currproc(void);

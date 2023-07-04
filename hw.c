@@ -6,8 +6,6 @@
  *****************************************************************************/
 //tm4c includes
 #include "hw.h"
-#include "include/mem.h"
-#include "syscalls.h"
 //Texas Instruments includes
 #include "tm4c123gh6pm.h"
 #include "ssi.h"
@@ -15,6 +13,9 @@
 #include "timer.h"
 #include "sysctl.h"
 #include "hw_memmap.h"
+
+//TEMP
+#include "kernel_services.h"
 
 
 /*********************************SYSTICK*************************************/
@@ -192,7 +193,7 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
   if((uint32_t)faddr <= 0x1000) {
     while(1);
   }
-  if((uint32_t)eaddr - (uint32_t)saddr > 1*KB) {
+  if((uint32_t)eaddr - (uint32_t)saddr > 1*1024) {
     return -1;
   }
 /* Align the flash address to the nearest 1KB boundary */
@@ -232,7 +233,7 @@ int write_flash(void *saddr, void *eaddr, void *faddr) {
 /* Copy the modified fcopy back into the flash write buffers. */
 Write:
   i = 0;
-  while((FLASH_FMA_R + i*4) < (FLASH_FMA_R + 1*KB)) {
+  while((FLASH_FMA_R + i*4) < (FLASH_FMA_R + 1*1024)) {
       *(&FLASH_FWBN_R + i) = fcopy[j];
     i++;
     j++;
@@ -461,15 +462,15 @@ void ssi0_handler() {
     return;
 }
 /*****************************General Purpose Timer****************************/
-void gptmTimerInit(uint32_t timeoutValueMs) {
+void gptmTimerInit() {
   SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
   while(!SysCtlPeripheralReady(SYSCTL_PERIPH_TIMER0));
-  TimerConfigure(TIMER0_BASE, TIMER_CFG_SPLIT_PAIR | TIMER_CFG_A_ONE_SHOT);
   TimerClockSourceSet(TIMER0_BASE, TIMER_CLOCK_SYSTEM);
-  TimerLoadSet(TIMER0_BASE, TIMER_A, (SysCtlClockGet()/1000)*timeoutValueMs);
+  TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
 }
 
-void gptmTimerStart() {
+void gptmTimerStart(uint32_t timeoutValueMs) {
+  TimerLoadSet(TIMER0_BASE, TIMER_A, (SysCtlClockGet()/1000)*timeoutValueMs);
   TimerEnable(TIMER0_BASE, TIMER_A);
 }
 
@@ -480,49 +481,82 @@ void gptmTimerStart() {
 int gptmWaitForTimeout() {
   if (TIMER_TIMA_TIMEOUT & TimerIntStatus(TIMER0_BASE, false)) {
     TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-    return 1;
+    return 0;
   }
-  return 0;
+  return 1;
 }
 
 /*************************************GPIO************************************/
-int gpio_write(int port, int pin, int state) {
+void gpioInit(int port) {
+  switch (port) {
+    case 0:
+      if (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA)) {
+        SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+        while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA));
+      }
+      break;
+    case 1:
+      if (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOB)) {
+        SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+        while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOB));
+      }
+      break;
+    case 2:
+      if (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOC)) {
+        SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+        while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOC));
+      }
+      break;
+    case 3:
+      if (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOD)) {
+        SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+        while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOD));
+      }
+      break;
+    case 4:
+      if (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOE)) {
+        SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+        while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOE));
+      }
+      break;
+    case 5:
+      if (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF)) {
+        SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+        while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF));
+      }
+      break;
+  }
+}
+
+/**
+ * @pre
+ *   call gpioInit() first.
+ */
+int gpioWrite(int port, int pin, int state) {
   uint8_t pinBit = (1 << pin);
   uint8_t stateBit = (state << pin);
   switch (port) {
-    case GPIO_PORTA:
-      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA));
+    case 0:
       GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, pinBit);
       GPIOPinWrite(GPIO_PORTA_BASE, pinBit, stateBit);
       break;
-    case GPIO_PORTB:
-      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOB));
+    case 1:
       GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, pinBit);
       GPIOPinWrite(GPIO_PORTB_BASE, pinBit, stateBit);
       break;
-    case GPIO_PORTC:
-      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
-      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOC));
+    case 2:
       GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, pinBit);
       GPIOPinWrite(GPIO_PORTC_BASE, pinBit, stateBit);
       break;
-    case GPIO_PORTD:
-      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
-      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOD));
+    case 3:
       GPIOPinTypeGPIOOutput(GPIO_PORTD_BASE, pinBit);
       GPIOPinWrite(GPIO_PORTD_BASE, pinBit, stateBit);
       break;
-    case GPIO_PORTE:
-      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
-      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOE));
+    case 4:
       GPIOPinTypeGPIOOutput(GPIO_PORTE_BASE, pinBit);
       GPIOPinWrite(GPIO_PORTE_BASE, pinBit, stateBit);
       break;
-    case GPIO_PORTF:
-      SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-      while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF));
+    case 5:
       GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, pinBit);
       GPIOPinWrite(GPIO_PORTF_BASE, pinBit, stateBit);
       break;

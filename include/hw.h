@@ -32,11 +32,12 @@ int ssi0InitMaster();
 int ssi0_transmit(uint8_t);
 uint8_t ssi0_receive();
 /* GPTM */
-void gptmTimerInit(uint32_t);
-void gptmTimerStart();
+void gptmTimerInit();
+void gptmTimerStart(uint32_t);
 int gptmWaitForTimeout();
 
 /* GPIO */
-int gpio_write(int, int, int);
+int gpioWrite(int, int, int);
+void gpioInit(int port);
 
 #endif /*__HW_H__*/

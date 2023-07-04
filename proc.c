@@ -144,7 +144,7 @@ inline struct pcb* currproc() {
   if (currpid < 0 || currpid > MAXPROC)
     while(1);
 
-	return (ptable + ptable_index_from_pid(currpid));
+  return (ptable + ptable_index_from_pid(currpid));
 }
 
 /**

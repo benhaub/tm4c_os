@@ -280,15 +280,16 @@ void sysspi(int direction, uint8_t *data) {
  * @sa gpio
  */
 void sysgpio(int port, int pin, int state) {
-  gpio_write(port, pin, state);
+  gpioWrite(port, pin, state);
 }
 
 /**
  * @sa delay
+ * @pre
+ *   Call gptmTimerInit() before calling this function or a bus fault will occur
  */
 void sysdelay(uint32_t delayMs) {
-  gptmTimerInit(delayMs);
-  gptmTimerStart();
+  gptmTimerStart(delayMs);
   //TODO: It would be nice if this could yeild or let another process do
   //something while we wait for the timer. We are in interrupt context here so
   //this blocks the entire OS. We might need to make all the syscalln save

@@ -19,16 +19,31 @@
  * @section Flashing
  * @section Debugging
  *****************************************************************************/
-#include <tm4c123gh6pm.h>
-#include <hw.h>
-#include <mem.h>
-#include <proc.h>
-#include <cstring.h>
-#include <kernel_services.h>
+#include "hw.h"
+#include "mem.h"
+#include "proc.h"
+#include "cstring.h"
+#include "tm4c123gh6pm.h"
+#include "kernel_services.h"
 
-//Debug
 #include "sysctl.h"
 
+/*
+ * Hardware peripheral initialization for custom applications.
+ */
+void appInit() {
+  led_init();
+  gptmTimerInit();
+  gpioInit(4);
+
+  if(-1 == ssi0InitMaster())
+    syswrite("Failed to start SSI0\n\r");
+}
+
+/*
+ * @brief
+ *   Initialization of required kernel software
+ */
 int init() {
 /* Enable all the faults and exceptions. Pg.173, datasheet */
   NVIC_SYS_HND_CTRL_R |= (1 << 16); /* MEM Enable */
@@ -41,24 +56,24 @@ int init() {
   NVIC_SYS_PRI3_R |= (3 << 29); //SysTick
   NVIC_SYS_PRI2_R |= (2 << 29); //SVC
   NVIC_SYS_PRI1_R |= (3 << 21); //Usage
-  NVIC_SYS_PRI1_R |= (2 << 5); //Mem
+  NVIC_SYS_PRI1_R |= (2 << 5);  //Mem
 
   SysCtlClockSet(SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
-#pragma GCC diagnostic push //push the state back to before we ignored
   if(-1 == uart1_init(115200u)) {
-    return 0;
+    syswrite("Failed to initialize UART1\n\r");
   }
+
   /* We are already in the kernel so we can use the kernel services directly. */
   syswrite("Initialising tm4c_os\n\r");
-  led_init();
-  if(-1 == ssi0InitMaster())
-    syswrite("Failed to start SSI0\n\r");
   init_ram();
   init_ptable();
   start_clocktick(1, 10);
-/* Set up the first user process (the shell) */
   mpuInit();
+
+  appInit();
   user_init();
+
+/* Never reached */
   return 0;
 }
