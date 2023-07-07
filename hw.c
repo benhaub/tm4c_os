@@ -433,7 +433,7 @@ int ssi0InitMaster() {
  *   non-zero on failure, 0 otherwise
  */
 int ssi0_transmit(uint8_t data) {
-  SSIDataPut(0x40008000, data);
+  SSIDataPut(SSI0_BASE, data);
   return 0;
 }
 

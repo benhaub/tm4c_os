@@ -9,10 +9,6 @@
  * @section Introduction
  *   TM4C OS is an simple operating system with the intent of demonstrating the
  *   core functionality of an operating system kernel.\n
- *   Much of the code is naively written on purpose (especially device drivers)
- *   to help users focus more on the purpose rather than optimization techniques
- *   which often lead to having to understand serveral concepts in tandem and
- *   more complicated code.
  * @section Compiling
  *   Run make with no arguments. The makefile will produce a binary file located
  *   in the .binary folder.
@@ -31,7 +27,7 @@
 /*
  * Hardware peripheral initialization for custom applications.
  */
-void appInit() {
+static void appInit() {
   led_init();
   gptmTimerInit();
   gpioInit(4);

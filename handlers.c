@@ -141,13 +141,15 @@ void b_handler(uint8_t stack) {
 	precise = (NVIC_FAULT_STAT_R & (1 << 9));
 	ibus = (NVIC_FAULT_STAT_R & (1 << 8));
 /* Clear the contents of the fault register */
-  NVIC_FAULT_STAT_R |= (fault_addr | bfarv | blsperr | bstke | bustke | impre |
-                         precise | ibus);
+  NVIC_FAULT_STAT_R |= (bfarv | blsperr | bstke | bustke | impre |
+      precise | ibus);
 /* View locals with a debugger. */
   printk("Bus fault from process with pid %d\n\r", currproc()->pid);
+
   if(stack) {
     while(1);
   }
+
   return;
 }
 
@@ -179,9 +181,11 @@ void u_handler(uint32_t stack) {
   if(0 != div0) {
     syswrite("Divide by zero error\n\r");
   }
+
   if(stack) {
     while(1);
   }
+
   return;
 }
 
@@ -220,6 +224,7 @@ void svc_handler(int sysnum, void *arg1, void *arg2, void *arg3) {
       break;
     default: while(1);
   }
+
 /* Store return values */
   syscreturn(ret);
 }
