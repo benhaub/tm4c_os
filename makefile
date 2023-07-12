@@ -8,9 +8,8 @@
 CC := arm-none-eabi-gcc
 #Architecture specific options for C compiler
 CPU := -mcpu=cortex-m4 -march=armv7e-m -mtune=cortex-m4
-#The FPU is single precision (sp) with 16 double word registers (d16). The
-#important information here is the sp. C treats all floats as
-#doubles. They must be forced to single precision.
+#The FPU is single precision (sp) with 16 double word registers (d16) so force
+#constants to sp so we don't have to write f all the time.
 FPU := -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 
 #Flags for C compiler.

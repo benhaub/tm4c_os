@@ -28,11 +28,12 @@
  * Hardware peripheral initialization for custom applications.
  */
 static void appInit() {
-  led_init();
+  ledInit();
   gptmTimerInit();
   gpioInit(4);
 
-  if(-1 == ssi0InitMaster())
+  //SSI must be lower that (somewhere between 5 and 10 divided by SysClk
+  if(-1 == ssi0InitMaster(10))
     syswrite("Failed to start SSI0\n\r");
 }
 
@@ -56,7 +57,7 @@ int init() {
 
   SysCtlClockSet(SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
-  if(-1 == uart1_init(115200u)) {
+  if(-1 == uart1Init(115200u)) {
     syswrite("Failed to initialize UART1\n\r");
   }
 
@@ -64,7 +65,7 @@ int init() {
   syswrite("Initialising tm4c_os\n\r");
   init_ram();
   init_ptable();
-  start_clocktick(1, 10);
+  startClocktick(1, 10);
   mpuInit();
 
   appInit();

@@ -121,7 +121,7 @@ void sysexit(int exitcode) {
 int syswrite(const char *msg) {
   int i = 0;
   while(msg[i] != '\0') {
-    if(-1 == uart1_tchar(msg[i])) {
+    if(-1 == uart1TransmitChar(msg[i])) {
       return -1;
     }
     else {
@@ -238,11 +238,11 @@ void printk(const char *s, ...) {
  */
 int sysled(int colour, int state) {
   switch (colour) {
-    case 0: state ? led_ron() : led_roff();
+    case 0: state ? ledRedOn() : ledRedOff();
             break;
-    case 1: state ? led_gron() : led_groff();
+    case 1: state ? ledGreenOn() : ledGreenOff();
             break;
-    case 2: state ? led_blon() : led_bloff();
+    case 2: state ? ledBlueOn() : ledBlueOff();
             break;
     default: return -1;
   }
@@ -269,10 +269,10 @@ void sysspi(int direction, uint8_t *data) {
     return;
 
   if (direction) {
-    *data = ssi0_receive();
+    *data = ssi0Receive();
   }
   else {
-    ssi0_transmit(*data);
+    ssi0Transmit(*data);
   }
 }
 

@@ -38,7 +38,7 @@
  * @post
  *   The counter will begin counting.
  */
-void systick_init(int clksrc, int inten, uint32_t reload) {
+void systickInit(int clksrc, int inten, uint32_t reload) {
     /* Make sure systick is disabled for initialization */
     NVIC_ST_CTRL_R = 0;
     NVIC_ST_RELOAD_R = reload;
@@ -58,7 +58,7 @@ void systick_init(int clksrc, int inten, uint32_t reload) {
  * @param period
  *   The number of milliseconds before an interrupt is activated
  */
-void start_clocktick(int clksrc, int period) {
+void startClocktick(int clksrc, int period) {
   NVIC_ST_CTRL_R = 0;
   if(clksrc) {
     NVIC_ST_RELOAD_R = (SysCtlClockGet() / 1000) * period;
@@ -79,7 +79,7 @@ void start_clocktick(int clksrc, int period) {
 /**
  * 1ms delay
  */
-void systick_delay_1ms() {
+void systickDelay1ms() {
     NVIC_ST_RELOAD_R = (SysCtlClockGet() / 1000);
     NVIC_ST_CURRENT_R = 0;
     while(!(NVIC_ST_CTRL_R & (1 << 16)));
@@ -97,7 +97,7 @@ void systick_delay_1ms() {
  *   Initialize PortF for LED operation. This function must be run before the
  *   LEDs can be used.
  */
-void led_init() {
+void ledInit() {
     SYSCTL_RCGCGPIO_R |= (1 << 5); //Enable port F
     /* Dummy instruction to let the clock settle */
     #pragma GCC diagnostic push //Remember the diagnostic state
@@ -118,7 +118,7 @@ void led_init() {
  * @brief
  *   Turn the red led on
  */
-void led_ron() {
+void ledRedOn() {
     GPIO_PORTF_DATA_R |= (1 << 1);
     return;
 }
@@ -127,7 +127,7 @@ void led_ron() {
  * @brief
  *   Turn off red led
  */
-void led_roff() {
+void ledRedOff() {
     GPIO_PORTF_DATA_R &= ~(1 << 1);
     return;
 }
@@ -136,7 +136,7 @@ void led_roff() {
  * @brief
  *   Turn the green led on
  */
-void led_gron() {
+void ledGreenOn() {
     GPIO_PORTF_DATA_R |= (1 << 3);
     return;
 }
@@ -145,7 +145,7 @@ void led_gron() {
  * @brief
  *   Turn off the green led on
  */
-void led_groff() {
+void ledGreenOff() {
     GPIO_PORTF_DATA_R &= ~(1 << 3);
     return;
 }
@@ -154,7 +154,7 @@ void led_groff() {
  * @brief
  *   Turn the blue led on
  */
-void led_blon() {
+void ledBlueOn() {
     GPIO_PORTF_DATA_R |= (1 << 2);
     return;
 }
@@ -163,7 +163,7 @@ void led_blon() {
  * @brief
  *   Turn the blue led off
  */
-void led_bloff() {
+void ledBlueOff() {
     GPIO_PORTF_DATA_R &= ~(1 << 2);
     return;
 }
@@ -189,7 +189,7 @@ void led_bloff() {
  * @return
  *   0 on success, -1 on error.
  */
-int write_flash(void *saddr, void *eaddr, void *faddr) {
+int writeFlash(void *saddr, void *eaddr, void *faddr) {
   if((uint32_t)faddr <= 0x1000) {
     while(1);
   }
@@ -279,7 +279,7 @@ Write:
  * @brief
  *   Erase the 1KB flash page that contains the address pageaddr.
  */
-void erase_flash(uint32_t pageaddr) {
+void eraseFlash(uint32_t pageaddr) {
 /* Align the flash address to the nearest 1KB boundary */
     FLASH_FMA_R = pageaddr & ~0x3FF;
 /* Erase the 1KB block of flash starting at pageaddr. */
@@ -300,7 +300,7 @@ void erase_flash(uint32_t pageaddr) {
  * @return
  *   0 on success, -1 on failure.
  */
-int uart1_init(unsigned int baud) {
+int uart1Init(unsigned int baud) {
 /* baud rate divisor. */
   float brd;
 /* integer and float parts of the baud rate divisor. */
@@ -354,7 +354,7 @@ int uart1_init(unsigned int baud) {
  *   value does NOT indicate a sucessful transmission, only that data was
  *   transferred.
  */
-int uart1_tchar(char data) {
+int uart1TransmitChar(char data) {
 /* Make sure the FIFO is not full. */
   if(UART1_FR_R & (1 << 5)) {
     return -1;
@@ -383,7 +383,7 @@ int uart1_tchar(char data) {
  *   non-zero on failure, 0 otherwise
  *
  */
-int ssi0InitMaster() {
+int ssi0InitMaster(uint8_t ssiClockDivisor) {
   SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI0);
   SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 
@@ -412,7 +412,7 @@ int ssi0InitMaster() {
       SysCtlClockGet(),
       SSI_FRF_MOTO_MODE_0,
       SSI_MODE_MASTER,
-      SysCtlClockGet() / 5,
+      SysCtlClockGet() / ssiClockDivisor,
       8);
 
   GPIO_PORTA_AFSEL_R |= 0x3C;
@@ -432,7 +432,7 @@ int ssi0InitMaster() {
  * @return
  *   non-zero on failure, 0 otherwise
  */
-int ssi0_transmit(uint8_t data) {
+int ssi0Transmit(uint8_t data) {
   SSIDataPut(SSI0_BASE, data);
   return 0;
 }
@@ -443,7 +443,7 @@ int ssi0_transmit(uint8_t data) {
  * @return
  *   The SSI data
  */
-uint8_t ssi0_receive() {
+uint8_t ssi0Receive() {
   uint32_t data;
   //Send dummy data to drive the clock in order to receive.
   SSIDataPut(SSI0_BASE, 0);

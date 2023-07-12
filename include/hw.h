@@ -10,27 +10,27 @@
 #include <types.h>
 
 /* Systick */
-void systick_init(int, int, uint32_t);
-void start_clocktick(int, int);
-void systick_delay_1ms(void);
+void systickInit(int, int, uint32_t);
+void startClocktick(int, int);
+void systickDelay1ms(void);
 /* LED */
-void led_init(void);
-void led_ron(void);
-void led_roff(void);
-void led_gron(void);
-void led_groff(void);
-void led_blon(void);
-void led_bloff(void);
+void ledInit(void);
+void ledRedOn(void);
+void ledRedOff(void);
+void ledGreenOn(void);
+void ledGreenOff(void);
+void ledBlueOn(void);
+void ledBlueOff(void);
 /* Flash Memory */
-int write_flash(void *, void *, void *);
-void erase_flash(uint32_t);
+int writeFlash(void *, void *, void *);
+void eraseFlash(uint32_t);
 /* UART */
-int uart1_init(unsigned int);
-int uart1_tchar(char);
+int uart1Init(unsigned int);
+int uart1TransmitChar(char);
 /* SSI */
-int ssi0InitMaster();
-int ssi0_transmit(uint8_t);
-uint8_t ssi0_receive();
+int ssi0InitMaster(uint8_t);
+int ssi0Transmit(uint8_t);
+uint8_t ssi0Receive();
 /* GPTM */
 void gptmTimerInit();
 void gptmTimerStart(uint32_t);
