@@ -7,7 +7,7 @@
 #ifndef __HW_H__
 #define __HW_H__
 
-#include <types.h>
+#include "types.h"
 
 /* Systick */
 void systickInit(int, int, uint32_t);
@@ -28,7 +28,7 @@ void eraseFlash(uint32_t);
 int uart1Init(unsigned int);
 int uart1TransmitChar(char);
 /* SSI */
-int ssi0InitMaster(uint8_t);
+int ssi0InitMaster(uint8_t, bool);
 int ssi0Transmit(uint8_t);
 uint8_t ssi0Receive();
 /* GPTM */

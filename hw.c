@@ -14,10 +14,6 @@
 #include "sysctl.h"
 #include "hw_memmap.h"
 
-//TEMP
-#include "kernel_services.h"
-
-
 /*********************************SYSTICK*************************************/
 
 /* PIOSC clock is default. See Pg. 219 and Pg. 256-257. RCC is left at */
@@ -383,7 +379,7 @@ int uart1TransmitChar(char data) {
  *   non-zero on failure, 0 otherwise
  *
  */
-int ssi0InitMaster(uint8_t ssiClockDivisor) {
+int ssi0InitMaster(uint8_t ssiClockDivisor, bool enableInterrupts) {
   SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI0);
   SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 
@@ -418,9 +414,14 @@ int ssi0InitMaster(uint8_t ssiClockDivisor) {
   GPIO_PORTA_AFSEL_R |= 0x3C;
   GPIO_PORTA_DEN_R |= 0x3C;
 
-  NVIC_EN0_R |= 1 << 7;
-  SSIIntEnable(SSI0_BASE, SSI_RXFF | SSI_RXTO | SSI_RXOR);
+  if (enableInterrupts) {
+    NVIC_EN0_R |= 1 << 7;
+    //See ssi.h for interrupt flags
+    SSIIntEnable(SSI0_BASE, 0);
+  }
+
   SSIEnable(SSI0_BASE);
+
   return 0;
 }
 
@@ -433,7 +434,9 @@ int ssi0InitMaster(uint8_t ssiClockDivisor) {
  *   non-zero on failure, 0 otherwise
  */
 int ssi0Transmit(uint8_t data) {
-  SSIDataPut(SSI0_BASE, data);
+  if (false == SSIBusy(SSI0_BASE))
+    SSIDataPut(SSI0_BASE, data);
+
   return 0;
 }
 
@@ -442,24 +445,24 @@ int ssi0Transmit(uint8_t data) {
  *   Receive SSI data
  * @return
  *   The SSI data
+ * @note
+ *   You may need to drive the clock by making a dummy read in order to receive
+ *   data.
  */
 uint8_t ssi0Receive() {
   uint32_t data;
-  //Send dummy data to drive the clock in order to receive.
-  SSIDataPut(SSI0_BASE, 0);
+
   SSIDataGet(SSI0_BASE, &data);
+
   return (data & 0xFF);
 }
 
 void ssi0_handler() {
-    uint32_t status = SSIIntStatus(SSI0_BASE, true);
-    SSIIntClear(SSI0_BASE, SSI_TXEOT | SSI_DMATX | SSI_DMARX | SSI_TXFF| SSI_RXFF | SSI_RXTO | SSI_RXOR);
-    if (status & SSI_RXOR)
-       return;
-    else if ((status & SSI_RXFF) || (status & SSI_RXTO)) {
-      uint8_t data = (SSI0_DR_R << 1);
-    }
-    return;
+  uint8_t data;
+  uint32_t status = SSIIntStatus(SSI0_BASE, true);
+  SSIIntClear(SSI0_BASE, status);
+
+  return;
 }
 /*****************************General Purpose Timer****************************/
 void gptmTimerInit() {

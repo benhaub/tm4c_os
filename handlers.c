@@ -291,7 +291,6 @@ __attribute((weak)) void uart0_handler() {
 __attribute((weak)) void uart1_handler() {
     return;
 }
-
 __attribute((weak)) void ssi0_handler() {
     return;
 }
