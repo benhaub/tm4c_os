@@ -32,8 +32,7 @@ static void appInit() {
   gptmTimerInit();
   gpioInit(4);
 
-  //SSI clock divisor must not be lower than 10.
-  if(-1 == ssi0InitMaster(10, false))
+  if(-1 == ssi0InitMaster(5, false))
     syswrite("Failed to start SSI0\n\r");
 }
 
