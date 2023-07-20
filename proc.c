@@ -25,6 +25,10 @@ struct pcb *schedproc;
 static unsigned int currpid;
 //! @endcond
 
+//Forward declarations for private functions
+static void init_ptable(void);
+struct pcb* reserveproc(char *);
+
 /**
  * @brief
  *   Initializes the first user process and runs it.
@@ -32,6 +36,13 @@ static unsigned int currpid;
  *   for an explantion of calculations made
  */
 void user_init() {
+
+  init_ptable();
+  
+  //Call once only
+  if (ptable[0].state != UNUSED)
+    return;
+
   if(MAXPROC > SRAM_PAGES - *(KRAM_USE - 1) + 1) {
     printk("MAXPROC is set to allow more processes than the available RAM "\
         "can hold. Please use a value no greater than %d\n\r", \
@@ -60,6 +71,7 @@ void user_init() {
  *   The name for the process
  */
 struct pcb* reserveproc(char *name) {
+
 	int rampg;
 	int i = 0;
 
@@ -122,7 +134,7 @@ static void initproc(struct pcb *reserved) {
  *   Set all unused procs to unused state and initialize pcb members to known
  *   values.
  */
-void init_ptable() {
+static void init_ptable() {
 	for(int i = 0; i < MAXPROC; i++) {
 		ptable[i].state = UNUSED;
 		ptable[i].numchildren = 0;
@@ -157,14 +169,17 @@ inline struct pcb* currproc() {
  */
 struct pcb* pidproc(int pid) {
 	int i;
+
   if(pid > MAXPROC) {
     return NULL;
   }
+
 	for(i = 0; i < MAXPROC; i++) {
 		if(pid == ptable[i].pid) {
 			return (ptable + i);
 		}
 	}
+
 	return NULL;
 }
 
@@ -176,10 +191,14 @@ struct pcb* pidproc(int pid) {
  * @see scheduling_algorithm.c
  */
 void scheduler() {
+
   while(1) {
-    /* Reset if we're looking passed the largest pid, there will be no RUNNABLE */
-    /* processes passed that index. */
+    //Should not be called if the current process is RUNNING
+    if (RUNNING == currproc()->state)
+      while(1);
+
     schedproc = round_robin();
+
     if (schedproc->state == RUNNING)
       while(1);
 
@@ -189,14 +208,18 @@ void scheduler() {
       schedproc->state = RUNNABLE;
       schedproc->waitpid = NULLPID;
     }
+
     if(schedproc->state == RESERVED || schedproc->state == RUNNABLE) {
       if(1 == schedproc->initflag) {
         initproc(schedproc);
         schedproc->initflag = 0;
       }
+
       currpid = schedproc->pid;
+
       if (currpid < 0 || currpid > MAXPROC)
         while(1);
+
       schedproc->state = RUNNING;
       create_user_memory_region(schedproc->rampg);
       swtch(schedproc->context.sp);

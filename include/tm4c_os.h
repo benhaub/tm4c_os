@@ -7,4 +7,4 @@
 #include "syscalls.h"
 #include "cstring.h"
 #include "types.h"
-
+#include "proc.h"

@@ -32,7 +32,7 @@ static void appInit() {
   gptmTimerInit();
   gpioInit(4);
 
-  //SSI must be lower that (somewhere between 5 and 10 divided by SysClk
+  //SSI clock divisor must not be lower than 10.
   if(-1 == ssi0InitMaster(10))
     syswrite("Failed to start SSI0\n\r");
 }
@@ -64,7 +64,6 @@ int init() {
   /* We are already in the kernel so we can use the kernel services directly. */
   syswrite("Initialising tm4c_os\n\r");
   init_ram();
-  init_ptable();
   startClocktick(1, 10);
   mpuInit();
 

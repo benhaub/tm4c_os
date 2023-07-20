@@ -6,7 +6,6 @@
  *****************************************************************************/
 #include "hw.h"
 #include "mem.h" /* in sysexit(), for free_stackpage() */
-#include "proc.h"
 #include "stdarg.h"
 #include "cstring.h"
 #include "kernel_services.h"
@@ -21,6 +20,7 @@
 /* From proc.c */
 extern int maxpid;
 extern struct pcb ptable[];
+extern struct pcb* reserveproc(char *);
 /* From vectors.s */
 extern void SYST_EXCP(); //For yield.
 extern void switch_to_privledged(); //For exit

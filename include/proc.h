@@ -148,8 +148,6 @@ struct pcb {
 };
 
 void user_init(void);
-struct pcb* reserveproc(char *);
-void init_ptable(void);
 struct pcb *currproc(void);
 struct pcb *pidproc(int);
 void scheduler(void) __attribute__((noreturn, naked));
