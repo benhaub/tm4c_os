@@ -29,7 +29,7 @@ int uart1Init(unsigned int);
 int uart1TransmitChar(char);
 /* SSI */
 int ssi0InitMaster(uint8_t, bool);
-int ssi0Transmit(uint8_t);
+int ssi0Transmit(const uint8_t);
 uint8_t ssi0Receive();
 /* GPTM */
 void gptmTimerInit();

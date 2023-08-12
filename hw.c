@@ -433,7 +433,7 @@ int ssi0InitMaster(uint8_t ssiClockDivisor, bool enableInterrupts) {
  * @return
  *   non-zero on failure, 0 otherwise
  */
-int ssi0Transmit(uint8_t data) {
+int ssi0Transmit(const uint8_t data) {
   if (false == SSIBusy(SSI0_BASE))
     SSIDataPut(SSI0_BASE, data);
 
