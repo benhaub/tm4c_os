@@ -6,12 +6,12 @@
  *          This file tests the OS from non-privledged (non-kernel mode) mode
  *          software.
  *****************************************************************************/
-#include <tm4c123gh6pm.h>
-#include <hw.h> /* For led functions */
-#include <proc.h> /* For NULLPID, exit macros */
-#include <syscalls.h>
-#include <mem.h> /* For flash address macros */
-#include <cstring.h> /* For testing cstring api */
+#include "tm4c123gh6pm.h"
+#include "syscalls.h"
+#include "cstring.h" /* For testing cstring api */
+#include "proc.h" /* For NULLPID, exit macros */
+#include "mem.h" /* For flash address macros */
+#include "hw.h" /* For led functions */
 
 int main(void) __attribute__((weak));
 

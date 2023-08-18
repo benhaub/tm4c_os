@@ -417,6 +417,7 @@ int ssi0InitMaster(uint8_t ssiClockDivisor, bool enableInterrupts) {
   if (enableInterrupts) {
     NVIC_EN0_R |= 1 << 7;
     //See ssi.h for interrupt flags
+    //TODO: Put the RXTO interrupt here and the OS seems to bus fault.
     SSIIntEnable(SSI0_BASE, 0);
   }
 

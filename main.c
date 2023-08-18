@@ -15,6 +15,7 @@
  * @section Flashing
  * @section Debugging
  *****************************************************************************/
+/* tm4c includes */
 #include "hw.h"
 #include "mem.h"
 #include "proc.h"
@@ -22,6 +23,7 @@
 #include "tm4c123gh6pm.h"
 #include "kernel_services.h"
 
+/* tivaware includes */
 #include "sysctl.h"
 
 /*
@@ -31,6 +33,9 @@ static void appInit() {
   ledInit();
   gptmTimerInit();
   gpioInit(4);
+  //Make the SPI select line high so that SPI is not active.
+  gpioWrite(4, 3, 1);
+
 
   if(-1 == ssi0InitMaster(5, false))
     syswrite("Failed to start SSI0\n\r");
