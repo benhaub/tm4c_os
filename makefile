@@ -53,7 +53,7 @@ ifdef DEBUG
 endif
 
 #Each module can add it's own sources and libs to the compilation
-MODULES := ../
+MODULES := example_app
 LIBS := -ldriver
 INCLUDES := include
 #Search for header files here as well as the current working directory
