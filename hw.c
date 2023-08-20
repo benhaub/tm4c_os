@@ -413,6 +413,8 @@ int ssi0InitMaster(uint8_t ssiClockDivisor, bool enableInterrupts) {
 
   GPIO_PORTA_AFSEL_R |= 0x3C;
   GPIO_PORTA_DEN_R |= 0x3C;
+  GPIO_PORTA_DR8R_R |= 0x3C;
+  GPIO_PORTA_SLR_R |= 0x3C;
 
   if (enableInterrupts) {
     NVIC_EN0_R |= 1 << 7;
