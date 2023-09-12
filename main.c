@@ -30,14 +30,15 @@
  * Hardware peripheral initialization for custom applications.
  */
 static void appInit() {
+  const int ssiClockDivisor = 5;
+
   ledInit();
   gptmTimerInit();
   gpioInit(4);
   //Make the SPI select line high so that SPI is not active.
   gpioWrite(4, 3, 1);
 
-
-  if(-1 == ssi0InitMaster(5, false))
+  if(-1 == ssi0InitMaster(ssiClockDivisor, false))
     syswrite("Failed to start SSI0\n\r");
 }
 
